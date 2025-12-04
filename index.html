@@ -595,38 +595,92 @@
 
     <!-- Rank Manager -->
     <div id="rankManagementModal" class="modal">
-        <div class="modal-content rounded-3xl p-6 w-full max-w-4xl h-[80vh] flex flex-col">
-            <h2 class="font-cute font-bold text-xl mb-4" style="color: var(--text-main);">จัดการยศและคำนำหน้า</h2>
-            <div class="flex flex-1 gap-4 overflow-hidden">
-                <!-- Col 1 -->
-                <div class="flex-1 border p-3 rounded-2xl flex flex-col" style="background: var(--bg-main); border-color: var(--accent-border);">
-                    <h3 class="font-bold text-sm mb-2" style="color: var(--primary);">1. ความสัมพันธ์</h3>
-                    <div class="flex gap-2 mb-2">
-                        <input id="nr" class="input-theme flex-1 text-sm rounded-full px-3" placeholder="เพิ่มใหม่...">
-                        <button onclick="addR()" class="btn-theme w-8 h-8 flex items-center justify-center rounded-full"><i class="fa-solid fa-plus"></i></button>
+        <div class="modal-content rounded-3xl p-0 w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden bg-[#f8fafc]">
+            <!-- Header -->
+            <div class="p-5 bg-white border-b flex justify-between items-center shadow-sm z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-500 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-sliders"></i>
                     </div>
-                    <ul id="rl" class="flex-1 overflow-auto custom-scrollbar space-y-1 pr-1"></ul>
+                    <div>
+                        <h2 class="font-cute font-bold text-xl text-slate-800">จัดการโครงสร้างยศ</h2>
+                        <p class="text-xs text-slate-500">กำหนดความสัมพันธ์ คำนำหน้า และสร้อยพระนาม</p>
+                    </div>
                 </div>
-                <!-- Col 2 -->
-                <div class="flex-1 border p-3 rounded-2xl flex flex-col" style="background: var(--bg-main); border-color: var(--accent-border);">
-                    <h3 class="font-bold text-sm mb-2" style="color: var(--primary);">2. คำนำหน้า</h3>
-                    <div class="flex gap-2 mb-2">
-                        <input id="np" class="input-theme flex-1 text-sm rounded-full px-3" placeholder="เพิ่มใหม่...">
-                        <button onclick="addP()" class="btn-theme w-8 h-8 flex items-center justify-center rounded-full"><i class="fa-solid fa-plus"></i></button>
+                <button onclick="closeModal('rankManagementModal')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-times"></i></button>
+            </div>
+
+            <!-- Body -->
+            <div class="flex flex-1 overflow-hidden p-6 gap-6">
+                <!-- Col 1: Relationship -->
+                <div class="flex-1 flex flex-col bg-white rounded-2xl border shadow-sm overflow-hidden group hover:border-indigo-200 transition">
+                    <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
+                        <h3 class="font-bold text-sm text-slate-700"><span class="bg-indigo-500 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[10px] mr-2">1</span>ความสัมพันธ์</h3>
+                        <span class="text-[10px] text-slate-400">เช่น พระมหากษัตริย์</span>
                     </div>
-                    <ul id="pl" class="flex-1 overflow-auto custom-scrollbar space-y-1 pr-1"></ul>
+                    <div class="p-3 border-b bg-white">
+                        <div class="flex gap-2">
+                            <input id="nr" class="flex-1 bg-slate-50 border border-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition" placeholder="เพิ่มความสัมพันธ์...">
+                            <button onclick="addR()" class="bg-indigo-500 hover:bg-indigo-600 text-white w-9 h-9 rounded-lg flex items-center justify-center shadow-sm transition"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-3 bg-slate-50/50">
+                        <ul id="rl" class="space-y-1"></ul>
+                    </div>
                 </div>
-                <!-- Col 3 -->
-                <div class="flex-1 border p-3 rounded-2xl flex flex-col" style="background: var(--bg-main); border-color: var(--accent-border);">
-                    <h3 class="font-bold text-sm mb-2" style="color: var(--primary);">3. สร้อยพระนาม</h3>
-                    <div class="flex gap-2 mb-2">
-                        <input id="ns" class="input-theme flex-1 text-sm rounded-full px-3" placeholder="เพิ่มใหม่...">
-                        <button onclick="addS()" class="btn-theme w-8 h-8 flex items-center justify-center rounded-full"><i class="fa-solid fa-plus"></i></button>
+
+                <!-- Arrow -->
+                <div class="flex items-center justify-center text-slate-300">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </div>
+
+                <!-- Col 2: Prefix -->
+                <div class="flex-1 flex flex-col bg-white rounded-2xl border shadow-sm overflow-hidden group hover:border-pink-200 transition">
+                    <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
+                        <h3 class="font-bold text-sm text-slate-700"><span class="bg-pink-500 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[10px] mr-2">2</span>คำนำหน้า</h3>
+                        <span class="text-[10px] text-slate-400">เช่น พระบาทสมเด็จพระ</span>
                     </div>
-                    <ul id="sl" class="flex-1 overflow-auto custom-scrollbar space-y-1 pr-1"></ul>
+                    <div class="p-3 border-b bg-white">
+                        <div class="flex gap-2">
+                            <input id="np" class="flex-1 bg-slate-50 border border-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition" placeholder="เพิ่มคำนำหน้า...">
+                            <button onclick="addP()" class="bg-pink-500 hover:bg-pink-600 text-white w-9 h-9 rounded-lg flex items-center justify-center shadow-sm transition"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-3 bg-slate-50/50 relative">
+                        <ul id="pl" class="space-y-1"></ul>
+                        <div id="pl-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-300 pointer-events-none hidden">
+                            <i class="fa-solid fa-arrow-left mb-2 text-2xl"></i>
+                            <span class="text-xs">เลือกความสัมพันธ์ก่อน</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="flex items-center justify-center text-slate-300">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </div>
+
+                <!-- Col 3: Suffix -->
+                <div class="flex-1 flex flex-col bg-white rounded-2xl border shadow-sm overflow-hidden group hover:border-amber-200 transition">
+                    <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
+                        <h3 class="font-bold text-sm text-slate-700"><span class="bg-amber-500 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[10px] mr-2">3</span>สร้อยพระนาม (ถ้ามี)</h3>
+                        <span class="text-[10px] text-slate-400">เช่น เจ้าอยู่หัว</span>
+                    </div>
+                    <div class="p-3 border-b bg-white">
+                        <div class="flex gap-2">
+                            <input id="ns" class="flex-1 bg-slate-50 border border-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition" placeholder="เพิ่มสร้อย...">
+                            <button onclick="addS()" class="bg-amber-500 hover:bg-amber-600 text-white w-9 h-9 rounded-lg flex items-center justify-center shadow-sm transition"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-3 bg-slate-50/50 relative">
+                        <ul id="sl" class="space-y-1"></ul>
+                        <div id="sl-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-300 pointer-events-none hidden">
+                            <i class="fa-solid fa-arrow-left mb-2 text-2xl"></i>
+                            <span class="text-xs">เลือกคำนำหน้าก่อน</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <button onclick="closeModal('rankManagementModal')" class="mt-4 py-2 rounded-full font-bold transition bg-gray-100 text-gray-500 hover:bg-gray-200">ปิดหน้าต่าง</button>
         </div>
     </div>
 
@@ -1252,18 +1306,148 @@ function switchView(m){ state.viewMode=m; saveState(); renderApp(); }
 function renderSelectors(){ const k=document.getElementById('kingdomSelector'); const d=document.getElementById('dynastySelector'); k.innerHTML=''; d.innerHTML=''; state.kingdoms.forEach(x=>k.innerHTML+=`<option value="${x.id}">${x.name}</option>`); if(state.kingdoms.length){ k.value=state.currentKingdomId; const kd=state.kingdoms.find(x=>x.id==k.value); kd.dynasties.forEach(x=>d.innerHTML+=`<option value="${x.id}">${x.name}</option>`); d.value=state.currentDynastyId; } }
 function setupDragScroll(){ const c=document.querySelector('.tree-container'); let isD=false,sX,sL; c.addEventListener('mousedown',e=>{if(e.target.closest('.person-card'))return;isD=true;sX=e.pageX-c.offsetLeft;sL=c.scrollLeft;}); c.addEventListener('mouseleave',()=>isD=false); c.addEventListener('mouseup',()=>isD=false); c.addEventListener('mousemove',e=>{if(!isD)return;e.preventDefault();c.scrollLeft=sL-(e.pageX-c.offsetLeft-sX)*2;}); }
 
-// Rank Manager
-function addR(){const v=document.getElementById('nr').value; if(v){state.hierarchy[v]={prefixes:[],suffixes:{}};saveState();renderRM();document.getElementById('nr').value='';}}
-function addP(){const v=document.getElementById('np').value; if(selR&&v){state.hierarchy[selR].prefixes.push(v);state.hierarchy[selR].suffixes[v]=[];saveState();renderRM();document.getElementById('np').value='';}}
-function addS(){const v=document.getElementById('ns').value; if(selR&&selP&&v){state.hierarchy[selR].suffixes[selP].push(v);saveState();renderRM();document.getElementById('ns').value='';}}
-function renderRM(){ 
-    const rl=document.getElementById('rl'); rl.innerHTML=''; Object.keys(state.hierarchy).forEach(k=>{ rl.innerHTML+=`<li onclick="selR='${k}';renderRM()" class="flex justify-between p-2 rounded-2xl cursor-pointer transition" style="background: ${selR===k?'var(--bg-dots)':'transparent'}; color: var(--text-main);"><span>${k}</span><button onclick="event.stopPropagation();delR('${k}')" class="text-gray-400 hover:text-red-400"><i class="fa-solid fa-trash"></i></button></li>` });
-    const pl=document.getElementById('pl'); pl.innerHTML=''; if(selR)state.hierarchy[selR].prefixes.forEach(k=>{ pl.innerHTML+=`<li onclick="selP='${k}';renderRM()" class="flex justify-between p-2 rounded-2xl cursor-pointer transition" style="background: ${selP===k?'var(--bg-dots)':'transparent'}; color: var(--text-main);"><span>${k}</span><button onclick="event.stopPropagation();delP('${k}')" class="text-gray-400 hover:text-red-400"><i class="fa-solid fa-trash"></i></button></li>` });
-    const sl=document.getElementById('sl'); sl.innerHTML=''; if(selR&&selP)state.hierarchy[selR].suffixes[selP].forEach((k,i)=>{ sl.innerHTML+=`<li class="flex justify-between p-2 rounded-2xl" style="color: var(--text-main);"><span>${k}</span><button onclick="delS(${i})" class="text-gray-400 hover:text-red-400"><i class="fa-solid fa-trash"></i></button></li>` });
+// Rank Manager (Revised)
+function addR() {
+    const v = document.getElementById('nr').value.trim();
+    if (v) {
+        if (!state.hierarchy[v]) {
+            state.hierarchy[v] = { prefixes: [], suffixes: {} };
+            saveState();
+            selectRel(v); // Auto select new
+            document.getElementById('nr').value = '';
+        } else {
+            alert('มีข้อมูลนี้อยู่แล้ว');
+        }
+    }
 }
-function delR(k){if(confirm('ลบ?')){delete state.hierarchy[k];if(selR===k)selR=null;saveState();renderRM();}}
-function delP(k){if(confirm('ลบ?')){state.hierarchy[selR].prefixes=state.hierarchy[selR].prefixes.filter(x=>x!==k);if(selP===k)selP=null;saveState();renderRM();}}
-function delS(i){if(confirm('ลบ?')){state.hierarchy[selR].suffixes[selP].splice(i,1);saveState();renderRM();}}
+
+function addP() {
+    const v = document.getElementById('np').value.trim();
+    if (selR && v) {
+        if (!state.hierarchy[selR].prefixes.includes(v)) {
+            state.hierarchy[selR].prefixes.push(v);
+            state.hierarchy[selR].suffixes[v] = [];
+            saveState();
+            selectPrefix(v); // Auto select new
+            document.getElementById('np').value = '';
+        } else {
+            alert('มีข้อมูลนี้อยู่แล้ว');
+        }
+    } else if (!selR) {
+        alert('กรุณาเลือกความสัมพันธ์ก่อน (ช่องซ้ายสุด)');
+    }
+}
+
+function addS() {
+    const v = document.getElementById('ns').value.trim();
+    if (selR && selP && v) {
+        if (!state.hierarchy[selR].suffixes[selP]) state.hierarchy[selR].suffixes[selP] = [];
+        if (!state.hierarchy[selR].suffixes[selP].includes(v)) {
+            state.hierarchy[selR].suffixes[selP].push(v);
+            saveState();
+            renderRM();
+            document.getElementById('ns').value = '';
+        } else {
+            alert('มีข้อมูลนี้อยู่แล้ว');
+        }
+    } else if (!selP) {
+        alert('กรุณาเลือกคำนำหน้าก่อน (ช่องกลาง)');
+    }
+}
+
+function selectRel(k) { selR = k; selP = null; renderRM(); }
+function selectPrefix(k) { selP = k; renderRM(); }
+
+function renderRM() {
+    // Render Relationship (Col 1)
+    const rl = document.getElementById('rl');
+    rl.innerHTML = '';
+    Object.keys(state.hierarchy).forEach(k => {
+        const isSelected = selR === k;
+        // Escape quotes just in case
+        const safeK = k.replace(/'/g, "\\'");
+        rl.innerHTML += `
+            <li onclick="selectRel('${safeK}')" 
+                class="flex justify-between items-center p-3 rounded-xl cursor-pointer transition mb-1 border group/item ${isSelected ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-transparent hover:bg-white hover:shadow-sm'}">
+                <span class="font-bold text-sm ${isSelected ? 'text-indigo-700' : 'text-slate-600'}">${k}</span>
+                <button onclick="event.stopPropagation();delR('${safeK}')" class="w-6 h-6 rounded-full flex items-center justify-center text-slate-300 hover:bg-red-50 hover:text-red-500 transition opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-trash text-xs"></i></button>
+            </li>`;
+    });
+
+    // Render Prefix (Col 2)
+    const pl = document.getElementById('pl');
+    const plPh = document.getElementById('pl-placeholder');
+    pl.innerHTML = '';
+    
+    if (selR && state.hierarchy[selR]) {
+        plPh.classList.add('hidden');
+        state.hierarchy[selR].prefixes.forEach(k => {
+            const isSelected = selP === k;
+            const safeK = k.replace(/'/g, "\\'");
+            pl.innerHTML += `
+                <li onclick="selectPrefix('${safeK}')" 
+                    class="flex justify-between items-center p-3 rounded-xl cursor-pointer transition mb-1 border group/item ${isSelected ? 'bg-pink-50 border-pink-200 shadow-sm' : 'bg-white border-transparent hover:bg-white hover:shadow-sm'}">
+                    <span class="font-bold text-sm ${isSelected ? 'text-pink-700' : 'text-slate-600'}">${k}</span>
+                    <button onclick="event.stopPropagation();delP('${safeK}')" class="w-6 h-6 rounded-full flex items-center justify-center text-slate-300 hover:bg-red-50 hover:text-red-500 transition opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-trash text-xs"></i></button>
+                </li>`;
+        });
+        if(state.hierarchy[selR].prefixes.length === 0) {
+            pl.innerHTML = `<div class="text-center text-xs text-slate-400 mt-4 font-light italic">ยังไม่มีคำนำหน้า<br>เพิ่มได้ที่ช่องด้านบน</div>`;
+        }
+    } else {
+        plPh.classList.remove('hidden');
+    }
+
+    // Render Suffix (Col 3)
+    const sl = document.getElementById('sl');
+    const slPh = document.getElementById('sl-placeholder');
+    sl.innerHTML = '';
+    
+    if (selR && selP && state.hierarchy[selR] && state.hierarchy[selR].suffixes[selP]) {
+        slPh.classList.add('hidden');
+        state.hierarchy[selR].suffixes[selP].forEach((k, i) => {
+            const safeK = k.replace(/'/g, "\\'");
+            sl.innerHTML += `
+                <li class="flex justify-between items-center p-3 rounded-xl mb-1 border bg-white border-slate-100 shadow-sm group/item">
+                    <span class="text-sm text-slate-600">${k}</span>
+                    <button onclick="delS(${i})" class="w-6 h-6 rounded-full flex items-center justify-center text-slate-300 hover:bg-red-50 hover:text-red-500 transition opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-trash text-xs"></i></button>
+                </li>`;
+        });
+        if(state.hierarchy[selR].suffixes[selP].length === 0) {
+            sl.innerHTML = `<div class="text-center text-xs text-slate-400 mt-4 font-light italic">ไม่มีสร้อยพระนาม<br>(หรือเพิ่มใหม่ได้)</div>`;
+        }
+    } else {
+        slPh.classList.remove('hidden');
+    }
+}
+
+function delR(k) {
+    if (confirm(`ต้องการลบกลุ่ม "${k}" และข้อมูลภายในทั้งหมด?`)) {
+        delete state.hierarchy[k];
+        if (selR === k) { selR = null; selP = null; }
+        saveState();
+        renderRM();
+    }
+}
+
+function delP(k) {
+    if (confirm(`ต้องการลบคำนำหน้า "${k}"?`)) {
+        state.hierarchy[selR].prefixes = state.hierarchy[selR].prefixes.filter(x => x !== k);
+        delete state.hierarchy[selR].suffixes[k];
+        if (selP === k) selP = null;
+        saveState();
+        renderRM();
+    }
+}
+
+function delS(i) {
+    if (confirm('ลบสร้อยพระนามนี้?')) {
+        state.hierarchy[selR].suffixes[selP].splice(i, 1);
+        saveState();
+        renderRM();
+    }
+}
+
 function openRankManagementModal(){ renderRM(); document.getElementById('rankManagementModal').classList.add('active'); }
 function completeInitialSetup(){ const k=document.getElementById('setupKingdomName').value; const d=document.getElementById('setupDynastyName').value; if(k&&d){ const id=Date.now(); state.kingdoms.push({id,name:k,dynasties:[{id:id+1,name:d,members:[]}]}); state.currentKingdomId=id; state.currentDynastyId=id+1; saveState(); closeModal('initialSetupModal'); renderSelectors(); renderApp(); } }
 function openCreateKingdomModal() { document.getElementById('newKingdomName').value = ''; document.getElementById('newDynastyName').value = ''; document.getElementById('createKingdomModal').classList.add('active'); }
