@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Royal Family Tree (The Golden Era Edition)</title>
+    <title>Royal Family Tree (The Golden Era - Polygamy Edition)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&family=Mali:wght@400;600&family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet">
@@ -304,7 +304,7 @@
                                 <th>ID</th>
                                 <th>พระนาม / นาม</th>
                                 <th>สถานะ</th>
-                                <th>ฉัตร</th>
+                                <th>บิดา / มารดา</th>
                                 <th class="text-center">จัดการ</th>
                             </tr>
                         </thead>
@@ -379,7 +379,6 @@
                 <button onclick="closeModal('personModal')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-400 transition"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="p-6 overflow-y-auto custom-scrollbar flex-1" style="background: var(--accent-bg);">
-                <!-- Fixed Form with Submit Handler -->
                 <form id="personForm" onsubmit="handleSavePerson(event)" class="space-y-6">
                     <input type="hidden" id="p_isEditMode">
                     
@@ -619,6 +618,9 @@
         </div>
     </div>
 
+    <!-- Toast Container (Fixed: Added Back) -->
+    <div id="toast-container"></div>
+
 <script>
 // ================= CORE CONFIG & STATE =================
 const DEFAULT_IMG_MALE = "https://cdn-icons-png.flaticon.com/512/4128/4128176.png";
@@ -738,7 +740,7 @@ function toThaiNumerals(num) {
     return num.toString().split('').map(d => thai[d]||d).join('');
 }
 
-// ================= RENDER TABLE =================
+// ================= RENDER TABLE (UPDATED) =================
 function renderTable() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
@@ -755,6 +757,11 @@ function renderTable() {
             ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 text-xs font-bold">มีชีวิต</span>'
             : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 text-xs font-bold">${dTerm}</span>`;
         
+        // Find Parents
+        const fName = state.members.find(x => x.id === m.fatherId)?.name || '-';
+        const mName = state.members.find(x => x.id === m.motherId)?.name || '-';
+        const parentsHTML = `<span class="text-xs text-slate-500">${fName} / ${mName}</span>`;
+
         const row = document.createElement('tr');
         row.className = "data-row transition border-b border-slate-100 hover:bg-slate-50";
         row.innerHTML = `
@@ -762,7 +769,7 @@ function renderTable() {
             <td class="py-2 text-xs font-mono text-slate-400">${m.id}</td>
             <td class="py-2 text-sm font-bold text-slate-700 cursor-pointer hover:text-blue-500" onclick="showDetail('${m.id}')">${m.name}</td>
             <td class="py-2">${statusHTML}</td>
-            <td class="py-2 text-xs text-slate-500">${m.hasUmbrella ? m.umbrellaType : '-'}</td>
+            <td class="py-2">${parentsHTML}</td>
             <td class="text-center py-2">
                 <button onclick="editPersonDirect('${m.id}')" class="text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen-to-square"></i></button>
             </td>
@@ -772,7 +779,7 @@ function renderTable() {
 }
 function editPersonDirect(id) { const m = state.members.find(x => x.id === id); if(m) openModal(m, true); }
 
-// ================= RENDER TREE =================
+// ================= RENDER TREE (POLYGAMY ENGINE) =================
 function findRootForDisplay(focusId) {
     if(!focusId) {
         const m = state.members.find(x => x.isMonarch);
@@ -794,55 +801,84 @@ function calculateTreeLayout(rootId) {
     if(!rootId) return { nodes:[], connections:[] };
     const config = state.isHorizontal ? {...BASE_CONFIG, gapX: 40, gapY: 250} : BASE_CONFIG;
     const nodes = []; const connections = [];
-    
-    function build(pid, level) {
-        const p = state.members.find(m => m.id === pid);
-        if(!p) return { w: config.nodeWidth, children: [] };
-        const spouses = (p.spouseIds||[]).map(id => state.members.find(m => m.id === id)).filter(Boolean);
-        let totalW = 0; let spouseBlocks = [];
+    const getP = (id) => state.members.find(m => m.id === id);
 
-        spouses.forEach(sp => {
-            const kids = state.members.filter(c => (c.fatherId === pid && c.motherId === sp.id) || (c.motherId === pid && c.fatherId === sp.id))
-                .sort((a,b) => (parseInt(a.birthYear)||0) - (parseInt(b.birthYear)||0));
-            let kidsW = 0; let kidResults = [];
-            kids.forEach(k => {
-                const res = build(k.id, level + 1);
-                kidResults.push(res);
-                kidsW += res.w + config.gapX;
+    function build(pid, level) {
+        const p = getP(pid);
+        if(!p) return { width: config.nodeWidth, nodes: [] };
+
+        // 1. Get Spouses
+        let spouses = (p.spouseIds || []).map(id => getP(id)).filter(s => s);
+        
+        let totalSubtreeWidth = 0;
+        let spouseBlocks = [];
+
+        if (spouses.length > 0) {
+            spouses.forEach(spouse => {
+                // Find children of this specific pair
+                const children = state.members.filter(m => 
+                    (m.fatherId === pid && m.motherId === spouse.id) || 
+                    (m.motherId === pid && m.fatherId === spouse.id)
+                ).sort((a,b) => (parseInt(a.birthYear)||0) - (parseInt(b.birthYear)||0));
+
+                let childrenBlockWidth = 0;
+                let childrenNodes = [];
+
+                if (children.length > 0) {
+                    children.forEach(child => {
+                        const childResult = build(child.id, level + 1);
+                        childrenNodes.push({ ...childResult, childId: child.id });
+                        childrenBlockWidth += childResult.width + config.gapX;
+                    });
+                    childrenBlockWidth -= config.gapX;
+                } else {
+                    childrenBlockWidth = config.nodeWidth;
+                }
+
+                spouseBlocks.push({ spouse, childrenData: childrenNodes, width: Math.max(config.nodeWidth, childrenBlockWidth) });
+                totalSubtreeWidth += Math.max(config.nodeWidth, childrenBlockWidth) + config.spouseGap;
             });
-            if(kids.length > 0) kidsW -= config.gapX; else kidsW = config.nodeWidth;
-            spouseBlocks.push({ sp, kids, kidResults, width: Math.max(config.nodeWidth, kidsW) });
-            totalW += Math.max(config.nodeWidth, kidsW) + config.spouseGap;
-        });
-        if(spouses.length === 0) totalW = config.nodeWidth; else totalW -= config.spouseGap;
-        return { pid, p, w: totalW, spouseBlocks };
+            totalSubtreeWidth -= config.spouseGap;
+        } else {
+            totalSubtreeWidth = config.nodeWidth;
+        }
+
+        // 2. Local Nodes Construction
+        let localNodes = [];
+        const rootX = totalSubtreeWidth / 2 - config.nodeWidth / 2;
+        localNodes.push({ data: p, x: rootX, y: 0, type: 'root' });
+
+        let currentX = 0;
+        if (spouses.length > 0) {
+            const spouseY = config.gapY; 
+            
+            spouseBlocks.forEach(block => {
+                const spouseX = currentX + (block.width / 2) - (config.nodeWidth / 2);
+                localNodes.push({ data: block.spouse, x: spouseX, y: spouseY, type: 'spouse', partnerId: pid });
+                
+                // Link Main -> Spouse
+                connections.push({ from: pid, to: block.spouse.id, isSpouse: true });
+
+                if (block.childrenData.length > 0) {
+                    let childStartX = currentX + (block.width / 2) - (block.childrenData.reduce((acc, c) => acc + c.width + config.gapX, 0) - config.gapX) / 2;
+                    block.childrenData.forEach(cRes => {
+                        cRes.nodes.forEach(n => {
+                            localNodes.push({ ...n, x: n.x + childStartX, y: n.y + (config.gapY * 2) });
+                        });
+                        // Link Spouse -> Child
+                        const childRoot = cRes.nodes.find(n => n.type === 'root');
+                        if(childRoot) connections.push({ from: block.spouse.id, to: childRoot.data.id, isChild: true });
+                        childStartX += cRes.width + config.gapX;
+                    });
+                }
+                currentX += block.width + config.spouseGap;
+            });
+        }
+        return { width: totalSubtreeWidth, nodes: localNodes };
     }
 
     const treeData = build(rootId, 0);
-
-    function place(data, x, y) {
-        const mainX = x + (data.w / 2) - (config.nodeWidth / 2);
-        nodes.push({ data: data.p, x: mainX, y: y, type: 'main' });
-        let curX = x;
-        const spouseY = y; const childY = y + config.gapY;
-
-        if(data.spouseBlocks && data.spouseBlocks.length > 0) {
-            data.spouseBlocks.forEach(block => {
-                const spouseX = curX + (block.width/2) - (config.nodeWidth/2);
-                nodes.push({ data: block.sp, x: spouseX, y: spouseY, type: 'spouse' });
-                connections.push({ from: data.pid, to: block.sp.id, type: 'spouse' });
-                let childStartX = curX + (block.width/2) - (block.kidResults.reduce((acc,k)=>acc+k.w+config.gapX,0) - config.gapX)/2;
-                block.kidResults.forEach(kRes => {
-                    place(kRes, childStartX, childY);
-                    connections.push({ from: block.sp.id, to: kRes.pid, type: 'child', parent1: data.pid });
-                    childStartX += kRes.w + config.gapX;
-                });
-                curX += block.width + config.spouseGap;
-            });
-        }
-    }
-    place(treeData, 0, 0);
-    return { nodes, connections };
+    return { nodes: treeData.nodes, connections };
 }
 
 function renderTree() {
@@ -858,8 +894,7 @@ function renderTree() {
     layout.connections.forEach(c => {
         const f = layout.nodes.find(n => n.data.id === c.from);
         const t = layout.nodes.find(n => n.data.id === c.to);
-        const p1 = layout.nodes.find(n => n.data.id === c.parent1);
-        if(f && t) drawLink(f, t, c.type, svgL, p1);
+        if(f && t) drawLink(f, t, c.isSpouse, svgL);
     });
     layout.nodes.forEach(n => drawNode(n, svgN));
 }
@@ -905,7 +940,7 @@ function drawNode(node, container) {
     fo.appendChild(div); g.appendChild(fo); container.appendChild(g);
 }
 
-function drawLink(n1, n2, type, container, n3) {
+function drawLink(n1, n2, isSpouse, container) {
     const config = state.isHorizontal ? {...BASE_CONFIG, gapX: 40, gapY: 250} : BASE_CONFIG;
     const getC = (n, point) => {
         let x = n.x, y = n.y;
@@ -923,25 +958,43 @@ function drawLink(n1, n2, type, container, n3) {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("class", "connector");
 
-    if(type === 'spouse') {
-        const start = getC(n1, 'bottom'); const end = getC(n2, 'bottom');
-        let p1 = state.isHorizontal ? {x: n1.y+config.nodeWidth, y: n1.x+config.nodeHeight/2} : {x: n1.x+config.nodeWidth, y: n1.y+config.nodeHeight/2};
-        let p2 = state.isHorizontal ? {x: n2.y, y: n2.x+config.nodeHeight/2} : {x: n2.x, y: n2.y+config.nodeHeight/2};
-        path.setAttribute("d", `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`);
-        const cx = (p1.x+p2.x)/2; const cy = (p1.y+p2.y)/2;
-        const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        txt.setAttribute("class", "heart-icon"); txt.setAttribute("x", cx); txt.setAttribute("y", cy);
-        txt.setAttribute("text-anchor", "middle"); txt.setAttribute("dominant-baseline", "middle"); txt.textContent = "❤";
-        container.appendChild(path); container.appendChild(txt);
-        return;
-    }
+    let p1, p2, d;
 
-    if(type === 'child') {
-        const p1 = getC(n3 || n1, 'bottom'); const p2 = getC(n2, 'top');
-        const d = state.isHorizontal 
-             ? `M ${p1.x} ${p1.y} C ${(p1.x+p2.x)/2} ${p1.y}, ${(p1.x+p2.x)/2} ${p2.y}, ${p2.x} ${p2.y}`
-             : `M ${p1.x} ${p1.y} C ${p1.x} ${(p1.y+p2.y)/2}, ${p2.x} ${(p1.y+p2.y)/2}, ${p2.x} ${p2.y}`;
-        path.setAttribute("d", d); container.appendChild(path);
+    if(isSpouse) {
+        p1 = getC(n1, 'bottom'); 
+        p2 = getC(n2, 'top');
+        if(state.isHorizontal) {
+             const midX = (p1.x + p2.x)/2;
+             d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`;
+        } else {
+             const midY = (p1.y + p2.y)/2;
+             d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`;
+        }
+        path.setAttribute("d", d);
+        container.appendChild(path);
+
+        const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        txt.setAttribute("class", "heart-icon"); 
+        txt.setAttribute("text-anchor", "middle"); txt.setAttribute("dominant-baseline", "middle"); txt.textContent = "❤";
+        const mx = (p1.x + p2.x)/2; const my = (p1.y + p2.y)/2;
+        txt.setAttribute("x", mx); txt.setAttribute("y", my);
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", mx); circle.setAttribute("cy", my); circle.setAttribute("r", 8); circle.setAttribute("fill", "#fff");
+        container.appendChild(circle); container.appendChild(txt);
+        
+    } else {
+        p1 = getC(n1, 'bottom'); 
+        p2 = getC(n2, 'top');
+        
+        if(state.isHorizontal) {
+             const midX = (p1.x + p2.x)/2;
+             d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`;
+        } else {
+             const midY = (p1.y + p2.y)/2;
+             d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`;
+        }
+        path.setAttribute("d", d);
+        container.appendChild(path);
     }
 }
 
@@ -1000,24 +1053,24 @@ function handleSavePerson(e) {
         const p = {
             id: id,
             name: document.getElementById('p_name').value || '-',
-            nickname: document.getElementById('p_nickname').value,
+            nickname: document.getElementById('p_nickname').value || '',
             gender: document.querySelector('input[name="gender"]:checked').value,
             isAlive: document.getElementById('p_isAlive').checked,
             relationship: document.getElementById('p_relationship').value,
-            titlePrefix: document.getElementById('p_titlePrefix').value,
-            titleSuffix: document.getElementById('p_titleSuffix').value,
+            titlePrefix: document.getElementById('p_titlePrefix').value || '',
+            titleSuffix: document.getElementById('p_titleSuffix').value || '',
             royalRank: document.getElementById('p_royalRank').value,
-            kromRank: document.getElementById('p_kromRank').value,
-            kromTitle: document.getElementById('p_kromTitle').value,
+            kromRank: document.getElementById('p_kromRank').value || '',
+            kromTitle: document.getElementById('p_kromTitle').value || '',
             isMonarch: document.getElementById('p_isMonarch').checked,
             isHeir: document.getElementById('p_isHeir').checked,
             isQueenConsort: document.getElementById('p_isQueenConsort').checked,
             useReignName: document.getElementById('p_useReignName').checked,
-            reignNameBase: document.getElementById('p_reignNameSelect').value,
-            ramaNumber: document.getElementById('p_ramaNumber').value,
-            reignStart: document.getElementById('p_reignStart').value,
-            reignEnd: document.getElementById('p_reignEnd').value,
-            eraName: document.getElementById('p_eraName').value,
+            reignNameBase: document.getElementById('p_reignNameSelect').value || '',
+            ramaNumber: document.getElementById('p_ramaNumber').value || '',
+            reignStart: document.getElementById('p_reignStart').value || '',
+            reignEnd: document.getElementById('p_reignEnd').value || '',
+            eraName: document.getElementById('p_eraName').value || '',
             hasUmbrella: document.getElementById('p_hasUmbrella').checked,
             umbrellaType: document.getElementById('p_umbrellaType').value,
             image: document.getElementById('p_imageFinal').value,
@@ -1026,7 +1079,6 @@ function handleSavePerson(e) {
             spouseIds: spouseIds
         };
 
-        // Handle King appointing Queen Consort logic check
         const queenSelect = document.getElementById('p_queenSelectForKing');
         
         if(isEdit) {
@@ -1045,12 +1097,10 @@ function handleSavePerson(e) {
         // King's Queen Consort Logic
         if(p.isMonarch && p.gender === 'M') {
             const selectedQueenId = document.getElementById('p_queenSelectForKing').value;
-            // Reset all spouses first
             p.spouseIds.forEach(sid => {
                 const s = state.members.find(m => m.id === sid);
                 if(s) s.isQueenConsort = false;
             });
-            // Set new
             if(selectedQueenId) {
                 const q = state.members.find(m => m.id === selectedQueenId);
                 if(q) q.isQueenConsort = true;
@@ -1074,7 +1124,6 @@ function openModal(d={}, edit=false) {
         const f = document.getElementById('personForm'); f.reset();
         document.getElementById('p_isEditMode').value = edit;
         
-        // Force Gender Check for New Person to prevent AutoID crash
         if (!edit && !d.gender) {
             const mRadio = document.querySelector('input[name="gender"][value="M"]');
             if(mRadio) mRadio.checked = true;
@@ -1084,7 +1133,6 @@ function openModal(d={}, edit=false) {
 
         document.getElementById('p_royalRank').value = d.royalRank || 'สามัญชน';
 
-        // Auto ID logic
         if(!edit) {
             updateAutoId(); 
         } else {
@@ -1123,10 +1171,7 @@ function openModal(d={}, edit=false) {
         document.getElementById('p_imagePreview').src = d.image || (d.gender==='F'?DEFAULT_IMG_FEMALE:DEFAULT_IMG_MALE);
         document.getElementById('p_imageFinal').value = d.image || '';
         updateDatalists(d.id);
-        
-        // Setup King's Queen Selector
         updateQueenConsortSelector(d);
-
         setTimeout(checkQueenConsortEligible, 100);
         document.getElementById('personModal').classList.add('active');
     } catch(e) {
@@ -1138,8 +1183,6 @@ function openModal(d={}, edit=false) {
 function updateQueenConsortSelector(d) {
     const selDiv = document.getElementById('maleMonarchQueenSelect');
     const sel = document.getElementById('p_queenSelectForKing');
-    
-    // Safer check for gender radio
     const genderEl = document.querySelector('input[name="gender"]:checked');
     const genderVal = genderEl ? genderEl.value : 'M';
     const isKing = document.getElementById('p_isMonarch').checked && genderVal === 'M';
@@ -1149,12 +1192,9 @@ function updateQueenConsortSelector(d) {
         sel.innerHTML = '<option value="">-- เลือก --</option>';
         const spouseIds = [];
         document.getElementById('p_spouseList').querySelectorAll('li').forEach(li => spouseIds.push(li.dataset.id));
-        
         let currentQueenId = null;
-
         spouseIds.forEach(sid => {
             const s = state.members.find(m => m.id === sid);
-            // Only Female & Phra Phanraya Chao
             if(s && s.gender === 'F' && (s.relationship||'').includes('พระภรรยาเจ้า')) {
                 const op = document.createElement('option');
                 op.value = s.id;
