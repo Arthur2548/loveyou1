@@ -460,7 +460,13 @@
                                     <select id="p_titlePrefix" class="w-full text-sm input-theme" onchange="updateSuffixOptions()"></select>
                                 </div>
                                 <div class="col-span-6 md:col-span-4">
-                                    <label class="text-xs ml-2" style="color: var(--text-sub);">อิสริยยศ</label>
+                                    <div class="flex justify-between items-end mb-1">
+                                        <label class="text-xs ml-2" style="color: var(--text-sub);">อิสริยยศ</label>
+                                        <label class="flex items-center gap-1 cursor-pointer hover:bg-slate-100 px-1 rounded transition" title="ติ๊กเพื่อไม่แสดงยศนำหน้าชื่อ">
+                                            <input type="checkbox" id="p_hideRank" class="accent-slate-500 w-3 h-3 rounded-sm">
+                                            <span class="text-[10px] text-slate-500 font-bold">ไม่แสดง</span>
+                                        </label>
+                                    </div>
                                     <select id="p_royalRank" class="w-full text-sm input-theme" onchange="updateAutoId()">
                                         <option value="เจ้าฟ้า (ชั้นเอก)">เจ้าฟ้า (ชั้นเอก)</option>
                                         <option value="เจ้าฟ้า (ชั้นโท)">เจ้าฟ้า (ชั้นโท)</option>
@@ -593,7 +599,7 @@
         </div>
     </div>
 
-    <!-- Rank Manager -->
+    <!-- Rank Manager (Improved) -->
     <div id="rankManagementModal" class="modal">
         <div class="modal-content rounded-3xl p-0 w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden bg-[#f8fafc]">
             <!-- Header -->
@@ -783,29 +789,76 @@ function updateAutoId() {
     document.getElementById('p_manualId').value = generateRoyalId(gender, rank);
 }
 
-// --- LOGIC: PARENT MANAGEMENT ---
+// --- LOGIC: PARENT MANAGEMENT (UPDATED) ---
+// ฟังก์ชันจัดการเมื่อพิมพ์หรือเลือกในช่องพ่อแม่
+function validateParentInput(inputId, hiddenId) {
+    const inputEl = document.getElementById(inputId);
+    const hiddenEl = document.getElementById(hiddenId);
+    let val = inputEl.value;
+
+    // 1. ถ้าเลือกจาก Dropdown มันจะมาในรูปแบบ "ID : Name" ให้ตัดเอาแค่ ID
+    if (val.includes(' : ')) {
+        const parts = val.split(' : ');
+        val = parts[0]; // เอาแค่ ID
+        inputEl.value = val; // อัปเดตช่องกรอกให้เหลือแค่ ID ทันที
+    }
+
+    // 2. ค้นหาว่า ID นี้มีอยู่จริงไหม
+    const dyn = getDyn();
+    const existing = dyn.members.find(x => x.id === val);
+
+    if (existing) {
+        hiddenEl.value = existing.id; // ถ้าเจอ ใส่ ID ลง hidden
+    } else {
+        hiddenEl.value = ''; // ถ้าไม่เจอ เคลียร์ hidden
+    }
+}
+
+// ฟังก์ชันปุ่ม + (เพิ่มพ่อแม่)
 function addParent(type) {
     const inputId = type === 'father' ? 'p_fatherSearch' : 'p_motherSearch';
     const hiddenId = type === 'father' ? 'p_fatherId' : 'p_motherId';
-    const val = document.getElementById(inputId).value.trim();
-    if(!val) { alert('กรุณากรอกชื่อ'); return; }
+    
+    const inputEl = document.getElementById(inputId);
+    const hiddenEl = document.getElementById(hiddenId);
+    
+    let val = inputEl.value.trim();
+    if (!val) { alert('กรุณากรอก ID หรือชื่อ'); return; }
+
+    // ตัด Format "ID : Name" เผื่อกรณีค้างอยู่ (แม้ validate จะทำแล้ว)
+    if (val.includes(' : ')) val = val.split(' : ')[0];
+
     const dyn = getDyn();
-    const existing = dyn.members.find(m => m.name === val || m.id === val);
-    if(existing) {
-        document.getElementById(hiddenId).value = existing.id;
-        document.getElementById(inputId).value = `${existing.id} : ${existing.name}`;
+    
+    // 1. ลองหาจาก ID ก่อน
+    let existing = dyn.members.find(m => m.id === val);
+    
+    // 2. ถ้าไม่เจอ ID ให้ลองหาจากชื่อ
+    if (!existing) {
+        existing = dyn.members.find(m => m.name === val);
+    }
+
+    if (existing) {
+        // กรณีเจอข้อมูลที่มีอยู่แล้ว (เชื่อมโยง)
+        hiddenEl.value = existing.id;
+        inputEl.value = existing.id; // แสดงแค่ ID ตามที่ขอ
+        alert(`เชื่อมโยงกับ ${existing.name} (ID: ${existing.id}) เรียบร้อย`);
     } else {
-        if(confirm(`สร้างบุคคลใหม่ชื่อ "${val}" เป็น${type==='father'?'พระบิดา':'พระมารดา'}ทันทีหรือไม่?`)) {
+        // กรณีไม่เจอ -> สร้างใหม่ (ใช้ค่า val เป็นชื่อ)
+        if (confirm(`ไม่พบข้อมูล ID นี้\n\nต้องการสร้างบุคคลใหม่ชื่อ "${val}" เป็น${type==='father'?'พระบิดา':'พระมารดา'}ทันทีหรือไม่?`)) {
             const pGender = type === 'father' ? 'M' : 'F';
             const newId = generateRoyalId(pGender, 'สามัญชน'); 
             const newP = {
                 id: newId, dynastyId: state.currentDynastyId, name: val, gender: pGender,
                 isAlive: true, royalRank: 'สามัญชน', relationship: 'สามัญชน', spouseIds: [] 
             };
-            dyn.members.push(newP); saveState();
-            document.getElementById(hiddenId).value = newId;
-            document.getElementById(inputId).value = `${newId} : ${newP.name}`;
-            populateParentDatalists(document.getElementById('p_manualId').value);
+            dyn.members.push(newP); 
+            saveState();
+            
+            // อัปเดตค่าในฟอร์ม
+            hiddenEl.value = newId;
+            inputEl.value = newId; // แสดงแค่ ID
+            populateParentDatalists(document.getElementById('p_manualId').value); // อัปเดต list
         }
     }
 }
@@ -846,14 +899,22 @@ function getDeathLabel(p) {
 
 // --- LOGIC: DISPLAY FORMATTING ---
 function getSmartRankName(p) {
-    let dRank = p.royalRank || "";
-    if(dRank === "สามัญชน") dRank = ""; 
-    else if((p.isMonarch || p.relationship.includes("พระภรรยาเจ้า")) && dRank.includes("เจ้าฟ้า")) dRank = ""; 
-    else dRank = dRank.replace(/\s*\(.*?\)/g, ""); 
+    let dRank = "";
+    
+    // ตรวจสอบว่าติ๊ก "ไม่แสดงอิสริยยศ" หรือไม่
+    if (!p.hideRank) {
+        dRank = p.royalRank || "";
+        if(dRank === "สามัญชน") dRank = ""; 
+        else if((p.isMonarch || p.relationship.includes("พระภรรยาเจ้า")) && dRank.includes("เจ้าฟ้า")) dRank = ""; 
+        else dRank = dRank.replace(/\s*\(.*?\)/g, ""); 
+    }
 
     let parts = [];
     if(p.titlePrefix) parts.push(p.titlePrefix);
+    
+    // dRank จะว่างเปล่าถ้า hideRank เป็น true
     let namePart = (dRank || "") + (p.name || "");
+    
     if(namePart) parts.push(namePart);
     if(p.titleSuffix) parts.push(p.titleSuffix);
     if(p.kromRank) parts.push(p.kromRank + (p.kromTitle || ""));
@@ -886,8 +947,6 @@ function toggleDeath() {
 
 function handleKingDeath(deadKing, dyn) {
     deadKing.relationship = "อดีตพระมหากษัตริย์"; 
-    // แก้ไข: คงสถานะ isMonarch ไว้ เพื่อให้ยังติ๊กช่องกษัตริย์อยู่ตามที่ขอ
-    // deadKing.isMonarch = false; 
     
     // Add suffix to spouses
     if(deadKing.spouseIds) {
@@ -1016,7 +1075,6 @@ function createCard(p) {
         if (p.isMonarch || p.isQueenConsort) {
             borderColorClass = "border-gray-900"; // Black border for dead Royal Top
         }
-        // Others keep gender color
     }
 
     // Additional styling
@@ -1024,17 +1082,14 @@ function createCard(p) {
     if (p.isMonarch && p.isAlive) bgClass = "bg-yellow-50";
     if (p.isQueenConsort && p.isAlive) bgClass = "bg-pink-50";
 
-    // NO GRAYSCALE for anyone based on request "เหมือนกับคนที่ยังมีชีวิต"
     d.className = `person-card ${borderColorClass} ${bgClass} cursor-pointer relative flex flex-col items-center`;
     
     // Crown Logic
     let crownHTML = '';
     if (p.isMonarch) {
-        // Black crown if dead, Gold if alive
         let crownColor = p.isAlive ? 'text-yellow-400' : 'text-gray-900';
         crownHTML = `<i class="fa-solid fa-crown absolute -top-4 left-1/2 -translate-x-1/2 text-2xl ${crownColor} drop-shadow-md filter saturate-150 ${p.isAlive?'animate-pulse':''}"></i>`;
     } else if (p.isQueenConsort) {
-        // Black crown if dead, Pink if alive
         let crownColor = p.isAlive ? 'text-pink-400' : 'text-gray-900';
         crownHTML = `<i class="fa-solid fa-crown absolute -top-4 left-1/2 -translate-x-1/2 text-2xl ${crownColor} drop-shadow-md filter saturate-150 ${p.isAlive?'animate-pulse':''}"></i>`;
     }
@@ -1043,7 +1098,6 @@ function createCard(p) {
     let roleText = '';
     if (!p.isAlive) {
         if (p.isMonarch) {
-            // แก้ไข: แสดงคำว่า "สวรรคต" คู่กับรัชกาลที่
             roleText = `สวรรคต (รัชกาลที่ ${p.ramaNumber})`;
         } else {
             roleText = getDeathLabel(p);
@@ -1149,14 +1203,26 @@ function openModal(d={}, edit=false) {
     document.getElementById('p_eraName').value = d.eraName||'';
     document.getElementById('p_isHeir').checked = !!d.isHeir;
     document.getElementById('p_isQueenConsort').checked = !!d.isQueenConsort;
+    
+    // เพิ่มการดึงค่า hideRank
+    document.getElementById('p_hideRank').checked = !!d.hideRank;
+
     document.getElementById('p_royalRank').value = d.royalRank||'สามัญชน';
     document.getElementById('p_kromRank').value = d.kromRank||'';
     document.getElementById('p_kromTitle').value = d.kromTitle||'';
     toggleKrom(); toggleMonarch();
     populateRelSelect(d.relationship); updatePrefixOptions(d.titlePrefix); updateSuffixOptions(d.titleSuffix);
     populateParentDatalists(d.id); populateSpouseCandidates(d.id);
-    if(d.fatherId) { document.getElementById('p_fatherId').value=d.fatherId; document.getElementById('p_fatherSearch').value=getParentName(d.fatherId); }
-    if(d.motherId) { document.getElementById('p_motherId').value=d.motherId; document.getElementById('p_motherSearch').value=getParentName(d.motherId); }
+    
+    if(d.fatherId) { 
+        document.getElementById('p_fatherId').value = d.fatherId; 
+        document.getElementById('p_fatherSearch').value = d.fatherId; 
+    }
+    if(d.motherId) { 
+        document.getElementById('p_motherId').value = d.motherId; 
+        document.getElementById('p_motherSearch').value = d.motherId; 
+    }
+
     refreshSpouseList(d.id); checkQueenConsortEligible(); updateDefaultImage();
     if(d.image) { document.getElementById('p_imagePreview').src = d.image; document.getElementById('p_imageFinal').value = d.image; } else { updateDefaultImage(); }
     if(!edit && !d.id) updateAutoId();
@@ -1188,7 +1254,6 @@ function savePerson() {
     
     let suffix = document.getElementById('p_titleSuffix').value;
     if(needsSuffixRemoval && suffix) {
-        // Simple regex to remove "ในรัชกาลที่ X"
         suffix = suffix.replace(/ ในรัชกาลที่ \d+/g, '').trim();
     }
 
@@ -1202,6 +1267,10 @@ function savePerson() {
         reignEnd: document.getElementById('p_reignEnd').value, eraName: document.getElementById('p_eraName').value,
         relationship: document.getElementById('p_relationship').value, titlePrefix: document.getElementById('p_titlePrefix').value,
         titleSuffix: suffix, royalRank: document.getElementById('p_royalRank').value,
+        
+        // บันทึกค่า hideRank
+        hideRank: document.getElementById('p_hideRank').checked,
+
         kromRank: document.getElementById('p_kromRank').value, kromTitle: document.getElementById('p_kromTitle').value,
         image: document.getElementById('p_imageFinal').value, fatherId: document.getElementById('p_fatherId').value || null,
         motherId: document.getElementById('p_motherId').value || null, spouseIds: newSpouseIds 
@@ -1247,6 +1316,20 @@ function savePerson() {
         });
     }
     saveState(); closeModal('personModal'); renderApp();
+}
+
+function populateParentDatalists(exId) { 
+    const d=getDyn(); 
+    const f=document.getElementById('fatherOptions'); 
+    const m=document.getElementById('motherOptions'); 
+    f.innerHTML=''; m.innerHTML=''; 
+    d.members.forEach(x=>{ 
+        if(x.id===exId)return; 
+        const o=document.createElement('option'); 
+        o.value=`${x.id} : ${x.name}`; 
+        if(x.gender==='M')f.appendChild(o); 
+        else m.appendChild(o); 
+    }); 
 }
 
 // Helper Functions
@@ -1297,7 +1380,6 @@ function deleteCurrent(){ if(confirm('ยืนยันการลบ?')){ con
 function populateRelSelect(v){ const s=document.getElementById('p_relationship'); s.innerHTML='<option value="">-เลือก-</option>'; Object.keys(state.hierarchy).forEach(k=>s.innerHTML+=`<option value="${k}">${k}</option>`); if(v)s.value=v; }
 function updatePrefixOptions(v){ const r=document.getElementById('p_relationship').value; const s=document.getElementById('p_titlePrefix'); s.innerHTML=''; if(state.hierarchy[r])state.hierarchy[r].prefixes.forEach(p=>s.innerHTML+=`<option value="${p}">${p}</option>`); if(v)s.value=v; updateSuffixOptions(); }
 function updateSuffixOptions(v){ const r=document.getElementById('p_relationship').value; const p=document.getElementById('p_titlePrefix').value; const s=document.getElementById('p_titleSuffix'); s.innerHTML=''; if(state.hierarchy[r]&&state.hierarchy[r].suffixes[p])state.hierarchy[r].suffixes[p].forEach(x=>s.innerHTML+=`<option value="${x}">${x}</option>`); if(v)s.value=v; }
-function validateParentInput(iid,hid){ const v=document.getElementById(iid).value; const m=getDyn().members.find(x=>x.name===v || x.id===v); document.getElementById(hid).value = m?m.id:''; }
 function handleImageUpload(i){ const r=new FileReader(); r.onload=e=>{ document.getElementById('p_imagePreview').src=e.target.result; document.getElementById('p_imageFinal').value=e.target.result; }; r.readAsDataURL(i.files[0]); }
 function updateDefaultImage(){ if(!document.getElementById('p_imageFinal').value) document.getElementById('p_imagePreview').src = document.querySelector('input[name="gender"]:checked').value==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE; }
 function renderTable(){ const t=document.getElementById('tableBody'); t.innerHTML=''; const filterStatus = document.getElementById('filterStatus').value; let members = getDyn().members; if(filterStatus === 'alive') members = members.filter(m => m.isAlive); else if(filterStatus === 'dead') members = members.filter(m => !m.isAlive); members.forEach(m=>{ t.innerHTML+=`<tr><td class="text-center py-2"><img src="${m.image||(m.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE)}" class="w-10 h-10 rounded-full mx-auto border-2 shadow-sm object-cover" style="border-color: var(--accent-border);"></td><td class="font-mono text-xs cursor-pointer hover:underline text-center" title="คลิกเพื่อคัดลอก" onclick="copyToClipboard('${m.id}')" style="color: var(--primary-light);">${m.id}</td><td class="font-bold cursor-pointer hover:underline" style="color: var(--text-main);" onclick="showDetail('${m.id}')">${getSmartRankName(m)}</td><td style="color: var(--text-sub);">${getNicknameWithPrefix(m)}</td><td><span class="px-2 py-0.5 rounded-full text-xs" style="background: var(--bg-dots); color: var(--text-main);">${m.isAlive?'มีชีวิต':'เสียชีวิต'}</span></td><td class="text-xs" style="color: var(--text-sub);">${getParentName(m.fatherId)} / ${getParentName(m.motherId)}</td><td class="text-center"><button onclick="showDetail('${m.id}')" style="color: var(--primary);"><i class="fa-solid fa-pen-to-square"></i></button></td></tr>`; }); document.getElementById('tableCount').innerText = getDyn().members.length + ' คน'; }
@@ -1306,14 +1388,14 @@ function switchView(m){ state.viewMode=m; saveState(); renderApp(); }
 function renderSelectors(){ const k=document.getElementById('kingdomSelector'); const d=document.getElementById('dynastySelector'); k.innerHTML=''; d.innerHTML=''; state.kingdoms.forEach(x=>k.innerHTML+=`<option value="${x.id}">${x.name}</option>`); if(state.kingdoms.length){ k.value=state.currentKingdomId; const kd=state.kingdoms.find(x=>x.id==k.value); kd.dynasties.forEach(x=>d.innerHTML+=`<option value="${x.id}">${x.name}</option>`); d.value=state.currentDynastyId; } }
 function setupDragScroll(){ const c=document.querySelector('.tree-container'); let isD=false,sX,sL; c.addEventListener('mousedown',e=>{if(e.target.closest('.person-card'))return;isD=true;sX=e.pageX-c.offsetLeft;sL=c.scrollLeft;}); c.addEventListener('mouseleave',()=>isD=false); c.addEventListener('mouseup',()=>isD=false); c.addEventListener('mousemove',e=>{if(!isD)return;e.preventDefault();c.scrollLeft=sL-(e.pageX-c.offsetLeft-sX)*2;}); }
 
-// Rank Manager (Revised)
+// Rank Manager (Fixed & Restored)
 function addR() {
     const v = document.getElementById('nr').value.trim();
     if (v) {
         if (!state.hierarchy[v]) {
             state.hierarchy[v] = { prefixes: [], suffixes: {} };
             saveState();
-            selectRel(v); // Auto select new
+            selectRel(v); 
             document.getElementById('nr').value = '';
         } else {
             alert('มีข้อมูลนี้อยู่แล้ว');
@@ -1328,7 +1410,7 @@ function addP() {
             state.hierarchy[selR].prefixes.push(v);
             state.hierarchy[selR].suffixes[v] = [];
             saveState();
-            selectPrefix(v); // Auto select new
+            selectPrefix(v); 
             document.getElementById('np').value = '';
         } else {
             alert('มีข้อมูลนี้อยู่แล้ว');
@@ -1359,12 +1441,10 @@ function selectRel(k) { selR = k; selP = null; renderRM(); }
 function selectPrefix(k) { selP = k; renderRM(); }
 
 function renderRM() {
-    // Render Relationship (Col 1)
     const rl = document.getElementById('rl');
     rl.innerHTML = '';
     Object.keys(state.hierarchy).forEach(k => {
         const isSelected = selR === k;
-        // Escape quotes just in case
         const safeK = k.replace(/'/g, "\\'");
         rl.innerHTML += `
             <li onclick="selectRel('${safeK}')" 
@@ -1374,7 +1454,6 @@ function renderRM() {
             </li>`;
     });
 
-    // Render Prefix (Col 2)
     const pl = document.getElementById('pl');
     const plPh = document.getElementById('pl-placeholder');
     pl.innerHTML = '';
@@ -1398,7 +1477,6 @@ function renderRM() {
         plPh.classList.remove('hidden');
     }
 
-    // Render Suffix (Col 3)
     const sl = document.getElementById('sl');
     const slPh = document.getElementById('sl-placeholder');
     sl.innerHTML = '';
@@ -1406,7 +1484,6 @@ function renderRM() {
     if (selR && selP && state.hierarchy[selR] && state.hierarchy[selR].suffixes[selP]) {
         slPh.classList.add('hidden');
         state.hierarchy[selR].suffixes[selP].forEach((k, i) => {
-            const safeK = k.replace(/'/g, "\\'");
             sl.innerHTML += `
                 <li class="flex justify-between items-center p-3 rounded-xl mb-1 border bg-white border-slate-100 shadow-sm group/item">
                     <span class="text-sm text-slate-600">${k}</span>
@@ -1452,7 +1529,6 @@ function openRankManagementModal(){ renderRM(); document.getElementById('rankMan
 function completeInitialSetup(){ const k=document.getElementById('setupKingdomName').value; const d=document.getElementById('setupDynastyName').value; if(k&&d){ const id=Date.now(); state.kingdoms.push({id,name:k,dynasties:[{id:id+1,name:d,members:[]}]}); state.currentKingdomId=id; state.currentDynastyId=id+1; saveState(); closeModal('initialSetupModal'); renderSelectors(); renderApp(); } }
 function openCreateKingdomModal() { document.getElementById('newKingdomName').value = ''; document.getElementById('newDynastyName').value = ''; document.getElementById('createKingdomModal').classList.add('active'); }
 function createNewKingdomDynasty() { const k=document.getElementById('newKingdomName').value.trim(); const d=document.getElementById('newDynastyName').value.trim(); if(!k || !d) { alert('กรุณากรอกชื่ออาณาจักรและราชวงศ์'); return; } const id=Date.now(); state.kingdoms.push({id,name:k,dynasties:[{id:id+1,name:d,members:[]}]}); state.currentKingdomId=id; state.currentDynastyId=id+1; saveState(); closeModal('createKingdomModal'); renderSelectors(); renderApp(); }
-function populateParentDatalists(exId) { const d=getDyn(); const f=document.getElementById('fatherOptions'); const m=document.getElementById('motherOptions'); f.innerHTML=''; m.innerHTML=''; d.members.forEach(x=>{ if(x.id===exId)return; const o=document.createElement('option'); o.value=`${x.id} : ${x.name}`; if(x.gender==='M')f.appendChild(o); else m.appendChild(o); }); }
 function populateSpouseCandidates(exId) { const list = document.getElementById('spouseOptions'); list.innerHTML=''; const dyn = getDyn(); dyn.members.forEach(m => { if(m.id===exId) return; const opt = document.createElement('option'); opt.value = `${m.id} : ${m.name}`; list.appendChild(opt); }); }
 function addSpouse(){ const tid=document.getElementById('p_spouseSearch').value.split(' : ')[0]; const t=getDyn().members.find(x=>x.id===tid); if(t){ const list = document.getElementById('p_spouseList'); if(Array.from(list.children).some(li => li.dataset.id === t.id)) return; const li = document.createElement('li'); li.className = "flex items-center gap-1 bg-pink-100 text-pink-700 px-3 py-1 rounded-full border border-pink-200 shadow-sm"; li.innerHTML = `<span>${t.name}</span><button type="button" onclick="this.parentElement.remove(); updateQueenConsortSelector();" class="w-4 h-4 rounded-full bg-pink-200 hover:bg-pink-300 flex items-center justify-center text-[10px] text-white transition">✕</button>`; li.dataset.id = t.id; list.appendChild(li); document.getElementById('p_spouseSearch').value = ''; updateQueenConsortSelector(); } }
 function refreshSpouseList(cid) { const ul=document.getElementById('p_spouseList'); ul.innerHTML=''; const p=getDyn().members.find(x=>x.id===cid); if(p&&p.spouseIds) p.spouseIds.forEach(sid=>{ const s=getDyn().members.find(x=>x.id===sid); if(s){ const li=document.createElement('li'); li.className="flex items-center gap-1 bg-pink-100 text-pink-700 px-3 py-1 rounded-full border border-pink-200 shadow-sm"; li.innerHTML=`<span>${s.name}</span><button type="button" onclick="this.parentElement.remove(); updateQueenConsortSelector();" class="w-4 h-4 rounded-full bg-pink-200 hover:bg-pink-300 flex items-center justify-center text-[10px] text-white transition">✕</button>`; li.dataset.id=s.id; ul.appendChild(li); } }); }
@@ -1486,17 +1562,12 @@ function populateMonarchDropdown(){
     const sel = document.getElementById('appointSelect'); if(!sel) return; sel.innerHTML='';
     const dyn = getDyn(); if(!dyn) return;
     
-    // Forbidden words in relationship or rank
     const forbidden = ['บาทบริจาริกา', 'พระภรรยาเจ้า', 'สามัญชน', 'หม่อมเจ้า'];
     
-    // Filter candidates
     const candidates = dyn.members.filter(m => {
         if (!m.isAlive) return false;
-        // Check if any forbidden term exists in relationship OR rank
         const rel = (m.relationship || '').toString();
         const rank = (m.royalRank || '').toString();
-        
-        // Strict check: if forbidden words appear anywhere, exclude.
         const isForbidden = forbidden.some(word => rel.includes(word) || rank.includes(word));
         return !isForbidden;
     });
@@ -1505,7 +1576,6 @@ function populateMonarchDropdown(){
         const o=document.createElement('option'); o.text='- ไม่มีผู้เหมาะสม -'; o.value=''; sel.appendChild(o); return; 
     }
     
-    // Default option
     const def = document.createElement('option'); def.text='-- เลือก --'; def.value=''; sel.appendChild(def);
 
     candidates.forEach(m => {
@@ -1522,12 +1592,10 @@ function appointMonarch(id){
     const chosen = dyn.members.find(m => m.id === id);
     if(!chosen) return;
     
-    // Calculate new Rama number (find max current rama)
     const maxRama = Math.max(0, ...dyn.members.map(m => parseInt(m.ramaNumber)||0));
     const newRama = maxRama + 1;
 
     if(!confirm(`ยืนยันสถาปนา ${chosen.name} เป็นพระมหากษัตริย์ รัชกาลที่ ${newRama}?`)) return;
-    
     performSuccession(chosen, newRama);
 }
 </script>
