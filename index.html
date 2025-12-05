@@ -74,9 +74,22 @@
             position: relative;
         }
         .node-box:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.15); z-index: 10; border-color: var(--primary); }
-        .node-box.focused { box-shadow: 0 0 0 4px var(--primary-light); animation: pulse-border 2s infinite; }
+        
+        /* Focused & Highlight Animation */
+        .node-box.focused { box-shadow: 0 0 0 4px var(--primary-light); }
+        
+        .node-flash {
+            animation: flash-highlight 1.5s infinite ease-in-out;
+            border-color: #ef4444 !important;
+            border-width: 3px !important;
+            z-index: 50;
+        }
 
-        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0px var(--primary-light); } 100% { box-shadow: 0 0 0 8px rgba(0,0,0,0); } }
+        @keyframes flash-highlight {
+            0% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.7); transform: scale(1); }
+            50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); transform: scale(1.05); }
+            100% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0); transform: scale(1); }
+        }
 
         /* Status Borders */
         .border-male { border-color: #38bdf8; } 
@@ -92,7 +105,6 @@
             border-color: #000000 !important; 
             border-width: 3px !important;
             background: #f8f8f8;
-            /* No grayscale filter here, handled on image */
         }
         
         .img-grayscale { filter: grayscale(1); }
@@ -102,6 +114,21 @@
         .connector { fill: none; stroke: var(--line-color); stroke-width: var(--line-width); transition: stroke 0.3s; }
         .connector:hover { stroke: var(--primary); stroke-width: 2.5px; }
         .heart-icon { font-size: 14px; fill: #ef4444; filter: drop-shadow(0px 1px 2px rgba(255, 255, 255, 0.8)); }
+
+        /* Ancestor Label */
+        .ancestor-label {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: bold;
+            z-index: 5;
+        }
 
         /* ================= TABLE VIEW ================= */
         .table-view-container {
@@ -277,6 +304,11 @@
                     </button>
                 </div>
 
+                <!-- Find Relationship -->
+                <button onclick="openRelationshipModal()" class="btn-theme flex items-center space-x-2" title="ค้นหาความสัมพันธ์">
+                    <i class="fa-solid fa-users-rays"></i> <span class="hidden lg:inline">ค้นหาความสัมพันธ์</span>
+                </button>
+
                 <!-- Focus Search -->
                 <div class="relative">
                     <input type="text" id="focusSearch" list="focusOptions" placeholder="ค้นหาบุคคล..." class="pl-8 pr-3 py-1.5 text-xs rounded-full border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-white/80 w-32 transition-all focus:w-48" onchange="focusOnPerson(this.value)">
@@ -338,10 +370,11 @@
                         <option value="all">1. ภาพรวมทั้งหมด</option>
                         <option value="descendants">2. สายสกุล (ลูกหลาน)</option>
                         <option value="direct">3. สายตรง (บรรพบุรุษ+ลูกหลาน)</option>
+                        <option value="ancestors">4. สายบรรพบุรุษ (Ancestors)</option>
                     </select>
                 </div>
                 <div class="h-px w-20 bg-slate-300 mx-auto my-1"></div>
-                <button class="ctrl-btn" onclick="toggleOrientation()" title="สลับแนว"><i class="fa-solid fa-rotate"></i></button>
+                <button class="ctrl-btn" onclick="toggleOrientation()" title="สลับแนว (ตั้ง/นอน)"><i class="fa-solid fa-rotate"></i></button>
                 <button class="ctrl-btn" onclick="zoomIn()"><i class="fa-solid fa-plus"></i></button>
                 <button class="ctrl-btn" onclick="zoomOut()"><i class="fa-solid fa-minus"></i></button>
                 <button class="ctrl-btn" onclick="resetView()"><i class="fa-solid fa-crosshairs"></i></button>
@@ -542,7 +575,7 @@
                                 </div>
                                 
                                 <div class="col-span-12 md:col-span-6"><label class="text-xs ml-2 text-slate-400">สร้อยพระนาม</label><select id="p_titleSuffix" class="w-full text-sm input-theme"></select></div>
-                                <div class="col-span-6 md:col-span-3"><label class="text-xs ml-2 text-slate-400">ยศกรม</label><select id="p_kromRank" class="w-full text-sm input-theme" onchange="toggleKrom()"><option value="">-</option><option value="กรมหมื่น">กรมหมื่น</option><option value="กรมขุน">กรมขุน</option><option value="กรมหลวง">กรมหลวง</option><option value="กรมพระ">กรมพระ</option><option value="กรมพระยา">กรมพระยา</option><option value="กรมสมเด็จพระ">กรมสมเด็จพระ</option></select></div>
+                                <div class="col-span-6 md:col-span-3"><label class="text-xs ml-2 text-slate-400">ยศกรม</label><select id="p_kromRank" class="w-full text-sm input-theme" onchange="toggleKrom()"><option value="">-</option><option value="กรมหมื่น">กรมหมื่น</option><option value="กรมขุน">กรมขุน</option><option value="กรมหลวง">กรมหลวง</option><option value="กรมพระ">กรมพระ</option><option value="กรมพระยา">กรมพระยา</option><option value="สมเด็จกรมพระ">สมเด็จกรมพระ</option></select></div>
                                 <div class="col-span-6 md:col-span-3"><label class="text-xs ml-2 text-slate-400">ราชทินนามกรม</label><input type="text" id="p_kromTitle" class="w-full text-sm hidden input-theme"></div>
                             </div>
                         </div>
@@ -685,6 +718,50 @@
             <button onclick="confirmReignSelection()" class="btn-theme w-full">ยืนยัน</button>
         </div>
     </div>
+    
+    <!-- Relationship Finder Modal -->
+    <div id="relationshipModal" class="modal">
+        <div class="modal-content w-full max-w-md p-6 relative">
+            <button onclick="closeModal('relationshipModal')" class="absolute top-4 right-4 text-slate-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="font-cute font-bold text-xl mb-6 text-center text-primary"><i class="fa-solid fa-users-rays mr-2"></i>ค้นหาความสัมพันธ์</h3>
+            
+            <div class="space-y-4">
+                <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
+                    <label class="text-xs font-bold text-indigo-500 mb-1 block">บุคคลที่ 1 (A)</label>
+                    <div class="flex gap-2">
+                        <div class="w-10 h-10 rounded-full bg-white border-2 border-indigo-200 flex items-center justify-center overflow-hidden">
+                            <img id="rel_img_a" src="" class="w-full h-full object-cover opacity-50">
+                        </div>
+                        <input type="text" id="rel_input_a" list="relOptions" class="flex-1 input-theme text-sm" placeholder="พิมพ์ชื่อ..." onchange="updateRelPreview('a')">
+                    </div>
+                    <input type="hidden" id="rel_id_a">
+                </div>
+                
+                <div class="flex justify-center -my-2 relative z-10">
+                    <div class="bg-white p-2 rounded-full shadow-sm border text-slate-400 text-xs">
+                        <i class="fa-solid fa-arrow-down-up"></i>
+                    </div>
+                </div>
+
+                <div class="bg-pink-50 p-4 rounded-2xl border border-pink-100">
+                    <label class="text-xs font-bold text-pink-500 mb-1 block">บุคคลที่ 2 (B)</label>
+                    <div class="flex gap-2">
+                         <div class="w-10 h-10 rounded-full bg-white border-2 border-pink-200 flex items-center justify-center overflow-hidden">
+                            <img id="rel_img_b" src="" class="w-full h-full object-cover opacity-50">
+                        </div>
+                        <input type="text" id="rel_input_b" list="relOptions" class="flex-1 input-theme text-sm" placeholder="พิมพ์ชื่อ..." onchange="updateRelPreview('b')">
+                    </div>
+                    <input type="hidden" id="rel_id_b">
+                </div>
+                
+                <datalist id="relOptions"></datalist>
+                
+                <button onclick="calculateRelationship()" class="btn-theme w-full py-3 mt-2 shadow-lg shadow-indigo-200">
+                    <i class="fa-solid fa-search mr-2"></i> ค้นหาและแสดงเส้นทาง
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Fantasy Celebration Modal -->
     <div id="fantasyModal" class="modal">
@@ -730,6 +807,7 @@ const DEFAULT_IMG_MALE = "https://cdn-icons-png.flaticon.com/512/4128/4128176.pn
 const DEFAULT_IMG_FEMALE = "https://cdn-icons-png.flaticon.com/512/4128/4128253.png";
 
 const BASE_CONFIG = { nodeWidth: 180, nodeHeight: 100, gapX: 40, gapY: 150, spouseGap: 50 };
+const ANCESTOR_CONFIG = { nodeWidth: 160, nodeHeight: 90, gapX: 50, gapY: 120 };
 const RANK_CODES = { "เจ้าฟ้า (ชั้นเอก)":'1', "เจ้าฟ้า (ชั้นโท)":'2', "เจ้าฟ้า (ชั้นตรี)":'3', "พระองค์เจ้า (ชั้นเอก)":'4', "พระองค์เจ้า (ชั้นโท)":'5', "หม่อมเจ้า":'6', "เจ้าประเทศราช":'6', "สามัญชน":'7' };
 
 // ================= GLOBAL STATE =================
@@ -753,7 +831,8 @@ let state = {
     zoom: 1, panX: window.innerWidth/2, panY: 50, isDragging: false, isHorizontal: false,
     viewRootId: null, 
     viewMode: 'tree',
-    treeViewType: 'all' // all, descendants, direct
+    treeViewType: 'all', // all, descendants, direct, ancestors
+    highlightIds: [] // IDs to flash
 };
 
 // ================= INITIALIZATION & KINGDOM MANAGEMENT =================
@@ -926,17 +1005,14 @@ function changeViewMode(mode) {
     state.treeViewType = mode;
     saveState();
     renderTree();
+    resetView();
     showToast(`เปลี่ยนมุมมองเป็น: ${document.querySelector('#treeViewMode option:checked').text}`);
 }
 
-// Helper: Find the absolute root ancestor of a person
 function findAbsoluteRoot(startId) {
     if(!startId) return null;
     let curr = state.members.find(m => m.id === startId);
     if(!curr) return null;
-    
-    // Climb up until no parents
-    // Prefer Father line, fallback to Mother line
     let guard = 0;
     while((curr.fatherId || curr.motherId) && guard < 50) {
         let parent = null;
@@ -950,24 +1026,19 @@ function findAbsoluteRoot(startId) {
     return curr.id;
 }
 
-// Helper: Get members for Direct Line view
 function getDirectLineMembers(focusId) {
     const directIds = new Set();
     const spousesToAdd = new Set();
     
-    // 1. Trace Up (Ancestors)
     let curr = state.members.find(m => m.id === focusId);
     while(curr) {
         directIds.add(curr.id);
         if(curr.spouseIds) curr.spouseIds.forEach(s => spousesToAdd.add(s));
-        
-        // Find next parent (Prefer Father)
         if(curr.fatherId) curr = state.members.find(m => m.id === curr.fatherId);
         else if(curr.motherId) curr = state.members.find(m => m.id === curr.motherId);
         else curr = null;
     }
 
-    // 2. Trace Down (Descendants - Recursively)
     function addDescendants(pid) {
         const children = state.members.filter(m => m.fatherId === pid || m.motherId === pid);
         children.forEach(c => {
@@ -978,10 +1049,7 @@ function getDirectLineMembers(focusId) {
     }
     addDescendants(focusId);
 
-    // 3. Combine
     spousesToAdd.forEach(s => directIds.add(s));
-    
-    // Return full objects
     return state.members.filter(m => directIds.has(m.id));
 }
 
@@ -990,29 +1058,36 @@ function renderTree() {
     if(!focusId) { document.getElementById('empty-state').classList.remove('hidden'); return; }
     document.getElementById('empty-state').classList.add('hidden');
 
+    const svgL = document.getElementById('links-layer');
+    const svgN = document.getElementById('nodes-layer');
+    svgL.innerHTML = ''; svgN.innerHTML = '';
+
+    if (state.treeViewType === 'ancestors') {
+        const layout = calculateAncestryLayout(focusId);
+        layout.connections.forEach(c => {
+            const f = layout.nodes.find(n => n.data.id === c.from);
+            const t = layout.nodes.find(n => n.data.id === c.to);
+            if(f && t) drawLink(f, t, false, svgL);
+        });
+        layout.nodes.forEach(n => drawNode(n, svgN));
+        return;
+    }
+
     let renderRootId = focusId;
     let membersToRender = state.members;
 
-    // View Logic
     if (state.treeViewType === 'all') {
-        // 1. Overview: Find absolute root, render everyone
         renderRootId = findAbsoluteRoot(focusId);
         membersToRender = state.members;
     } else if (state.treeViewType === 'descendants') {
-        // 2. Lineage: Root is focus, render everyone (algorithm filters downwards naturally)
         renderRootId = focusId;
         membersToRender = state.members;
     } else if (state.treeViewType === 'direct') {
-        // 3. Direct Line: Filter members first
         renderRootId = findAbsoluteRoot(focusId);
         membersToRender = getDirectLineMembers(focusId);
     }
 
     const layout = calculateTreeLayout(renderRootId, membersToRender);
-    
-    const svgL = document.getElementById('links-layer');
-    const svgN = document.getElementById('nodes-layer');
-    svgL.innerHTML = ''; svgN.innerHTML = '';
     
     layout.connections.forEach(c => {
         const f = layout.nodes.find(n => n.data.id === c.from);
@@ -1020,6 +1095,68 @@ function renderTree() {
         if(f && t) drawLink(f, t, c.isSpouse, svgL);
     });
     layout.nodes.forEach(n => drawNode(n, svgN));
+}
+
+function calculateAncestryLayout(rootId) {
+    const nodes = [];
+    const connections = [];
+    const maxGen = 4; // Self(0), Parents(1), Grand(2), Great(3), GreatGreat(4)
+    
+    function getRelName(path) {
+        if(path === "") return "ตนเอง";
+        const p = path.toLowerCase();
+        if(p === "f") return "พ่อ";
+        if(p === "m") return "แม่";
+        if(p === "ff") return "ปู่";
+        if(p === "fm") return "ย่า";
+        if(p === "mf") return "ตา";
+        if(p === "mm") return "ยาย";
+        if(p.length === 3) return "ทวด";
+        if(p.length === 4) return "เทียด";
+        return "";
+    }
+
+    function addAncestor(id, gen, path, yOffset, range) {
+        if (gen > maxGen) return;
+        const p = state.members.find(m => m.id === id);
+        if (!p) return;
+
+        let x, y;
+        if(state.isHorizontal) {
+            // Horizontal: Root Left -> Ancestors Right
+            x = gen * (ANCESTOR_CONFIG.nodeWidth + ANCESTOR_CONFIG.gapX);
+            y = yOffset;
+        } else {
+            // Vertical: Root Bottom -> Ancestors Top
+            x = yOffset;
+            y = -(gen * (ANCESTOR_CONFIG.nodeHeight + ANCESTOR_CONFIG.gapY));
+        }
+
+        nodes.push({ data: p, x, y, type: 'ancestor', ancestorLabel: getRelName(path) });
+
+        const nextRange = range / 2;
+        
+        if (p.fatherId) {
+            // Father (Top in Horizontal, Left in Vertical)
+            const fOffset = state.isHorizontal ? y - nextRange : x - nextRange;
+            addAncestor(p.fatherId, gen + 1, path + "f", fOffset, nextRange);
+            connections.push({ from: id, to: p.fatherId });
+        }
+        
+        if (p.motherId) {
+            // Mother (Bottom in Horizontal, Right in Vertical)
+            const mOffset = state.isHorizontal ? y + nextRange : x + nextRange;
+            addAncestor(p.motherId, gen + 1, path + "m", mOffset, nextRange);
+            connections.push({ from: id, to: p.motherId });
+        }
+    }
+
+    // Initial Range Calculation
+    // Level 4 needs 16 slots. Range should be big enough to separate leaf nodes.
+    const initialRange = (Math.pow(2, maxGen-1)) * (state.isHorizontal ? ANCESTOR_CONFIG.nodeHeight : ANCESTOR_CONFIG.nodeWidth) * 0.8; 
+    
+    addAncestor(rootId, 0, "", 0, initialRange);
+    return { nodes, connections };
 }
 
 function calculateTreeLayout(rootId, memberList) {
@@ -1032,16 +1169,11 @@ function calculateTreeLayout(rootId, memberList) {
         const p = getP(pid);
         if(!p) return { width: config.nodeWidth, nodes: [] };
 
-        // 1. Identify Spouses
         let spouses = (p.spouseIds || []).map(id => getP(id)).filter(s => s);
-        
-        // 2. Identify Children (Only those in memberList)
         const children = memberList.filter(m => m.fatherId === pid || m.motherId === pid)
                                    .sort((a,b) => (parseInt(a.birthYear)||0) - (parseInt(b.birthYear)||0));
 
-        // 3. Group Children
         const groups = [];
-        
         spouses.forEach(s => {
             const kids = children.filter(c => c.fatherId === s.id || c.motherId === s.id);
             groups.push({ spouse: s, children: kids });
@@ -1049,20 +1181,13 @@ function calculateTreeLayout(rootId, memberList) {
 
         const accountedChildrenIds = new Set(groups.flatMap(g => g.children.map(c => c.id)));
         const loneChildren = children.filter(c => !accountedChildrenIds.has(c.id));
-        
-        if (loneChildren.length > 0) {
-            groups.push({ spouse: null, children: loneChildren });
-        }
-
-        if (groups.length === 0) {
-            return { width: config.nodeWidth, nodes: [{ data: p, x: 0, y: 0, type: 'root' }] };
-        }
+        if (loneChildren.length > 0) { groups.push({ spouse: null, children: loneChildren }); }
+        if (groups.length === 0) { return { width: config.nodeWidth, nodes: [{ data: p, x: 0, y: 0, type: 'root' }] }; }
 
         let totalSubtreeWidth = 0;
         const groupLayouts = groups.map(g => {
             let childrenBlockWidth = 0;
             const childResults = [];
-            
             if (g.children.length > 0) {
                 g.children.forEach(child => {
                     const res = build(child.id, level + 1);
@@ -1071,7 +1196,6 @@ function calculateTreeLayout(rootId, memberList) {
                 });
                 childrenBlockWidth -= config.gapX; 
             }
-            
             const groupWidth = Math.max(g.spouse ? config.nodeWidth : 0, childrenBlockWidth);
             return { group: g, width: groupWidth, childResults };
         });
@@ -1085,7 +1209,6 @@ function calculateTreeLayout(rootId, memberList) {
         localNodes.push({ data: p, x: rootX, y: 0, type: 'root' });
 
         let currentX = 0;
-        
         groupLayouts.forEach(gl => {
             const g = gl.group;
             const groupCenterX = currentX + gl.width / 2;
@@ -1103,9 +1226,7 @@ function calculateTreeLayout(rootId, memberList) {
                         localNodes.push({ ...n, x: n.x + childX, y: n.y + config.gapY * 2 });
                     });
                     const childRoot = res.nodes.find(n => n.type === 'root');
-                    if (childRoot) {
-                        connections.push({ from: g.spouse.id, to: childRoot.data.id, isChild: true });
-                    }
+                    if (childRoot) { connections.push({ from: g.spouse.id, to: childRoot.data.id, isChild: true }); }
                     childX += res.width + config.gapX;
                 });
 
@@ -1116,59 +1237,75 @@ function calculateTreeLayout(rootId, memberList) {
                         localNodes.push({ ...n, x: n.x + childX, y: n.y + config.gapY * 2 });
                     });
                     const childRoot = res.nodes.find(n => n.type === 'root');
-                    if (childRoot) {
-                        connections.push({ from: pid, to: childRoot.data.id, isChild: false });
-                    }
+                    if (childRoot) { connections.push({ from: pid, to: childRoot.data.id, isChild: false }); }
                     childX += res.width + config.gapX;
                 });
             }
             currentX += gl.width + config.spouseGap;
         });
-
         return { width: totalSubtreeWidth, nodes: localNodes };
     }
-
     const treeData = build(rootId, 0);
     return { nodes: treeData.nodes, connections };
 }
 
 // ================= DRAWING =================
 function drawNode(node, container) {
-    const config = state.isHorizontal ? {...BASE_CONFIG, gapX: 40, gapY: 250} : BASE_CONFIG;
-    const {x, y} = state.isHorizontal ? {x: node.y, y: node.x} : {x: node.x, y: node.y}; 
+    let config = BASE_CONFIG;
+    if (state.treeViewType === 'ancestors') config = ANCESTOR_CONFIG;
+    else if (state.isHorizontal) config = {...BASE_CONFIG, gapX: 40, gapY: 250};
+
+    // Correct coordinate flip for horizontal view in tree mode, but ancestors logic already handled coords
+    let x = node.x, y = node.y;
+    if (state.isHorizontal && state.treeViewType !== 'ancestors') { x = node.y; y = node.x; }
+
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
     g.setAttribute("transform", `translate(${x},${y})`);
     g.style.cursor = "pointer";
     g.onclick = (e) => { e.stopPropagation(); showDetail(node.data.id); };
+    
     const fo = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
     fo.setAttribute("width", config.nodeWidth); fo.setAttribute("height", config.nodeHeight);
+    
     const p = node.data;
     const isDead = !p.isAlive;
     const deathTerm = isDead ? getDeathTerm(p) : "";
     let borderClass = p.gender === 'M' ? "border-male" : "border-female";
     if(p.isMonarch) borderClass = "border-king";
     else if(p.isQueenConsort) borderClass = "border-queen";
+    
     let imgClass = "";
     if(isDead) {
         if(p.isMonarch) { borderClass = "border-dead-royal"; imgClass = "img-normal"; } 
         else { borderClass = "border-dead"; imgClass = "img-grayscale"; }
     }
+    
     const treeName = getTreeNodeName(p); 
     const showCrown = (p.isMonarch || p.isQueenConsort);
+    
+    // Highlight Logic
+    const isFlash = state.highlightIds.includes(p.id);
+    const flashClass = isFlash ? "node-flash" : "";
+    
     let badgeHTML = "";
+    if (state.treeViewType === 'ancestors' && node.ancestorLabel) {
+        badgeHTML += `<div class="ancestor-label">${node.ancestorLabel}</div>`;
+    }
+    
     if (p.isMonarch && p.useReignName && p.reignNameBase) {
         let reignTxt = p.reignNameBase;
         const autoNum = getReignNameRank(p);
         if(autoNum) reignTxt += `ที่ ${toThaiNumerals(autoNum)}`;
         if(p.globalReignNumber) reignTxt += ` (ร.${toThaiNumerals(p.globalReignNumber)})`;
-        badgeHTML = `<div class="badge-monarch truncate w-full text-center">${reignTxt}</div>`;
+        badgeHTML += `<div class="badge-monarch truncate w-full text-center mt-1">${reignTxt}</div>`;
     } else if (p.isHeir) {
-         badgeHTML = `<div class="badge-heir truncate w-full text-center">รัชทายาทลำดับที่ ${toThaiNumerals(p.heirOrder)}</div>`;
+         badgeHTML += `<div class="badge-heir truncate w-full text-center mt-1">รัชทายาทลำดับที่ ${toThaiNumerals(p.heirOrder)}</div>`;
     } else if (!p.isMonarch && p.kromRank) {
-        badgeHTML = `<div class="badge-krom truncate w-full text-center">${p.kromRank}${p.kromTitle||''}</div>`;
+        badgeHTML += `<div class="badge-krom truncate w-full text-center mt-1">${p.kromRank}${p.kromTitle||''}</div>`;
     }
+
     const div = document.createElement("div");
-    div.className = `node-box ${borderClass} ${state.viewRootId === p.id ? 'focused' : ''}`;
+    div.className = `node-box ${borderClass} ${flashClass} ${state.viewRootId === p.id ? 'focused' : ''}`;
     div.innerHTML = `
         <div class="relative mb-1">
             <img src="${p.image || (p.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE)}" class="w-10 h-10 rounded-full border border-white shadow-sm object-cover bg-slate-100 ${imgClass}">
@@ -1182,40 +1319,93 @@ function drawNode(node, container) {
 }
 
 function drawLink(n1, n2, isSpouse, container) {
-    const config = state.isHorizontal ? {...BASE_CONFIG, gapX: 40, gapY: 250} : BASE_CONFIG;
-    const getC = (n, point) => {
-        let x = n.x, y = n.y;
-        if(state.isHorizontal) { x = n.y; y = n.x; }
-        if(state.isHorizontal) {
-            if(point==='bottom') return {x: x+config.nodeWidth, y: y+config.nodeHeight/2}; 
-            if(point==='top') return {x: x, y: y+config.nodeHeight/2}; 
+    let config = BASE_CONFIG;
+    if (state.treeViewType === 'ancestors') config = ANCESTOR_CONFIG;
+    else if (state.isHorizontal) config = {...BASE_CONFIG, gapX: 40, gapY: 250};
+
+    // Calculate center points logic (complicated by rotation and view modes)
+    const getC = (n, type) => {
+        let nx = n.x, ny = n.y;
+        
+        // Adjust for standard horizontal view rotation
+        if (state.isHorizontal && state.treeViewType !== 'ancestors') { nx = n.y; ny = n.x; }
+
+        if (state.treeViewType === 'ancestors') {
+            if (state.isHorizontal) {
+                // Root Left -> Parents Right
+                if (type === 'from') return { x: nx + config.nodeWidth, y: ny + config.nodeHeight/2 };
+                if (type === 'to') return { x: nx, y: ny + config.nodeHeight/2 };
+            } else {
+                // Root Bottom -> Parents Top
+                if (type === 'from') return { x: nx + config.nodeWidth/2, y: ny };
+                if (type === 'to') return { x: nx + config.nodeWidth/2, y: ny + config.nodeHeight };
+            }
         } else {
-            if(point==='bottom') return {x: x+config.nodeWidth/2, y: y+config.nodeHeight};
-            if(point==='top') return {x: x+config.nodeWidth/2, y: y};
+             if (state.isHorizontal) {
+                if(type==='bottom') return {x: nx+config.nodeWidth, y: ny+config.nodeHeight/2}; 
+                if(type==='top') return {x: nx, y: ny+config.nodeHeight/2}; 
+             } else {
+                if(type==='bottom') return {x: nx+config.nodeWidth/2, y: ny+config.nodeHeight};
+                if(type==='top') return {x: nx+config.nodeWidth/2, y: ny};
+             }
         }
-        return {x,y};
+        return {x: nx, y: ny}; // Fallback
     };
+
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("class", "connector");
-    let p1, p2, d;
-    if(isSpouse) {
-        p1 = getC(n1, 'bottom'); p2 = getC(n2, 'top');
-        if(state.isHorizontal) { const midX = (p1.x + p2.x)/2; d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`; } 
-        else { const midY = (p1.y + p2.y)/2; d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`; }
-        path.setAttribute("d", d); container.appendChild(path);
-        const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        txt.setAttribute("class", "heart-icon"); txt.setAttribute("text-anchor", "middle"); txt.setAttribute("dominant-baseline", "middle"); txt.textContent = "❤";
-        const mx = (p1.x + p2.x)/2; const my = (p1.y + p2.y)/2;
-        txt.setAttribute("x", mx); txt.setAttribute("y", my);
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", mx); circle.setAttribute("cy", my); circle.setAttribute("r", 8); circle.setAttribute("fill", "#fff");
-        container.appendChild(circle); container.appendChild(txt);
-    } else {
-        p1 = getC(n1, 'bottom'); p2 = getC(n2, 'top');
-        if(state.isHorizontal) { const midX = (p1.x + p2.x)/2; d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`; } 
-        else { const midY = (p1.y + p2.y)/2; d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`; }
-        path.setAttribute("d", d); container.appendChild(path);
+    
+    // Highlight link if both nodes are highlighted
+    if (state.highlightIds.includes(n1.data.id) && state.highlightIds.includes(n2.data.id)) {
+        path.style.stroke = "#ef4444";
+        path.style.strokeWidth = "3px";
+        path.style.strokeDasharray = "5,5";
     }
+
+    let p1, p2, d;
+    
+    if (state.treeViewType === 'ancestors') {
+        p1 = getC(n1, 'from');
+        p2 = getC(n2, 'to');
+        if (state.isHorizontal) {
+            const midX = (p1.x + p2.x)/2;
+            d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`;
+        } else {
+            const midY = (p1.y + p2.y)/2;
+            d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`;
+        }
+    } else {
+        if(isSpouse) {
+            p1 = getC(n1, 'bottom'); p2 = getC(n2, 'top');
+            // Spouse curves
+            if(state.isHorizontal) { 
+                const midX = (p1.x + p2.x)/2; 
+                d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`; 
+            } else { 
+                const midY = (p1.y + p2.y)/2; 
+                d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`; 
+            }
+            
+            // Draw heart
+            const mx = (p1.x + p2.x)/2; const my = (p1.y + p2.y)/2;
+            const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            txt.setAttribute("class", "heart-icon"); txt.setAttribute("text-anchor", "middle"); txt.setAttribute("dominant-baseline", "middle"); txt.textContent = "❤";
+            txt.setAttribute("x", mx); txt.setAttribute("y", my);
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", mx); circle.setAttribute("cy", my); circle.setAttribute("r", 8); circle.setAttribute("fill", "#fff");
+            container.appendChild(circle); container.appendChild(txt);
+        } else {
+            p1 = getC(n1, 'bottom'); p2 = getC(n2, 'top');
+            if(state.isHorizontal) { 
+                const midX = (p1.x + p2.x)/2; 
+                d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`; 
+            } else { 
+                const midY = (p1.y + p2.y)/2; 
+                d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`; 
+            }
+        }
+    }
+    path.setAttribute("d", d); container.appendChild(path);
 }
 
 // ================= UTILS & HELPERS =================
@@ -1651,6 +1841,119 @@ function deleteCurrent() {
     saveState(); closeModal('detailModal'); updateApp();
 }
 
+// ================= RELATIONSHIP FINDER =================
+function openRelationshipModal() {
+    document.getElementById('rel_input_a').value = '';
+    document.getElementById('rel_input_b').value = '';
+    document.getElementById('rel_id_a').value = '';
+    document.getElementById('rel_id_b').value = '';
+    document.getElementById('rel_img_a').src = '';
+    document.getElementById('rel_img_b').src = '';
+    
+    const dl = document.getElementById('relOptions');
+    dl.innerHTML = '';
+    state.members.forEach(m => {
+        const op = document.createElement('option');
+        op.value = `${m.name} [${m.id}]`;
+        dl.appendChild(op);
+    });
+    
+    document.getElementById('relationshipModal').classList.add('active');
+}
+
+function updateRelPreview(side) {
+    const input = document.getElementById(`rel_input_${side}`).value;
+    const match = input.match(/\[(.*?)\]/);
+    if(match && match[1]) {
+        const id = match[1];
+        const m = state.members.find(x => x.id === id);
+        if(m) {
+            document.getElementById(`rel_id_${side}`).value = id;
+            document.getElementById(`rel_img_${side}`).src = m.image || (m.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE);
+            document.getElementById(`rel_img_${side}`).classList.remove('opacity-50');
+            return;
+        }
+    }
+    document.getElementById(`rel_id_${side}`).value = '';
+    document.getElementById(`rel_img_${side}`).src = '';
+    document.getElementById(`rel_img_${side}`).classList.add('opacity-50');
+}
+
+function calculateRelationship() {
+    const idA = document.getElementById('rel_id_a').value;
+    const idB = document.getElementById('rel_id_b').value;
+    
+    if(!idA || !idB) { showToast("กรุณาเลือกบุคคลให้ครบทั้งสองคน"); return; }
+    if(idA === idB) { showToast("โปรดเลือกบุคคลที่แตกต่างกัน"); return; }
+    
+    const path = findRelationshipPath(idA, idB);
+    
+    if(!path) {
+        showToast("ไม่พบความสัมพันธ์ระหว่างสองคนนี้");
+        return;
+    }
+
+    // Set View
+    closeModal('relationshipModal');
+    state.highlightIds = [idA, idB]; // Highlight both
+    
+    // Find common ancestor to center view
+    // If path exists, path[0] is A, path[path.length-1] is B.
+    // Try to find a node in the path that is an ancestor of both or just pick one
+    const common = path.find(pid => {
+       // Heuristic: pick middle of path
+       return true; 
+    });
+    const midId = path[Math.floor(path.length/2)];
+    
+    state.viewRootId = midId; 
+    state.treeViewType = 'all'; // Switch to all to see connections
+    
+    saveState();
+    renderTree();
+    resetView();
+    showToast("แสดงเส้นทางความสัมพันธ์แล้ว");
+    
+    // Auto-remove highlight after 5 seconds
+    setTimeout(() => {
+        state.highlightIds = [];
+        renderTree();
+    }, 5000);
+}
+
+function findRelationshipPath(startId, endId) {
+    // BFS to find shortest path
+    const queue = [[startId]];
+    const visited = new Set();
+    visited.add(startId);
+    
+    while (queue.length > 0) {
+        const path = queue.shift();
+        const node = path[path.length - 1];
+        
+        if (node === endId) return path;
+        
+        const neighbors = [];
+        const m = state.members.find(x => x.id === node);
+        if(m) {
+            if(m.fatherId) neighbors.push(m.fatherId);
+            if(m.motherId) neighbors.push(m.motherId);
+            if(m.spouseIds) neighbors.push(...m.spouseIds);
+            // Children
+            state.members.filter(c => c.fatherId === node || c.motherId === node).forEach(c => neighbors.push(c.id));
+        }
+        
+        for (const neighbor of neighbors) {
+            if (!visited.has(neighbor)) {
+                visited.add(neighbor);
+                const newPath = [...path, neighbor];
+                queue.push(newPath);
+            }
+        }
+    }
+    return null;
+}
+
 // ================= RANK MANAGER =================
 let selR=null, selP=null;
 function openRankManagementModal() { renderRM(); document.getElementById('rankManagementModal').classList.add('active'); }
@@ -1815,4 +2118,3 @@ function toggleOrientation(){ state.isHorizontal=!state.isHorizontal; renderTree
 </script>
 </body>
 </html>
-
