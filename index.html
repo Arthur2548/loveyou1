@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Royal Family Tree (The Golden Era - Polygamy Edition)</title>
+    <title>Royal Family Tree (Succession & Polygamy Edition)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&family=Mali:wght@400;600&family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet">
@@ -21,9 +21,6 @@
             --card-shadow: rgba(0, 0, 0, 0.05);
             --line-color: #cbd5e1;
             --line-width: 1.5px;
-            --gold-main: #d4af37;
-            --gold-light: #f3e5ab;
-            --gold-dark: #aa8c2c;
         }
 
         /* Themes */
@@ -86,8 +83,20 @@
         .border-female { border-color: #c084fc; } 
         .border-king { border-color: #fbbf24; background: linear-gradient(to bottom, #fff, #fffbeb); } 
         .border-queen { border-color: #f472b6; background: linear-gradient(to bottom, #fff, #fff0f5); }
-        .border-dead { filter: grayscale(0.8) opacity(0.9); border-style: dashed !important; border-color: #64748b !important; }
-        .border-dead-royal { filter: grayscale(0.5); border-color: #92400e !important; background: #fff7ed; }
+        
+        /* Death Visuals */
+        .border-dead { filter: grayscale(1) opacity(0.8); border-style: dashed !important; border-color: #64748b !important; }
+        
+        /* Monarch Death: Black Border, Normal Image */
+        .border-dead-royal { 
+            border-color: #000000 !important; 
+            border-width: 3px !important;
+            background: #f8f8f8;
+            /* No grayscale filter here, handled on image */
+        }
+        
+        .img-grayscale { filter: grayscale(1); }
+        .img-normal { filter: none; }
 
         /* Connectors */
         .connector { fill: none; stroke: var(--line-color); stroke-width: var(--line-width); transition: stroke 0.3s; }
@@ -179,6 +188,11 @@
 
         /* Monarch Banner */
         .monarch-frame { border: 2px solid #fbbf24; background: linear-gradient(to right, #fffbeb, #fff); box-shadow: 0 4px 6px rgba(251, 191, 36, 0.2); }
+        
+        /* Badges for Tree */
+        .badge-monarch { background-color: #fef9c3; color: #854d0e; border: 1px solid #fde047; padding: 1px 4px; border-radius: 4px; font-size: 8px; font-weight: bold; margin-top: 2px; }
+        .badge-krom { background-color: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 1px 4px; border-radius: 4px; font-size: 8px; font-weight: bold; margin-top: 2px; }
+        .badge-heir { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 1px 4px; border-radius: 4px; font-size: 8px; font-weight: bold; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -192,7 +206,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-cute font-bold tracking-wide" style="color: var(--text-main);">Royal Family Tree</h1>
-                    <p class="text-[10px] text-slate-400">The Golden Era Edition</p>
+                    <p class="text-[10px] text-slate-400">Succession & Polygamy Edition</p>
                 </div>
             </div>
             
@@ -230,8 +244,8 @@
                 
                 <button onclick="openAddRootModal()" class="btn-theme flex items-center space-x-2"><i class="fa-solid fa-user-plus"></i><span>เพิ่มคนแรก</span></button>
 
-                <!-- Monarch Banner -->
-                <div id="monarchBannerContainer" class="ml-2">
+                <!-- Monarch Banner (Fixed Visibility) -->
+                <div id="monarchBannerContainer" class="ml-2 flex items-center">
                     <!-- Active Monarch -->
                     <div id="monarchBanner" class="hidden monarch-frame rounded-full pl-1 pr-4 py-1 flex items-center gap-2 transition-all duration-500 cursor-pointer hover:scale-105" onclick="focusOnMonarch()">
                         <div class="relative">
@@ -288,6 +302,11 @@
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                     <h2 class="font-cute text-2xl" style="color: var(--primary);">รายชื่อสมาชิก</h2>
                     <div class="flex gap-2 items-center flex-wrap justify-center">
+                        <select id="tableFilterStatus" class="bg-white px-4 py-1.5 rounded-full border border-slate-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition cursor-pointer" onchange="renderTable()">
+                            <option value="all">แสดงทั้งหมด</option>
+                            <option value="alive" selected>เฉพาะผู้มีชีวิต</option>
+                            <option value="dead">เฉพาะผู้เสียชีวิต</option>
+                        </select>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fa-solid fa-search text-slate-400 group-focus-within:text-primary transition"></i>
@@ -301,7 +320,6 @@
                         <thead>
                             <tr style="background: var(--bg-dots);">
                                 <th class="text-center w-20">รูป</th>
-                                <th>ID</th>
                                 <th>พระนาม / นาม</th>
                                 <th>สถานะ</th>
                                 <th>บิดา / มารดา</th>
@@ -337,8 +355,12 @@
                         <span id="d_id"></span> <i class="fa-regular fa-copy"></i>
                     </div>
                 </div>
-                <p id="d_krom" class="text-xs font-bold text-amber-500 bg-amber-50 inline-block px-3 py-1 rounded-full mb-4 border border-amber-100"></p>
                 
+                <!-- Added back the missing d_krom element -->
+                <p id="d_krom" class="text-xs font-bold text-amber-600 bg-amber-50 inline-block px-4 py-1.5 rounded-xl mb-4 border border-amber-200 shadow-sm hidden"></p>
+
+                <div id="d_badges" class="flex flex-wrap justify-center gap-2 mb-4"></div>
+
                 <div class="grid grid-cols-1 gap-2 mb-4">
                     <button onclick="setAsRoot(window.curPID)" class="w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-sitemap"></i> ดูผังพงศาวลีของคนนี้
@@ -401,7 +423,7 @@
 
                         <!-- Info Fields -->
                         <div class="flex-1 space-y-4">
-                            <!-- ID Row (Restored) -->
+                            <!-- ID Row -->
                             <div class="flex gap-2 items-end bg-slate-50 p-2 rounded-lg border border-slate-100">
                                 <div class="flex-1">
                                     <label class="text-xs font-bold text-slate-500">ID (อัตโนมัติ)</label>
@@ -447,10 +469,18 @@
                                         <option value="พระองค์เจ้า (ชั้นเอก)">พระองค์เจ้า (ชั้นเอก)</option>
                                         <option value="พระองค์เจ้า (ชั้นโท)">พระองค์เจ้า (ชั้นโท)</option>
                                         <option value="หม่อมเจ้า">หม่อมเจ้า</option>
+                                        <option value="เจ้าประเทศราช">เจ้าประเทศราช</option>
                                         <option value="สามัญชน">สามัญชน</option>
                                     </select>
                                 </div>
                                 
+                                <div class="col-span-12">
+                                     <label class="flex items-center gap-2 cursor-pointer ml-2">
+                                        <input type="checkbox" id="p_hideRoyalRank" class="accent-slate-500 rounded">
+                                        <span class="text-xs text-slate-500">ไม่แสดงอิสริยยศ</span>
+                                    </label>
+                                </div>     
+
                                 <div class="col-span-8">
                                     <label class="text-xs font-bold ml-2 text-primary">พระนาม *</label>
                                     <input type="text" id="p_name" required class="w-full font-bold input-theme">
@@ -460,9 +490,11 @@
                                     <input type="text" id="p_nickname" class="w-full text-sm input-theme">
                                 </div>
                                 
+                                
+
                                 <div class="col-span-12 md:col-span-6"><label class="text-xs ml-2 text-slate-400">สร้อยพระนาม</label><select id="p_titleSuffix" class="w-full text-sm input-theme"></select></div>
                                 <div class="col-span-6 md:col-span-3"><label class="text-xs ml-2 text-slate-400">ยศกรม</label><select id="p_kromRank" class="w-full text-sm input-theme" onchange="toggleKrom()"><option value="">-</option><option value="กรมหมื่น">กรมหมื่น</option><option value="กรมขุน">กรมขุน</option><option value="กรมหลวง">กรมหลวง</option><option value="กรมพระ">กรมพระ</option><option value="กรมพระยา">กรมพระยา</option><option value="สมเด็จกรมพระ">สมเด็จกรมพระ</option></select></div>
-                                <div class="col-span-6 md:col-span-3"><label class="text-xs ml-2 text-slate-400">ราชทินนาม</label><input type="text" id="p_kromTitle" class="w-full text-sm hidden input-theme"></div>
+                                <div class="col-span-6 md:col-span-3"><label class="text-xs ml-2 text-slate-400">ราชทินนามกรม</label><input type="text" id="p_kromTitle" class="w-full text-sm hidden input-theme"></div>
                             </div>
                         </div>
                     </div>
@@ -495,15 +527,18 @@
                     </div>
 
                     <!-- Roles -->
-                    <div class="flex flex-wrap gap-4 pt-2">
+                    <div class="flex flex-wrap gap-4 pt-2 items-center">
                         <label class="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-2xl border transition bg-amber-50 border-amber-100">
                             <input type="checkbox" id="p_isMonarch" class="accent-amber-400 w-4 h-4" onchange="toggleMonarch()">
                             <span class="text-sm font-bold text-amber-600">กษัตริย์/ราชินีนาถ</span>
                         </label>
-                        <label class="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-2xl border transition bg-blue-50 border-blue-100">
-                            <input type="checkbox" id="p_isHeir" class="accent-blue-400 w-4 h-4">
-                            <span class="text-sm font-bold text-blue-600">รัชทายาท</span>
-                        </label>
+                        <div class="flex items-center gap-2 px-4 py-2 rounded-2xl border transition bg-blue-50 border-blue-100">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="p_isHeir" class="accent-blue-400 w-4 h-4" onchange="toggleHeirOrder()">
+                                <span class="text-sm font-bold text-blue-600">รัชทายาท</span>
+                            </label>
+                            <input type="number" id="p_heirOrder" min="1" placeholder="ลำดับ" class="w-16 text-xs input-theme hidden border-blue-200 text-blue-800 font-bold text-center">
+                        </div>
                          <label id="queenConsortOption" class="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-2xl border transition bg-pink-50 border-pink-100 hidden">
                             <input type="checkbox" id="p_isQueenConsort" class="accent-pink-400 w-4 h-4">
                             <span class="text-sm font-bold text-pink-600">พระมเหสีคู่บัลลังก์</span>
@@ -512,17 +547,27 @@
 
                     <!-- Monarch Panel -->
                     <div id="monarchPanel" class="hidden bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-3xl border border-amber-200 grid grid-cols-4 gap-3 animate-fade-in">
-                        <div class="col-span-4 flex items-center gap-2 mb-2">
-                            <input type="checkbox" id="p_useReignName" class="accent-amber-600" onchange="toggleReignName()">
-                            <span class="text-xs font-bold text-amber-800">ใช้พระนามแผ่นดิน</span>
-                            <select id="p_reignNameSelect" class="text-xs input-theme hidden flex-1"></select>
+                        <div class="col-span-4 flex flex-col md:flex-row gap-2 mb-2 bg-white/50 p-2 rounded-xl">
+                            <!-- Reign Name Section -->
+                            <div class="flex items-center gap-2 flex-1">
+                                <input type="checkbox" id="p_useReignName" class="accent-amber-600" onchange="toggleReignName()">
+                                <span class="text-xs font-bold text-amber-800">ใช้นามแผ่นดิน</span>
+                                <select id="p_reignNameSelect" class="text-xs input-theme hidden flex-1"></select>
+                                <span id="p_autoReignNameNumber" class="text-xs font-bold text-amber-600 hidden bg-amber-100 px-2 py-1 rounded"></span>
+                            </div>
+                            
+                            <!-- Global Reign Number Section -->
+                            <div class="flex items-center gap-2 border-l pl-2 border-amber-200">
+                                <span class="text-xs font-bold text-amber-800">รัชกาลที่ :</span>
+                                <input type="number" id="p_globalReignNumber" class="w-16 text-xs font-bold text-center input-theme border-amber-300 text-amber-900" min="1">
+                            </div>
                         </div>
-                        <input type="number" id="p_ramaNumber" placeholder="รัชกาลที่ (เลข)" class="col-span-1 text-sm font-bold text-amber-800 bg-white border-amber-200 rounded-lg text-center">
+                        
                         <input type="text" id="p_reignStart" placeholder="เริ่มครองราชย์ (พ.ศ.)" class="col-span-1 text-sm bg-white border-amber-100 rounded-lg p-1 text-center">
                         <input type="text" id="p_reignEnd" placeholder="สิ้นสุด (พ.ศ.)" class="col-span-1 text-sm bg-white border-amber-100 rounded-lg p-1 text-center">
-                        <input type="text" id="p_eraName" placeholder="ชื่อยุคสมัย" class="col-span-1 text-sm bg-white border-amber-100 rounded-lg p-1">
+                        <input type="text" id="p_eraName" placeholder="ชื่อยุคสมัย" class="col-span-2 text-sm bg-white border-amber-100 rounded-lg p-1">
                         
-                        <!-- Queen Selector for King (Restored) -->
+                        <!-- Queen Selector for King -->
                         <div id="maleMonarchQueenSelect" class="col-span-4 mt-2 pt-2 border-t border-amber-200/50 hidden">
                             <label class="text-xs font-bold text-amber-700 block mb-1">แต่งตั้งพระมเหสีคู่บัลลังก์ (จากคู่สมรส)</label>
                             <select id="p_queenSelectForKing" class="text-xs input-theme w-full bg-white/80 border-amber-200 text-pink-700 font-bold">
@@ -531,13 +576,11 @@
                         </div>
                     </div>
                     
-                    <!-- Hidden Submit Button to handle Enter key -->
                     <button type="submit" class="hidden"></button>
                 </form>
             </div>
             <div class="p-4 flex justify-end gap-3 border-t" style="background: var(--accent-bg);">
                 <button onclick="closeModal('personModal')" class="px-5 py-2 rounded-full transition text-sm font-bold bg-gray-100 text-gray-500 hover:bg-gray-200">ยกเลิก</button>
-                <!-- Fixed Button: Removed onclick, added type="submit" AND form attribute -->
                 <button type="submit" form="personForm" class="px-8 py-2 btn-theme text-sm">บันทึกข้อมูล</button>
             </div>
         </div>
@@ -584,6 +627,16 @@
         </div>
     </div>
 
+    <!-- Reign Name Selection Modal (NEW) -->
+    <div id="reignSelectionModal" class="modal">
+        <div class="modal-content w-full max-w-sm p-6 text-center">
+            <h3 class="font-bold text-lg mb-4 text-amber-600">เลือกพระนามแผ่นดิน</h3>
+            <p class="text-xs text-slate-500 mb-4">โปรดเลือกพระนามสำหรับรัชกาลใหม่</p>
+            <select id="reignSelectionInput" class="input-theme w-full mb-4"></select>
+            <button onclick="confirmReignSelection()" class="btn-theme w-full">ยืนยัน</button>
+        </div>
+    </div>
+
     <!-- Fantasy Celebration Modal -->
     <div id="fantasyModal" class="modal">
         <div class="modal-content">
@@ -599,8 +652,9 @@
                 <h2 id="fan_name" class="font-royal text-2xl md:text-3xl shimmer-text leading-tight px-4"></h2>
                 
                 <div class="text-xs text-amber-100/80 font-light mt-4">
+                    ราชวงศ์ <span id="fan_dynasty" class="font-bold text-white"></span> แห่งอาณาจักร <span id="fan_kingdom" class="font-bold text-white"></span><br>
                     ทรงได้รับการราชาภิเษกเสวยถวัลยราชสมบัติ<br>
-                    เป็นรัชกาลที่ <span id="fan_rama" class="font-bold text-lg text-white"></span> แห่งอาณาจักร
+                    เป็น <span id="fan_rama" class="font-bold text-lg text-white"></span>
                 </div>
 
                 <div class="my-6 h-px w-3/4 mx-auto bg-gradient-to-r from-transparent via-[#d4af37] to-transparent"></div>
@@ -618,7 +672,7 @@
         </div>
     </div>
 
-    <!-- Toast Container (Fixed: Added Back) -->
+    <!-- Toast Container -->
     <div id="toast-container"></div>
 
 <script>
@@ -631,14 +685,14 @@ let state = {
     kingdomName: "อาณาจักร",
     dynastyName: "ราชวงศ์",
     members: [],
-    reignNames: ["รามาธิบดี", "ปรเมนทร", "จุฬาลงกรณ์", "ภูมิพลอดุลยเดช", "วชิรเกล้า"], 
+    reignNames: ["พระรามาธิบดี", "พระปรเมนทร", "พระปรมินทร", "พระมหาธรรมราชา", "พระร่วงเจ้า", "พระบรมราชา", "พระมหาจักรพรรดิ"], 
     hierarchy: {
-        "พระมหากษัตริย์": { prefixes: ["พระบาทสมเด็จพระ"], suffixes: { "พระบาทสมเด็จพระ": ["เจ้าอยู่หัว"] } },
+        "พระมหากษัตริย์": { prefixes: ["สมเด็จพระ"], suffixes: { "สมเด็จพระ": ["เจ้าอยู่หัว"] } },
         "พระราชินีนาถ": { prefixes: ["สมเด็จพระนางเจ้า"], suffixes: { "สมเด็จพระนางเจ้า": ["พระบรมราชินีนาถ"] } },
         "พระภรรยาเจ้า": { prefixes: ["สมเด็จพระนางเจ้า"], suffixes: { "สมเด็จพระนางเจ้า": ["พระบรมราชินี", "พระบรมราชเทวี"] } },
-        "พระราชโอรส": { prefixes: ["สมเด็จพระเจ้าลูกยาเธอ", "พระเจ้าลูกยาเธอ"], suffixes: { "สมเด็จพระเจ้าลูกยาเธอ": ["เจ้าฟ้า..."], "พระเจ้าลูกยาเธอ": ["พระองค์เจ้า..."] } },
+        "พระราชโอรส": { prefixes: ["สมเด็จพระเจ้าลูกยาเธอ", "พระเจ้าลูกยาเธอ"], suffixes: { "สมเด็จพระเจ้าลูกยาเธอ": ["บรมราชกุมาร"], "พระเจ้าลูกยาเธอ": ["บวรราชกุมาร"] } },
         "รัชทายาท": { prefixes: ["สมเด็จพระบรมโอรสาธิราช"], suffixes: { "สมเด็จพระบรมโอรสาธิราช": ["สยามมกุฎราชกุมาร"] } },
-        "สามัญชน": { prefixes: ["นาย", "นาง", "นางสาว"], suffixes: {} }
+        "สามัญชน": { prefixes: ["หม่อมราชวงศ์", "หม่อมหลวง", "คุณ"], suffixes: {} }
     },
     currentTheme: 'white',
     zoom: 1, panX: window.innerWidth/2, panY: 50, isDragging: false, isHorizontal: false,
@@ -646,11 +700,11 @@ let state = {
     viewMode: 'tree'
 };
 
-const RANK_CODES = { "เจ้าฟ้า (ชั้นเอก)":'1', "เจ้าฟ้า (ชั้นโท)":'2', "เจ้าฟ้า (ชั้นตรี)":'3', "พระองค์เจ้า (ชั้นเอก)":'4', "พระองค์เจ้า (ชั้นโท)":'5', "หม่อมเจ้า":'6', "สามัญชน":'7' };
+const RANK_CODES = { "เจ้าฟ้า (ชั้นเอก)":'1', "เจ้าฟ้า (ชั้นโท)":'2', "เจ้าฟ้า (ชั้นตรี)":'3', "พระองค์เจ้า (ชั้นเอก)":'4', "พระองค์เจ้า (ชั้นโท)":'5', "หม่อมเจ้า":'6', "เจ้าประเทศราช":'6', "สามัญชน":'7' };
 
 // ================= INIT =================
 window.onload = () => {
-    const s = localStorage.getItem('royal_tree_gold');
+    const s = localStorage.getItem('royal_tree_v2');
     if(s) { state = {...state, ...JSON.parse(s)}; }
     else { document.getElementById('initialSetupModal').classList.add('active'); }
     
@@ -661,7 +715,7 @@ window.onload = () => {
     populateSearchLists();
 };
 
-function saveState() { localStorage.setItem('royal_tree_gold', JSON.stringify(state)); }
+function saveState() { localStorage.setItem('royal_tree_v2', JSON.stringify(state)); }
 
 function updateApp() {
     if(state.viewMode === 'tree') renderTree();
@@ -691,7 +745,93 @@ function switchView(mode) {
     }
 }
 
-// ================= LOGIC: DEATH & RANKS & IDs =================
+// ================= LOGIC: NAMING & DISPLAY =================
+function toThaiNumerals(num) {
+    if(num === null || num === undefined) return '';
+    const thai = ['๐','๑','๒','๓','๔','๕','๖','๗','๘','๙'];
+    return num.toString().split('').map(d => thai[d]||d).join('');
+}
+
+function getReignNameRank(p) {
+    if(!p.isMonarch || !p.useReignName || !p.reignNameBase) return null;
+    const sameName = state.members
+        .filter(m => m.isMonarch && m.useReignName && m.reignNameBase === p.reignNameBase)
+        .sort((a,b) => (parseInt(a.reignStart)||0) - (parseInt(b.reignStart)||0) || a.id.localeCompare(b.id));
+    return sameName.findIndex(m => m.id === p.id) + 1;
+}
+
+function getDisplayRank(rank) {
+    if(!rank) return '';
+    if(rank.includes('เจ้าฟ้า') || rank.includes('พระองค์เจ้า')) {
+        return rank.split(' ')[0]; 
+    }
+    return rank;
+}
+
+function getFullDisplayTitle(p) {
+    if (!p) return "";
+    let parts = [];
+    parts.push(p.titlePrefix || "");
+    
+    let rankName = "";
+    if (!p.hideRoyalRank && p.royalRank && !p.royalRank.includes('สามัญชน')) {
+        rankName += getDisplayRank(p.royalRank);
+    }
+    rankName += p.name;
+    parts.push(rankName);
+    
+    if (p.titleSuffix) parts.push(p.titleSuffix);
+    if (p.monarchSpouseContext) parts.push(p.monarchSpouseContext);
+
+    if (p.kromRank) {
+        parts.push(p.kromRank + (p.kromTitle || ""));
+    }
+
+    if (p.isMonarch && p.useReignName && p.reignNameBase) {
+        let reignStr = p.reignNameBase;
+        if(p.eraName) reignStr += " " + p.eraName;
+        const autoNum = getReignNameRank(p);
+        if(autoNum) reignStr += "ที่ " + toThaiNumerals(autoNum);
+        parts.push(reignStr);
+    }
+    
+    return parts.filter(s => s && s.trim() !== "").join(" ");
+}
+
+function getNicknameWithPrefix(p) {
+    if(!p.nickname) return '-';
+    let prefix = '';
+    const r = p.royalRank || '';
+    if(r.includes('เจ้าฟ้า (ชั้นเอก)')) prefix = 'ทูลกระหม่อม';
+    else if(r.includes('เจ้าฟ้า')) prefix = 'สมเด็จ'; 
+    else if(r.includes('พระองค์เจ้า (ชั้นเอก)') || r.includes('พระองค์เจ้า (ชั้นโท)')) prefix = 'เสด็จ';
+    else if(r.includes('หม่อมเจ้า')) prefix = p.gender === 'M' ? 'ท่านชาย' : 'ท่านหญิง';
+    return prefix + p.nickname;
+}
+
+function getTreeNodeName(p) { return p.name || "-"; }
+
+function getGlobalReignLabel(p) {
+    if(p.globalReignNumber) return `รัชกาลที่ ${toThaiNumerals(p.globalReignNumber)}`;
+    return '';
+}
+
+function getDeathTerm(p) {
+    if(p.hasUmbrella) {
+        if(p.umbrellaType.includes('นพดล') || p.umbrellaType.includes('สัปตดล')) return "สวรรคต";
+        if(p.umbrellaType.includes('เบญจดล')) return "ทิวงคต"; 
+    }
+    if(p.isMonarch || p.isQueenConsort) return "สวรรคต";
+    if(p.isHeir) return "สวรรคต"; 
+    const rank = p.royalRank || '';
+    if((p.relationship||'').includes('บาทบริจาริกา')) return "อสัญกรรม";
+    if(rank.includes('เจ้าฟ้า')) return "ทิวงคต";
+    if(rank.includes('พระองค์เจ้า')) return "สิ้นพระชนม์";
+    if(rank.includes('หม่อมเจ้า')) return "สิ้นชีพิตักษัย";
+    if(rank.includes('เจ้าประเทศราช')) return "พิลาลัย";
+    return "เสียชีวิต";
+}
+
 function generateRoyalId(gender, rankName) {
     const d1 = gender === 'M' ? '1' : '2';
     const d2 = RANK_CODES[rankName] || '7';
@@ -704,50 +844,29 @@ function updateAutoId() {
     try {
         if (document.getElementById('p_isEditMode').value === 'true') return;
         const gEl = document.querySelector('input[name="gender"]:checked');
-        const gender = gEl ? gEl.value : 'M'; // Fallback if glitch
+        const gender = gEl ? gEl.value : 'M';
         const rank = document.getElementById('p_royalRank').value || 'สามัญชน';
-        const newId = generateRoyalId(gender, rank);
-        document.getElementById('p_id').value = newId;
-    } catch(e) { console.warn("AutoID Error", e); }
+        document.getElementById('p_id').value = generateRoyalId(gender, rank);
+    } catch(e) { }
 }
 
-function getDeathTerm(p) {
-    if(p.umbrellaType === 'สัปตดลเศวตฉัตร' || p.umbrellaType === 'นพดลมหาเศวตฉัตร') return "สวรรคต";
-    if(p.isMonarch || p.isQueenConsort || p.isHeir) return "สวรรคต";
-    const rank = p.royalRank || '';
-    if(rank.includes('เจ้าฟ้า')) return "ทิวงคต";
-    if(rank.includes('พระองค์เจ้า')) return "สิ้นพระชนม์";
-    if(rank.includes('หม่อมเจ้า')) return "สิ้นชีพิตักษัย";
-    if(rank.includes('สามัญชน')) return "เสียชีวิต";
-    if(p.relationship && p.relationship.includes('บาทบริจาริกา')) return "อสัญกรรม";
-    return "เสียชีวิต";
-}
-
-function getReignDisplayName(p) {
-    if(!p.isMonarch || !p.useReignName || !p.reignNameBase) return null;
-    const users = state.members
-        .filter(m => m.isMonarch && m.useReignName && m.reignNameBase === p.reignNameBase)
-        .sort((a,b) => (parseInt(a.ramaNumber)||0) - (parseInt(b.ramaNumber)||0)); 
-
-    const index = users.findIndex(m => m.id === p.id);
-    if(index === 0 && users.length === 1) return p.reignNameBase; 
-    if(index === 0 && users.length > 1) return `${p.reignNameBase} ที่ ๑`;
-    return `${p.reignNameBase} ที่ ${toThaiNumerals(index + 1)}`;
-}
-
-function toThaiNumerals(num) {
-    const thai = ['๐','๑','๒','๓','๔','๕','๖','๗','๘','๙'];
-    return num.toString().split('').map(d => thai[d]||d).join('');
-}
-
-// ================= RENDER TABLE (UPDATED) =================
 function renderTable() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
     const q = document.getElementById('tableSearch').value.toLowerCase();
+    const filterStatus = document.getElementById('tableFilterStatus').value;
     
     let list = state.members;
-    if(q) list = list.filter(m => (m.name||'').toLowerCase().includes(q) || (m.nickname||'').toLowerCase().includes(q));
+    if(filterStatus === 'alive') list = list.filter(m => m.isAlive);
+    else if(filterStatus === 'dead') list = list.filter(m => !m.isAlive);
+    if(q) list = list.filter(m => getFullDisplayTitle(m).toLowerCase().includes(q) || (m.nickname||'').toLowerCase().includes(q));
+
+    list.sort((a,b) => {
+        if(a.isMonarch && !b.isMonarch) return -1;
+        if(!a.isMonarch && b.isMonarch) return 1;
+        if(a.isMonarch && b.isMonarch) return (parseInt(a.reignStart)||0) - (parseInt(b.reignStart)||0);
+        return 0;
+    });
 
     if(list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">ไม่พบข้อมูล</td></tr>`; return; }
 
@@ -756,20 +875,20 @@ function renderTable() {
         const statusHTML = m.isAlive 
             ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 text-xs font-bold">มีชีวิต</span>'
             : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 text-xs font-bold">${dTerm}</span>`;
-        
-        // Find Parents
         const fName = state.members.find(x => x.id === m.fatherId)?.name || '-';
         const mName = state.members.find(x => x.id === m.motherId)?.name || '-';
-        const parentsHTML = `<span class="text-xs text-slate-500">${fName} / ${mName}</span>`;
+        let fullName = getFullDisplayTitle(m);
+        if(m.isMonarch) { fullName += ` <span class="text-xs text-amber-600 font-bold bg-amber-50 px-1 rounded border border-amber-200 ml-1">${getGlobalReignLabel(m)}</span>`; }
+        const nn = getNicknameWithPrefix(m);
+        const nnHTML = nn !== '-' ? `<div class="text-xs text-slate-400 font-normal mt-0.5">(${nn})</div>` : '';
 
         const row = document.createElement('tr');
         row.className = "data-row transition border-b border-slate-100 hover:bg-slate-50";
         row.innerHTML = `
             <td class="text-center py-2"><img src="${m.image || (m.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE)}" class="w-8 h-8 rounded-full mx-auto object-cover border"></td>
-            <td class="py-2 text-xs font-mono text-slate-400">${m.id}</td>
-            <td class="py-2 text-sm font-bold text-slate-700 cursor-pointer hover:text-blue-500" onclick="showDetail('${m.id}')">${m.name}</td>
+            <td class="py-2 text-sm font-bold text-slate-700 cursor-pointer hover:text-blue-500" onclick="showDetail('${m.id}')">${fullName}${nnHTML}</td>
             <td class="py-2">${statusHTML}</td>
-            <td class="py-2">${parentsHTML}</td>
+            <td class="py-2"><span class="text-xs text-slate-500">${fName} / ${mName}</span></td>
             <td class="text-center py-2">
                 <button onclick="editPersonDirect('${m.id}')" class="text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen-to-square"></i></button>
             </td>
@@ -779,16 +898,17 @@ function renderTable() {
 }
 function editPersonDirect(id) { const m = state.members.find(x => x.id === id); if(m) openModal(m, true); }
 
-// ================= RENDER TREE (POLYGAMY ENGINE) =================
 function findRootForDisplay(focusId) {
     if(!focusId) {
-        const m = state.members.find(x => x.isMonarch);
-        return m ? m.id : (state.members[0]?.id || null);
+        const active = state.members.find(x => x.isMonarch && x.isAlive);
+        if(active) return active.id;
+        const anyMonarch = state.members.find(x => x.isMonarch);
+        return anyMonarch ? anyMonarch.id : (state.members[0]?.id || null);
     }
     let curr = state.members.find(m => m.id === focusId);
     if(!curr) return null;
     let safeGuard = 0;
-    while((curr.fatherId || curr.motherId) && safeGuard < 50) {
+    while((curr.fatherId || curr.motherId) && safeGuard < 10) {
         const dad = state.members.find(m => m.id === curr.fatherId);
         const mom = state.members.find(m => m.id === curr.motherId);
         if(dad) curr = dad; else if(mom) curr = mom; else break;
@@ -807,73 +927,109 @@ function calculateTreeLayout(rootId) {
         const p = getP(pid);
         if(!p) return { width: config.nodeWidth, nodes: [] };
 
-        // 1. Get Spouses
+        // 1. Identify Spouses
         let spouses = (p.spouseIds || []).map(id => getP(id)).filter(s => s);
         
-        let totalSubtreeWidth = 0;
-        let spouseBlocks = [];
+        // 2. Identify ALL Children
+        const allChildren = state.members.filter(m => m.fatherId === pid || m.motherId === pid)
+                                         .sort((a,b) => (parseInt(a.birthYear)||0) - (parseInt(b.birthYear)||0));
 
-        if (spouses.length > 0) {
-            spouses.forEach(spouse => {
-                // Find children of this specific pair
-                const children = state.members.filter(m => 
-                    (m.fatherId === pid && m.motherId === spouse.id) || 
-                    (m.motherId === pid && m.fatherId === spouse.id)
-                ).sort((a,b) => (parseInt(a.birthYear)||0) - (parseInt(b.birthYear)||0));
+        // 3. Group Children
+        const groups = [];
+        
+        // 3a. Group by existing spouses
+        spouses.forEach(s => {
+            const kids = allChildren.filter(c => c.fatherId === s.id || c.motherId === s.id);
+            groups.push({ spouse: s, children: kids });
+        });
 
-                let childrenBlockWidth = 0;
-                let childrenNodes = [];
-
-                if (children.length > 0) {
-                    children.forEach(child => {
-                        const childResult = build(child.id, level + 1);
-                        childrenNodes.push({ ...childResult, childId: child.id });
-                        childrenBlockWidth += childResult.width + config.gapX;
-                    });
-                    childrenBlockWidth -= config.gapX;
-                } else {
-                    childrenBlockWidth = config.nodeWidth;
-                }
-
-                spouseBlocks.push({ spouse, childrenData: childrenNodes, width: Math.max(config.nodeWidth, childrenBlockWidth) });
-                totalSubtreeWidth += Math.max(config.nodeWidth, childrenBlockWidth) + config.spouseGap;
-            });
-            totalSubtreeWidth -= config.spouseGap;
-        } else {
-            totalSubtreeWidth = config.nodeWidth;
+        // 3b. Find "Lone" children
+        const accountedChildrenIds = new Set(groups.flatMap(g => g.children.map(c => c.id)));
+        const loneChildren = allChildren.filter(c => !accountedChildrenIds.has(c.id));
+        
+        if (loneChildren.length > 0) {
+            groups.push({ spouse: null, children: loneChildren });
         }
 
-        // 2. Local Nodes Construction
-        let localNodes = [];
+        if (groups.length === 0) {
+            return { width: config.nodeWidth, nodes: [{ data: p, x: 0, y: 0, type: 'root' }] };
+        }
+
+        // 4. Calculate Dimensions for each group
+        let totalSubtreeWidth = 0;
+        const groupLayouts = groups.map(g => {
+            let childrenBlockWidth = 0;
+            const childResults = [];
+            
+            if (g.children.length > 0) {
+                g.children.forEach(child => {
+                    const res = build(child.id, level + 1);
+                    childResults.push({ ...res, childId: child.id });
+                    childrenBlockWidth += res.width + config.gapX;
+                });
+                childrenBlockWidth -= config.gapX; 
+            } else {
+                childrenBlockWidth = 0; 
+            }
+            
+            const groupWidth = Math.max(g.spouse ? config.nodeWidth : 0, childrenBlockWidth);
+            return { group: g, width: groupWidth, childResults };
+        });
+
+        totalSubtreeWidth = groupLayouts.reduce((acc, gl) => acc + gl.width + config.spouseGap, 0);
+        if (groupLayouts.length > 0) totalSubtreeWidth -= config.spouseGap;
+        totalSubtreeWidth = Math.max(totalSubtreeWidth, config.nodeWidth); 
+
+        const localNodes = [];
         const rootX = totalSubtreeWidth / 2 - config.nodeWidth / 2;
         localNodes.push({ data: p, x: rootX, y: 0, type: 'root' });
 
         let currentX = 0;
-        if (spouses.length > 0) {
-            const spouseY = config.gapY; 
+        
+        groupLayouts.forEach(gl => {
+            const g = gl.group;
+            const groupCenterX = currentX + gl.width / 2;
             
-            spouseBlocks.forEach(block => {
-                const spouseX = currentX + (block.width / 2) - (config.nodeWidth / 2);
-                localNodes.push({ data: block.spouse, x: spouseX, y: spouseY, type: 'spouse', partnerId: pid });
+            // 1. Place Spouse (if exists)
+            if (g.spouse) {
+                const spouseX = groupCenterX - config.nodeWidth / 2;
+                localNodes.push({ data: g.spouse, x: spouseX, y: config.gapY, type: 'spouse', partnerId: pid });
+                connections.push({ from: pid, to: g.spouse.id, isSpouse: true });
                 
-                // Link Main -> Spouse
-                connections.push({ from: pid, to: block.spouse.id, isSpouse: true });
+                let childX = currentX + (gl.width - (gl.childResults.reduce((a,c)=>a+c.width+config.gapX,0) - config.gapX))/2;
+                if (gl.childResults.length === 0) childX = currentX; 
 
-                if (block.childrenData.length > 0) {
-                    let childStartX = currentX + (block.width / 2) - (block.childrenData.reduce((acc, c) => acc + c.width + config.gapX, 0) - config.gapX) / 2;
-                    block.childrenData.forEach(cRes => {
-                        cRes.nodes.forEach(n => {
-                            localNodes.push({ ...n, x: n.x + childStartX, y: n.y + (config.gapY * 2) });
-                        });
-                        // Link Spouse -> Child
-                        const childRoot = cRes.nodes.find(n => n.type === 'root');
-                        if(childRoot) connections.push({ from: block.spouse.id, to: childRoot.data.id, isChild: true });
-                        childStartX += cRes.width + config.gapX;
+                gl.childResults.forEach(res => {
+                    res.nodes.forEach(n => {
+                        localNodes.push({ ...n, x: n.x + childX, y: n.y + config.gapY * 2 });
                     });
-                }
-                currentX += block.width + config.spouseGap;
-            });
-        }
+                    const childRoot = res.nodes.find(n => n.type === 'root');
+                    if (childRoot) {
+                        connections.push({ from: g.spouse.id, to: childRoot.data.id, isChild: true });
+                    }
+                    childX += res.width + config.gapX;
+                });
+
+            } else {
+                // No Spouse (Lone Children)
+                let childX = currentX + (gl.width - (gl.childResults.reduce((a,c)=>a+c.width+config.gapX,0) - config.gapX))/2;
+                
+                gl.childResults.forEach(res => {
+                    res.nodes.forEach(n => {
+                        localNodes.push({ ...n, x: n.x + childX, y: n.y + config.gapY * 2 });
+                    });
+                    
+                    const childRoot = res.nodes.find(n => n.type === 'root');
+                    if (childRoot) {
+                        // Connect Root directly to Child
+                        connections.push({ from: pid, to: childRoot.data.id, isChild: false });
+                    }
+                    childX += res.width + config.gapX;
+                });
+            }
+            currentX += gl.width + config.spouseGap;
+        });
+
         return { width: totalSubtreeWidth, nodes: localNodes };
     }
 
@@ -887,10 +1043,8 @@ function renderTree() {
     const svgL = document.getElementById('links-layer');
     const svgN = document.getElementById('nodes-layer');
     svgL.innerHTML = ''; svgN.innerHTML = '';
-
     if(layout.nodes.length === 0) { document.getElementById('empty-state').classList.remove('hidden'); return; }
     document.getElementById('empty-state').classList.add('hidden');
-
     layout.connections.forEach(c => {
         const f = layout.nodes.find(n => n.data.id === c.from);
         const t = layout.nodes.find(n => n.data.id === c.to);
@@ -902,39 +1056,46 @@ function renderTree() {
 function drawNode(node, container) {
     const config = state.isHorizontal ? {...BASE_CONFIG, gapX: 40, gapY: 250} : BASE_CONFIG;
     const {x, y} = state.isHorizontal ? {x: node.y, y: node.x} : {x: node.x, y: node.y}; 
-    
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
     g.setAttribute("transform", `translate(${x},${y})`);
     g.style.cursor = "pointer";
     g.onclick = (e) => { e.stopPropagation(); showDetail(node.data.id); };
-
     const fo = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
     fo.setAttribute("width", config.nodeWidth); fo.setAttribute("height", config.nodeHeight);
-
     const p = node.data;
-    const isMale = p.gender === 'M';
     const isDead = !p.isAlive;
     const deathTerm = isDead ? getDeathTerm(p) : "";
-    
-    let borderClass = isMale ? "border-male" : "border-female";
+    let borderClass = p.gender === 'M' ? "border-male" : "border-female";
     if(p.isMonarch) borderClass = "border-king";
     else if(p.isQueenConsort) borderClass = "border-queen";
-    if(isDead) borderClass = (p.isMonarch || p.isQueenConsort) ? "border-dead-royal" : "border-dead";
-
-    let displayName = p.name;
-    if(p.isMonarch && p.useReignName && p.reignNameBase) displayName = getReignDisplayName(p);
-    
+    let imgClass = "";
+    if(isDead) {
+        if(p.isMonarch) { borderClass = "border-dead-royal"; imgClass = "img-normal"; } 
+        else { borderClass = "border-dead"; imgClass = "img-grayscale"; }
+    }
+    const treeName = getTreeNodeName(p); 
     const showCrown = (p.isMonarch || p.isQueenConsort);
-
+    let badgeHTML = "";
+    if (p.isMonarch && p.useReignName && p.reignNameBase) {
+        let reignTxt = p.reignNameBase;
+        const autoNum = getReignNameRank(p);
+        if(autoNum) reignTxt += `ที่ ${toThaiNumerals(autoNum)}`;
+        if(p.globalReignNumber) reignTxt += ` (ร.${toThaiNumerals(p.globalReignNumber)})`;
+        badgeHTML = `<div class="badge-monarch truncate w-full text-center">${reignTxt}</div>`;
+    } else if (p.isHeir) {
+         badgeHTML = `<div class="badge-heir truncate w-full text-center">รัชทายาทลำดับที่ ${toThaiNumerals(p.heirOrder)}</div>`;
+    } else if (!p.isMonarch && p.kromRank) {
+        badgeHTML = `<div class="badge-krom truncate w-full text-center">${p.kromRank}${p.kromTitle||''}</div>`;
+    }
     const div = document.createElement("div");
     div.className = `node-box ${borderClass} ${state.viewRootId === p.id ? 'focused' : ''}`;
     div.innerHTML = `
         <div class="relative mb-1">
-            <img src="${p.image || (isMale ? DEFAULT_IMG_MALE : DEFAULT_IMG_FEMALE)}" class="w-10 h-10 rounded-full border border-white shadow-sm object-cover bg-slate-100 ${isDead?'grayscale':''}">
+            <img src="${p.image || (p.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE)}" class="w-10 h-10 rounded-full border border-white shadow-sm object-cover bg-slate-100 ${imgClass}">
             ${showCrown ? `<i class="fa-solid fa-crown absolute -top-1 -right-1 text-xs ${p.isAlive?'text-yellow-500':'text-slate-600'} bg-white rounded-full p-0.5 shadow-sm"></i>` : ''}
         </div>
-        <div class="text-[11px] font-bold text-center leading-tight truncate w-full px-1 ${p.isMonarch?'text-amber-700':'text-slate-700'}">${displayName}</div>
-        <div class="text-[9px] text-slate-500 truncate mt-0.5">${p.royalRank || ''}</div>
+        <div class="text-[11px] font-bold text-center leading-tight truncate w-full px-1 ${p.isMonarch?'text-amber-700':'text-slate-700'}">${treeName}</div>
+        ${badgeHTML}
         ${isDead ? `<div class="absolute top-1 left-1 text-[8px] bg-slate-800 text-white px-1.5 py-0.5 rounded shadow-sm opacity-90">${deathTerm}</div>` : ''}
     `;
     fo.appendChild(div); g.appendChild(fo); container.appendChild(g);
@@ -954,66 +1115,47 @@ function drawLink(n1, n2, isSpouse, container) {
         }
         return {x,y};
     };
-
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("class", "connector");
-
     let p1, p2, d;
-
     if(isSpouse) {
-        p1 = getC(n1, 'bottom'); 
-        p2 = getC(n2, 'top');
-        if(state.isHorizontal) {
-             const midX = (p1.x + p2.x)/2;
-             d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`;
-        } else {
-             const midY = (p1.y + p2.y)/2;
-             d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`;
-        }
-        path.setAttribute("d", d);
-        container.appendChild(path);
-
+        p1 = getC(n1, 'bottom'); p2 = getC(n2, 'top');
+        if(state.isHorizontal) { const midX = (p1.x + p2.x)/2; d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`; } 
+        else { const midY = (p1.y + p2.y)/2; d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`; }
+        path.setAttribute("d", d); container.appendChild(path);
         const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        txt.setAttribute("class", "heart-icon"); 
-        txt.setAttribute("text-anchor", "middle"); txt.setAttribute("dominant-baseline", "middle"); txt.textContent = "❤";
+        txt.setAttribute("class", "heart-icon"); txt.setAttribute("text-anchor", "middle"); txt.setAttribute("dominant-baseline", "middle"); txt.textContent = "❤";
         const mx = (p1.x + p2.x)/2; const my = (p1.y + p2.y)/2;
         txt.setAttribute("x", mx); txt.setAttribute("y", my);
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         circle.setAttribute("cx", mx); circle.setAttribute("cy", my); circle.setAttribute("r", 8); circle.setAttribute("fill", "#fff");
         container.appendChild(circle); container.appendChild(txt);
-        
     } else {
-        p1 = getC(n1, 'bottom'); 
-        p2 = getC(n2, 'top');
-        
-        if(state.isHorizontal) {
-             const midX = (p1.x + p2.x)/2;
-             d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`;
-        } else {
-             const midY = (p1.y + p2.y)/2;
-             d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`;
-        }
-        path.setAttribute("d", d);
-        container.appendChild(path);
+        p1 = getC(n1, 'bottom'); p2 = getC(n2, 'top');
+        if(state.isHorizontal) { const midX = (p1.x + p2.x)/2; d = `M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}`; } 
+        else { const midY = (p1.y + p2.y)/2; d = `M ${p1.x} ${p1.y} C ${p1.x} ${midY}, ${p2.x} ${midY}, ${p2.x} ${p2.y}`; }
+        path.setAttribute("d", d); container.appendChild(path);
     }
 }
 
-// ================= MONARCH BANNER =================
+// ================= MONARCH & SUCCESSION =================
 function renderMonarchBanner() {
-    const activeMonarch = state.members.find(m => m.isMonarch && m.isAlive);
-    const banner = document.getElementById('monarchBanner');
-    const vacant = document.getElementById('monarchVacant');
-    if(activeMonarch) {
-        banner.classList.remove('hidden'); banner.classList.add('flex'); vacant.classList.add('hidden');
-        document.getElementById('monarchImg').src = activeMonarch.image || (activeMonarch.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE);
-        let name = activeMonarch.name;
-        if(activeMonarch.useReignName && activeMonarch.reignNameBase) name = getReignDisplayName(activeMonarch);
-        document.getElementById('monarchName').innerText = name;
-    } else {
-        if(state.members.length > 0) { banner.classList.add('hidden'); vacant.classList.remove('hidden'); vacant.classList.add('flex'); } 
-        else { banner.classList.add('hidden'); vacant.classList.add('hidden'); }
-    }
+    try {
+        const activeMonarch = state.members.find(m => m.isMonarch && m.isAlive);
+        const banner = document.getElementById('monarchBanner');
+        const vacant = document.getElementById('monarchVacant');
+        if(activeMonarch) {
+            banner.classList.remove('hidden'); banner.classList.add('flex'); vacant.classList.add('hidden'); vacant.classList.remove('flex');
+            document.getElementById('monarchImg').src = activeMonarch.image || (activeMonarch.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE);
+            document.getElementById('monarchName').innerText = getFullDisplayTitle(activeMonarch) + " " + getGlobalReignLabel(activeMonarch);
+        } else {
+            banner.classList.add('hidden'); banner.classList.remove('flex');
+            if(state.members.length > 0) { vacant.classList.remove('hidden'); vacant.classList.add('flex'); } 
+            else { vacant.classList.add('hidden'); vacant.classList.remove('flex'); }
+        }
+    } catch(e) { console.error("Banner Render Error:", e); }
 }
+
 function openAppointModal() {
     const s = document.getElementById('appointSelectModal'); s.innerHTML = '';
     const eligible = state.members.filter(m => m.isAlive && !m.royalRank.includes('หม่อมเจ้า') && !m.royalRank.includes('สามัญชน') && !(m.relationship||'').includes('บาทบริจาริกา'));
@@ -1021,16 +1163,117 @@ function openAppointModal() {
     eligible.forEach(m => { const op = document.createElement('option'); op.value = m.id; op.innerText = `${m.royalRank} ${m.name}`; s.appendChild(op); });
     document.getElementById('appointModal').classList.add('active');
 }
+
+let tempAppointId = null;
 function appointFromModal() {
     const id = document.getElementById('appointSelectModal').value;
-    const m = state.members.find(x => x.id === id);
-    if(m) { m.isMonarch = true; m.reignStart = new Date().getFullYear() + 543; saveState(); closeModal('appointModal'); updateApp(); showFantasyPopup(m); }
+    closeModal('appointModal');
+    openReignNameSelectionModal(id);
 }
+
+function openReignNameSelectionModal(id) {
+    tempAppointId = id;
+    const s = document.getElementById('reignSelectionInput');
+    s.innerHTML = '';
+    state.reignNames.forEach(n => {
+        const op = document.createElement('option');
+        op.value = n; op.innerText = n;
+        s.appendChild(op);
+    });
+    document.getElementById('reignSelectionModal').classList.add('active');
+}
+
+function confirmReignSelection() {
+    const rName = document.getElementById('reignSelectionInput').value;
+    if(tempAppointId && rName) {
+        performSuccession(tempAppointId, rName);
+        closeModal('reignSelectionModal');
+    }
+}
+
+function performSuccession(newMonarchId, reignNameBase) {
+    const m = state.members.find(x => x.id === newMonarchId);
+    if(m) { 
+        m.relationship = "พระมหากษัตริย์"; // Auto update relationship
+        
+        // Auto set titles from hierarchy
+        if(state.hierarchy["พระมหากษัตริย์"]) {
+            const defaults = state.hierarchy["พระมหากษัตริย์"];
+            if(defaults.prefixes && defaults.prefixes.length > 0) {
+                m.titlePrefix = defaults.prefixes[0];
+                if(defaults.suffixes && defaults.suffixes[m.titlePrefix] && defaults.suffixes[m.titlePrefix].length > 0) {
+                    m.titleSuffix = defaults.suffixes[m.titlePrefix][0];
+                }
+            }
+        }
+
+        m.isMonarch = true; 
+        m.isHeir = false; 
+        m.heirOrder = null;
+        m.reignStart = new Date().getFullYear() + 543; 
+        
+        // Auto set Reign Name
+        m.useReignName = true;
+        m.reignNameBase = reignNameBase;
+
+        // Auto-run Global Reign Number
+        const monarchs = state.members.filter(x => x.isMonarch);
+        const maxGlobal = Math.max(0, ...monarchs.map(x => parseInt(x.globalReignNumber||0)));
+        m.globalReignNumber = maxGlobal + 1;
+
+        saveState(); 
+        updateApp(); 
+        showFantasyPopup(m); 
+    }
+}
+
+function handleMonarchDeath(monarch) {
+    if(monarch.spouseIds && monarch.spouseIds.length > 0) {
+        const reignNum = getGlobalReignLabel(monarch); 
+        monarch.spouseIds.forEach(sid => {
+            const sp = state.members.find(x => x.id === sid);
+            if(sp && sp.isAlive && ((sp.relationship || '').includes('ภรรยา') || (sp.relationship || '').includes('บาทบริจาริกา'))) {
+    sp.monarchSpouseContext = `ใน${reignNum}`;
+}
+        });
+    }
+    const heirs = state.members.filter(m => m.isHeir && m.isAlive).sort((a,b) => (a.heirOrder||99) - (b.heirOrder||99));
+    if(heirs.length > 0) {
+        const successor = heirs[0];
+        showToast(`กำลังสถาปนา ${successor.name} ขึ้นครองราชย์...`);
+        setTimeout(() => {
+            // Trigger flow: Open modal to pick reign name for successor
+            openReignNameSelectionModal(successor.id);
+            // Shift other heirs
+            state.members.filter(m => m.isHeir && m.isAlive).forEach(h => {
+                if(h.heirOrder > 1) h.heirOrder--;
+            });
+            saveState();
+        }, 2000);
+    }
+}
+
+function handleHeirDeath(p) {
+    if (!p.heirOrder) return;
+    const deadOrder = parseInt(p.heirOrder);
+    p.heirOrder = null; 
+    state.members.forEach(m => {
+        if (m.isAlive && m.isHeir && m.heirOrder && parseInt(m.heirOrder) > deadOrder) {
+            m.heirOrder = parseInt(m.heirOrder) - 1;
+        }
+    });
+}
+
 function showFantasyPopup(monarch) {
     const modal = document.getElementById('fantasyModal');
-    document.getElementById('fan_name').innerText = monarch.useReignName ? getReignDisplayName(monarch) : monarch.name;
-    document.getElementById('fan_rama').innerText = toThaiNumerals(monarch.ramaNumber || '-');
+    document.getElementById('fan_name').innerText = getFullDisplayTitle(monarch);
+    document.getElementById('fan_rama').innerText = getGlobalReignLabel(monarch);
     document.getElementById('fan_img').src = monarch.image || (monarch.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE);
+    
+    // Set Dynasty and Kingdom
+    document.getElementById('fan_dynasty').innerText = state.dynastyName || '-';
+    document.getElementById('fan_kingdom').innerText = state.kingdomName || '-';
+
     const pc = document.getElementById('fantasyParticles'); pc.innerHTML = '';
     for(let i=0; i<30; i++) {
         const p = document.createElement('div'); p.className = 'particle';
@@ -1050,6 +1293,8 @@ function handleSavePerson(e) {
         const spouseIds = [];
         document.getElementById('p_spouseList').querySelectorAll('li').forEach(li => spouseIds.push(li.dataset.id));
 
+        const oldP = isEdit ? state.members.find(x => x.id === id) : null;
+
         const p = {
             id: id,
             name: document.getElementById('p_name').value || '-',
@@ -1064,10 +1309,11 @@ function handleSavePerson(e) {
             kromTitle: document.getElementById('p_kromTitle').value || '',
             isMonarch: document.getElementById('p_isMonarch').checked,
             isHeir: document.getElementById('p_isHeir').checked,
+            heirOrder: document.getElementById('p_heirOrder').value || null,
             isQueenConsort: document.getElementById('p_isQueenConsort').checked,
             useReignName: document.getElementById('p_useReignName').checked,
             reignNameBase: document.getElementById('p_reignNameSelect').value || '',
-            ramaNumber: document.getElementById('p_ramaNumber').value || '',
+            globalReignNumber: document.getElementById('p_globalReignNumber').value || null,
             reignStart: document.getElementById('p_reignStart').value || '',
             reignEnd: document.getElementById('p_reignEnd').value || '',
             eraName: document.getElementById('p_eraName').value || '',
@@ -1076,7 +1322,9 @@ function handleSavePerson(e) {
             image: document.getElementById('p_imageFinal').value,
             fatherId: document.getElementById('p_fatherId').value || null,
             motherId: document.getElementById('p_motherId').value || null,
-            spouseIds: spouseIds
+            spouseIds: spouseIds,
+            hideRoyalRank: document.getElementById('p_hideRoyalRank').checked,
+            monarchSpouseContext: (oldP && oldP.relationship === document.getElementById('p_relationship').value) ? oldP.monarchSpouseContext : null
         };
 
         const queenSelect = document.getElementById('p_queenSelectForKing');
@@ -1094,7 +1342,6 @@ function handleSavePerson(e) {
 
         spouseIds.forEach(sid => { const s = state.members.find(x => x.id === sid); if(s && !s.spouseIds.includes(id)) s.spouseIds.push(id); });
 
-        // King's Queen Consort Logic
         if(p.isMonarch && p.gender === 'M') {
             const selectedQueenId = document.getElementById('p_queenSelectForKing').value;
             p.spouseIds.forEach(sid => {
@@ -1119,25 +1366,22 @@ function handleSavePerson(e) {
 }
 
 // ================= MODAL OPENERS =================
-function openModal(d={}, edit=false) {
+function openModal(d={}, edit=false, contextTitle=null) {
     try {
         const f = document.getElementById('personForm'); f.reset();
         document.getElementById('p_isEditMode').value = edit;
         
-        if (!edit && !d.gender) {
-            const mRadio = document.querySelector('input[name="gender"][value="M"]');
-            if(mRadio) mRadio.checked = true;
-        } else if(d.gender) {
-            document.querySelector(`input[name="gender"][value="${d.gender}"]`).checked = true;
-        }
+        const titleEl = document.getElementById('modalTitle');
+        if(contextTitle) { titleEl.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>เพิ่มข้อมูลบุคคล (${contextTitle})`; } 
+        else { titleEl.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>ข้อมูลบุคคล`; }
+        
+        if (!edit && !d.gender) { const mRadio = document.querySelector('input[name="gender"][value="M"]'); if(mRadio) mRadio.checked = true; } 
+        else if(d.gender) { document.querySelector(`input[name="gender"][value="${d.gender}"]`).checked = true; }
 
         document.getElementById('p_royalRank').value = d.royalRank || 'สามัญชน';
+        document.getElementById('p_hideRoyalRank').checked = !!d.hideRoyalRank;
 
-        if(!edit) {
-            updateAutoId(); 
-        } else {
-            document.getElementById('p_id').value = d.id || '';
-        }
+        if(!edit) { updateAutoId(); } else { document.getElementById('p_id').value = d.id || ''; }
 
         document.getElementById('p_name').value = d.name || '';
         document.getElementById('p_nickname').value = d.nickname || '';
@@ -1153,12 +1397,22 @@ function openModal(d={}, edit=false) {
         document.getElementById('p_isMonarch').checked = !!d.isMonarch;
         document.getElementById('p_useReignName').checked = !!d.useReignName;
         populateReignSelect(d.reignNameBase);
-        document.getElementById('p_ramaNumber').value = d.ramaNumber || '';
+        
+        if(!edit && d.isMonarch === undefined) {
+             const monarchs = state.members.filter(x => x.isMonarch);
+             const maxGlobal = Math.max(0, ...monarchs.map(x => parseInt(x.globalReignNumber||0)));
+             document.getElementById('p_globalReignNumber').value = maxGlobal + 1;
+        } else { document.getElementById('p_globalReignNumber').value = d.globalReignNumber || ''; }
+        
         document.getElementById('p_reignStart').value = d.reignStart || '';
         document.getElementById('p_reignEnd').value = d.reignEnd || '';
         document.getElementById('p_eraName').value = d.eraName || '';
         toggleMonarch();
+        
         document.getElementById('p_isHeir').checked = !!d.isHeir;
+        document.getElementById('p_heirOrder').value = d.heirOrder || '';
+        toggleHeirOrder();
+
         document.getElementById('p_isQueenConsort').checked = !!d.isQueenConsort;
         document.getElementById('p_hasUmbrella').checked = !!d.hasUmbrella;
         document.getElementById('p_umbrellaType').value = d.umbrellaType || 'ตรีดลเศวตฉัตร';
@@ -1174,10 +1428,7 @@ function openModal(d={}, edit=false) {
         updateQueenConsortSelector(d);
         setTimeout(checkQueenConsortEligible, 100);
         document.getElementById('personModal').classList.add('active');
-    } catch(e) {
-        console.error(e);
-        alert("เกิดข้อผิดพลาดในการเปิดหน้าต่าง: " + e.message);
-    }
+    } catch(e) { console.error(e); }
 }
 
 function updateQueenConsortSelector(d) {
@@ -1186,7 +1437,6 @@ function updateQueenConsortSelector(d) {
     const genderEl = document.querySelector('input[name="gender"]:checked');
     const genderVal = genderEl ? genderEl.value : 'M';
     const isKing = document.getElementById('p_isMonarch').checked && genderVal === 'M';
-    
     if(isKing) {
         selDiv.classList.remove('hidden');
         sel.innerHTML = '<option value="">-- เลือก --</option>';
@@ -1197,21 +1447,23 @@ function updateQueenConsortSelector(d) {
             const s = state.members.find(m => m.id === sid);
             if(s && s.gender === 'F' && (s.relationship||'').includes('พระภรรยาเจ้า')) {
                 const op = document.createElement('option');
-                op.value = s.id;
-                op.innerText = s.name;
+                op.value = s.id; op.innerText = s.name;
                 sel.appendChild(op);
                 if(s.isQueenConsort) currentQueenId = s.id;
             }
         });
         if(currentQueenId) sel.value = currentQueenId;
-    } else {
-        selDiv.classList.add('hidden');
-    }
+    } else { selDiv.classList.add('hidden'); }
 }
 
 function openAddRootModal() { openModal({}); }
 function editCurrent() { closeModal('detailModal'); openModal(state.members.find(m=>m.id===window.curPID), true); }
-function toggleDeath() { const p = state.members.find(m=>m.id===window.curPID); p.isAlive = !p.isAlive; saveState(); showDetail(p.id); updateApp(); }
+function toggleDeath() { 
+    const p = state.members.find(m=>m.id===window.curPID); 
+    p.isAlive = !p.isAlive;
+    if(!p.isAlive) { if (p.isMonarch) handleMonarchDeath(p); if (p.isHeir) handleHeirDeath(p); }
+    saveState(); showDetail(p.id); updateApp(); 
+}
 function deleteCurrent() {
     if(!confirm('ยืนยันการลบ?')) return;
     const id = window.curPID;
@@ -1266,9 +1518,29 @@ function showDetail(id) {
     const m = state.members.find(x => x.id === id);
     if(!m) return;
     document.getElementById('d_img').src = m.image || (m.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE);
-    document.getElementById('d_name').innerText = m.isMonarch && m.useReignName ? getReignDisplayName(m) : m.name;
+    document.getElementById('d_name').innerText = getFullDisplayTitle(m);
     document.getElementById('d_id').innerText = m.id;
-    document.getElementById('d_krom').innerText = m.kromRank ? `${m.kromRank} ${m.kromTitle}` : '';
+    const kromEl = document.getElementById('d_krom');
+    if(m.kromRank && m.kromTitle) { kromEl.innerText = `${m.kromRank}${m.kromTitle}`; kromEl.classList.remove('hidden'); } else { kromEl.classList.add('hidden'); }
+    const badgesContainer = document.getElementById('d_badges'); badgesContainer.innerHTML = '';
+    if (m.isMonarch && m.useReignName && m.reignNameBase) {
+        let reignTxt = m.reignNameBase;
+        const autoNum = getReignNameRank(m);
+        if(autoNum) reignTxt += `ที่ ${toThaiNumerals(autoNum)}`;
+        const b = document.createElement('div');
+        b.className = "bg-yellow-100 text-yellow-800 border border-yellow-300 px-3 py-1 rounded-full text-xs font-bold";
+        b.innerText = reignTxt; badgesContainer.appendChild(b);
+    }
+    if (m.isQueenConsort) {
+        const b = document.createElement('div');
+        b.className = "bg-pink-100 text-pink-800 border border-pink-300 px-3 py-1 rounded-full text-xs font-bold";
+        b.innerText = "มเหสีคู่บัลลังก์"; badgesContainer.appendChild(b);
+    }
+    if (m.isHeir) {
+        const b = document.createElement('div');
+        b.className = "bg-red-100 text-red-800 border border-red-300 px-3 py-1 rounded-full text-xs font-bold";
+        b.innerText = `รัชทายาทลำดับที่ ${toThaiNumerals(m.heirOrder)}`; badgesContainer.appendChild(b);
+    }
     const dTerm = m.isAlive ? "มีชีวิต" : getDeathTerm(m);
     document.getElementById('d_status').innerHTML = m.isAlive ? `<span class="text-emerald-600">${dTerm}</span>` : `<span class="text-slate-500">${dTerm}</span>`;
     document.getElementById('d_spouses_count').innerText = (m.spouseIds||[]).length + " คน";
@@ -1278,57 +1550,86 @@ function showDetail(id) {
     document.getElementById('detailModal').classList.add('active');
 }
 function setAsRoot(id) { state.viewRootId = id; saveState(); closeModal('detailModal'); renderTree(); resetView(); }
-function focusOnPerson(val) {
-    const id = val.split(':')[0].trim();
-    if(state.members.find(m => m.id === id)) { state.viewRootId = id; renderTree(); }
-}
+function focusOnPerson(val) { const id = val.split(':')[0].trim(); if(state.members.find(m => m.id === id)) { state.viewRootId = id; renderTree(); } }
 function focusOnMonarch() { const m = state.members.find(x => x.isMonarch && x.isAlive); if(m) { state.viewRootId = m.id; renderTree(); resetView(); } }
-function populateSearchLists() {
-    const dl = document.getElementById('focusOptions'); dl.innerHTML = '';
-    state.members.forEach(m => { const op = document.createElement('option'); op.value = `${m.id} : ${m.name}`; dl.appendChild(op); });
-}
+function populateSearchLists() { const dl = document.getElementById('focusOptions'); dl.innerHTML = ''; state.members.forEach(m => { const op = document.createElement('option'); op.value = `${m.id} : ${m.name}`; dl.appendChild(op); }); }
 function openAddParentModal(childId) { closeModal('detailModal'); openModal({}, false); showToast("สร้างบุคคลใหม่ แล้วนำ ID ไปใส่ในช่อง พระบิดา/พระมารดา ของลูก"); }
-function openAddSpouseModal(id) { closeModal('detailModal'); const m = state.members.find(x => x.id === id); openModal({ spouseIds: [id], gender: m.gender==='M'?'F':'M' }, false); setTimeout(() => { const ul = document.getElementById('p_spouseList'); addSpouseLi(m); }, 100); }
-function openAddChildModal(id) { closeModal('detailModal'); const m = state.members.find(x => x.id === id); const defaults = m.gender === 'M' ? { fatherId: id } : { motherId: id }; openModal(defaults, false); }
-function toggleMonarch() { const isM = document.getElementById('p_isMonarch').checked; document.getElementById('monarchPanel').classList.toggle('hidden', !isM); checkQueenConsortEligible(); updateQueenConsortSelector(); }
-function toggleReignName() { const u = document.getElementById('p_useReignName').checked; document.getElementById('p_reignNameSelect').classList.toggle('hidden', !u); }
+function openAddSpouseModal(id) { closeModal('detailModal'); const m = state.members.find(x => x.id === id); openModal({ spouseIds: [id], gender: m.gender==='M'?'F':'M' }, false, `คู่สมรสของ ${m.name}`); }
+function openAddChildModal(id) { 
+    closeModal('detailModal'); 
+    const m = state.members.find(x => x.id === id); 
+    const defaults = m.gender === 'M' ? { fatherId: id } : { motherId: id }; 
+    openModal(defaults, false, `ลูกของ ${m.name}`); 
+    
+    const otherInputId = m.gender === 'M' ? 'p_motherSearch' : 'p_fatherSearch';
+    const type = m.gender === 'M' ? 'mother' : 'father';
+    const inputEl = document.getElementById(otherInputId);
+
+    if(inputEl) {
+        // Fix: Use addEventListener to avoid overwriting inline handlers, but since we need both...
+        // The cleanest way is to attach a function that does BOTH
+        inputEl.onchange = function() {
+            // 1. Run Validation (Critical Fix)
+            validateParent(type);
+            
+            // 2. Update Title
+            setTimeout(() => {
+                const val = this.value.trim();
+                // The value might be name now if validation succeeded
+                const baseTitle = `ลูกของ ${m.name}`;
+                const newTitle = val ? `${baseTitle} กับ ${val}` : baseTitle;
+                document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>เพิ่มข้อมูลบุคคล (${newTitle})`;
+            }, 100);
+        };
+    }
+}
+function toggleMonarch() { 
+    const isM = document.getElementById('p_isMonarch').checked; 
+    document.getElementById('monarchPanel').classList.toggle('hidden', !isM); 
+    checkQueenConsortEligible(); updateQueenConsortSelector(); 
+    if(isM && document.getElementById('p_isEditMode').value !== 'true') {
+         const monarchs = state.members.filter(x => x.isMonarch);
+         const maxGlobal = Math.max(0, ...monarchs.map(x => parseInt(x.globalReignNumber||0)));
+         document.getElementById('p_globalReignNumber').value = maxGlobal + 1;
+    }
+}
+function toggleReignName() { const u = document.getElementById('p_useReignName').checked; document.getElementById('p_reignNameSelect').classList.toggle('hidden', !u); document.getElementById('p_autoReignNameNumber').classList.toggle('hidden', !u); }
+function toggleHeirOrder() { const h = document.getElementById('p_isHeir').checked; document.getElementById('p_heirOrder').classList.toggle('hidden', !h); }
 function toggleUmbrella() { const h = document.getElementById('p_hasUmbrella').checked; document.getElementById('p_umbrellaType').classList.toggle('hidden', !h); }
 function toggleKrom() { const v = document.getElementById('p_kromRank').value; document.getElementById('p_kromTitle').classList.toggle('hidden', !v); }
-function checkQueenConsortEligible() {
-    // Safer check
-    const gEl = document.querySelector('input[name="gender"]:checked');
-    const g = gEl ? gEl.value : 'M';
-    const r = document.getElementById('p_relationship').value;
-    const ok = g === 'F' && (r === 'พระภรรยาเจ้า' || r.includes('พระภรรยาเจ้า'));
-    document.getElementById('queenConsortOption').classList.toggle('hidden', !ok);
-}
+function checkQueenConsortEligible() { const g = document.querySelector('input[name="gender"]:checked').value; const r = document.getElementById('p_relationship').value; const ok = g === 'F' && (r === 'พระภรรยาเจ้า' || (r||'').includes('พระภรรยาเจ้า')); document.getElementById('queenConsortOption').classList.toggle('hidden', !ok); }
 function populateReignSelect(selVal) { const s = document.getElementById('p_reignNameSelect'); s.innerHTML = ''; state.reignNames.forEach(n => s.innerHTML += `<option value="${n}">${n}</option>`); if(selVal) s.value = selVal; }
 function populateRelSelect(v) { const s = document.getElementById('p_relationship'); s.innerHTML='<option value="">-</option>'; Object.keys(state.hierarchy).forEach(k => s.innerHTML += `<option value="${k}">${k}</option>`); if(v) s.value = v; }
 function updatePrefixOptions(v) { const r = document.getElementById('p_relationship').value; const s = document.getElementById('p_titlePrefix'); s.innerHTML = ''; if(state.hierarchy[r]) state.hierarchy[r].prefixes.forEach(p => s.innerHTML += `<option value="${p}">${p}</option>`); if(v) s.value = v; updateSuffixOptions(); }
 function updateSuffixOptions(v) { const r = document.getElementById('p_relationship').value; const p = document.getElementById('p_titlePrefix').value; const s = document.getElementById('p_titleSuffix'); s.innerHTML = ''; if(state.hierarchy[r] && state.hierarchy[r].suffixes[p]) state.hierarchy[r].suffixes[p].forEach(x => s.innerHTML += `<option value="${x}">${x}</option>`); if(v) s.value = v; }
-function updateDatalists(selfId) {
-    const fo = document.getElementById('fatherOptions'); fo.innerHTML=''; const mo = document.getElementById('motherOptions'); mo.innerHTML=''; const so = document.getElementById('spouseOptions'); so.innerHTML='';
-    state.members.forEach(m => { if(m.id === selfId) return; const op = `<option value="${m.id}">${m.name}</option>`; if(m.gender==='M') fo.innerHTML += op; else mo.innerHTML += op; so.innerHTML += op; });
-}
+function updateDatalists(selfId) { const fo = document.getElementById('fatherOptions'); fo.innerHTML=''; const mo = document.getElementById('motherOptions'); mo.innerHTML=''; const so = document.getElementById('spouseOptions'); so.innerHTML=''; state.members.forEach(m => { if(m.id === selfId) return; const op = `<option value="${m.id}">${m.name}</option>`; if(m.gender==='M') fo.innerHTML += op; else mo.innerHTML += op; so.innerHTML += op; }); }
 function validateParent(type) { const i = document.getElementById(type==='father'?'p_fatherSearch':'p_motherSearch'); const h = document.getElementById(type==='father'?'p_fatherId':'p_motherId'); const val = i.value.trim(); const found = state.members.find(m => m.id === val || m.name === val); if(found) { h.value = found.id; i.value = found.name; } else { h.value = ''; } }
-function addSpouse() { const val = document.getElementById('p_spouseSearch').value; const m = state.members.find(x => x.id === val || x.name === val); if(m) { const ul = document.getElementById('p_spouseList'); if([...ul.children].some(li => li.dataset.id === m.id)) return; addSpouseLi(m); document.getElementById('p_spouseSearch').value = ''; updateQueenConsortSelector(); } }
+function addSpouse() { 
+    const val = document.getElementById('p_spouseSearch').value; 
+    const m = state.members.find(x => x.id === val || x.name === val); 
+    if(m) { 
+        const ul = document.getElementById('p_spouseList'); 
+        // Check for duplicates
+        if([...ul.children].some(li => li.dataset.id === m.id)) {
+            showToast("มีรายชื่อนี้อยู่แล้ว");
+            return;
+        }
+        addSpouseLi(m); 
+        document.getElementById('p_spouseSearch').value = ''; 
+        updateQueenConsortSelector(); 
+    } 
+}
 function addSpouseLi(m) { const ul = document.getElementById('p_spouseList'); const li = document.createElement('li'); li.className = "bg-rose-50 text-rose-600 px-2 py-1 rounded-lg flex items-center gap-2 border border-rose-100"; li.dataset.id = m.id; li.innerHTML = `<span>${m.name}</span> <button type="button" onclick="this.parentElement.remove(); updateQueenConsortSelector()" class="text-rose-300 hover:text-red-500">×</button>`; ul.appendChild(li); }
 function handleImageUpload(i){ const r=new FileReader(); r.onload=e=>{ document.getElementById('p_imagePreview').src=e.target.result; document.getElementById('p_imageFinal').value=e.target.result; }; if(i.files[0]) r.readAsDataURL(i.files[0]); }
 function updateDefaultImage(){ if(!document.getElementById('p_imageFinal').value) document.getElementById('p_imagePreview').src = document.querySelector('input[name="gender"]:checked').value==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE; }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 function showToast(msg) { const c = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = msg; c.appendChild(t); setTimeout(()=>t.remove(), 3000); }
 function copyToClipboard(t){ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('คัดลอก ID แล้ว'); }
-function resetData() { if(confirm('รีเซตข้อมูลทั้งหมด?')) { localStorage.removeItem('royal_tree_gold'); location.reload(); } }
+function resetData() { if(confirm('รีเซตข้อมูลทั้งหมด?')) { localStorage.removeItem('royal_tree_v2'); location.reload(); } }
 function setTheme(t) { document.body.setAttribute('data-theme', t); state.currentTheme=t; saveState(); }
 function completeInitialSetup() { state.kingdomName = document.getElementById('setupKingdomName').value || "อาณาจักร"; state.dynastyName = document.getElementById('setupDynastyName').value || "ราชวงศ์"; saveState(); closeModal('initialSetupModal'); }
 function openCreateKingdomModal() { document.getElementById('initialSetupModal').classList.add('active'); }
-function setupPanZoom() {
-    const c = document.getElementById('canvas-container');
-    c.addEventListener('mousedown',e=>{ if(e.target.id!=='main-svg' && e.target.id!=='viewport-group') return; state.isDragging=true; state.startX=e.clientX-state.panX; state.startY=e.clientY-state.panY; });
-    window.addEventListener('mouseup',()=>{state.isDragging=false;});
-    window.addEventListener('mousemove',e=>{ if(!state.isDragging)return; e.preventDefault(); state.panX=e.clientX-state.startX; state.panY=e.clientY-state.startY; updateTrans(); });
-    c.addEventListener('wheel',e=>{ e.preventDefault(); state.zoom = Math.min(Math.max(0.1, state.zoom + (-e.deltaY*0.001)), 5); updateTrans(); }, {passive:false});
-}
+function setupPanZoom() { const c = document.getElementById('canvas-container'); c.addEventListener('mousedown',e=>{ if(e.target.id!=='main-svg' && e.target.id!=='viewport-group') return; state.isDragging=true; state.startX=e.clientX-state.panX; state.startY=e.clientY-state.panY; }); window.addEventListener('mouseup',()=>{state.isDragging=false;}); window.addEventListener('mousemove',e=>{ if(!state.isDragging)return; e.preventDefault(); state.panX=e.clientX-state.startX; state.panY=e.clientY-state.startY; updateTrans(); }); c.addEventListener('wheel',e=>{ e.preventDefault(); state.zoom = Math.min(Math.max(0.1, state.zoom + (-e.deltaY*0.001)), 5); updateTrans(); }, {passive:false}); }
 function updateTrans(){ document.getElementById('viewport-group').setAttribute("transform", `translate(${state.panX},${state.panY}) scale(${state.zoom})`); }
 function zoomIn(){ state.zoom *= 1.2; updateTrans(); }
 function zoomOut(){ state.zoom /= 1.2; updateTrans(); }
