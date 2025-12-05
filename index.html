@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบพงศาวลีราชวงศ์</title>
+    <title>Royal Family Tree (Multi-Kingdom & Views)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&family=Mali:wght@400;600&family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet">
@@ -193,6 +193,48 @@
         .badge-monarch { background-color: #fef9c3; color: #854d0e; border: 1px solid #fde047; padding: 1px 4px; border-radius: 4px; font-size: 8px; font-weight: bold; margin-top: 2px; }
         .badge-krom { background-color: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 1px 4px; border-radius: 4px; font-size: 8px; font-weight: bold; margin-top: 2px; }
         .badge-heir { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 1px 4px; border-radius: 4px; font-size: 8px; font-weight: bold; margin-top: 2px; }
+
+        /* Kingdom Selector */
+        .kingdom-selector {
+            background: white;
+            border: 1px solid var(--accent-border);
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-size: 14px;
+            outline: none;
+            color: var(--text-main);
+            max-width: 200px;
+            font-weight: bold;
+        }
+
+        /* View Mode Selector */
+        .view-mode-selector {
+            background: var(--accent-bg);
+            color: var(--primary);
+            border: 1px solid var(--accent-border);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            outline: none;
+            cursor: pointer;
+            text-align: center;
+            appearance: none;
+        }
+        .view-mode-wrapper { position: relative; }
+        .view-mode-wrapper::after {
+            content: '\f0d7';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            pointer-events: none;
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
@@ -200,19 +242,24 @@
     <!-- Header -->
     <header class="sticky top-0 z-40 px-4 py-3" style="background-color: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--accent-border);">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-md text-white" style="background: var(--primary);">
+            <div class="flex items-center space-x-3 w-full md:w-auto">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-md text-white flex-shrink-0" style="background: var(--primary);">
                     <i class="fa-solid fa-chess-king"></i>
                 </div>
-                <div>
-                    <h1 class="text-xl font-cute font-bold tracking-wide" style="color: var(--text-main);">Royal Family Tree</h1>
-                    <p class="text-[10px] text-slate-400">Succession & Polygamy Edition</p>
+                <div class="flex flex-col min-w-0 flex-1">
+                    <!-- Multi-Kingdom Selector -->
+                    <div class="flex items-center gap-2">
+                        <select id="kingdomSelector" class="kingdom-selector" onchange="switchKingdom(this.value)"></select>
+                        <button onclick="deleteCurrentKingdom()" class="w-6 h-6 flex items-center justify-center rounded-full text-red-400 hover:bg-red-50" title="ลบอาณาจักรนี้"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button onclick="openCreateKingdomModal()" class="w-6 h-6 flex items-center justify-center rounded-full text-emerald-500 hover:bg-emerald-50" title="สร้างอาณาจักรใหม่"><i class="fa-solid fa-plus text-xs"></i></button>
+                    </div>
+                    <p id="dynastyLabel" class="text-[10px] text-slate-400 truncate"></p>
                 </div>
             </div>
             
-            <div class="flex flex-wrap gap-3 items-center justify-center">
+            <div class="flex flex-wrap gap-2 items-center justify-center md:justify-end w-full">
                 <!-- Theme Switcher -->
-                <div class="flex gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100 mr-2">
+                <div class="flex gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
                     <button onclick="setTheme('white')" class="w-4 h-4 rounded-full border border-gray-300 bg-gray-50"></button>
                     <button onclick="setTheme('pink')" class="w-4 h-4 rounded-full border border-pink-300 bg-pink-400"></button>
                     <button onclick="setTheme('purple')" class="w-4 h-4 rounded-full border border-purple-300 bg-purple-400"></button>
@@ -221,7 +268,7 @@
                 </div>
 
                 <!-- View Switcher -->
-                <div class="flex bg-white/50 p-1 rounded-full border border-slate-200 mr-2">
+                <div class="flex bg-white/50 p-1 rounded-full border border-slate-200">
                     <button onclick="switchView('tree')" id="btn-view-tree" class="px-3 py-1 text-xs rounded-full transition font-bold" style="background: var(--primary); color: white;">
                         <i class="fa-solid fa-sitemap mr-1"></i> ผัง
                     </button>
@@ -238,21 +285,19 @@
                 </div>
 
                 <!-- Actions -->
-                <button onclick="openCreateKingdomModal()" class="btn-icon w-9 h-9 flex items-center justify-center shadow-sm ml-2" title="สร้างอาณาจักร"><i class="fa-solid fa-plus"></i></button>
                 <button onclick="openRankManagementModal()" class="btn-icon w-9 h-9 flex items-center justify-center shadow-sm" title="จัดการยศ"><i class="fa-solid fa-sliders"></i></button>
-                <button onclick="resetData()" class="btn-icon w-9 h-9 flex items-center justify-center shadow-sm text-red-400" title="รีเซต"><i class="fa-solid fa-rotate-right"></i></button>
                 
-                <button onclick="openAddRootModal()" class="btn-theme flex items-center space-x-2"><i class="fa-solid fa-user-plus"></i><span>เพิ่มคนแรก</span></button>
+                <button onclick="openAddRootModal()" class="btn-theme flex items-center space-x-2"><i class="fa-solid fa-user-plus"></i><span class="hidden sm:inline">เพิ่มคนแรก</span></button>
 
                 <!-- Monarch Banner (Fixed Visibility) -->
-                <div id="monarchBannerContainer" class="ml-2 flex items-center">
+                <div id="monarchBannerContainer" class="flex items-center">
                     <!-- Active Monarch -->
                     <div id="monarchBanner" class="hidden monarch-frame rounded-full pl-1 pr-4 py-1 flex items-center gap-2 transition-all duration-500 cursor-pointer hover:scale-105" onclick="focusOnMonarch()">
                         <div class="relative">
                             <img id="monarchImg" src="" class="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover">
                             <i class="fa-solid fa-crown text-[10px] text-yellow-500 absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-sm"></i>
                         </div>
-                        <div class="text-xs text-left">
+                        <div class="text-xs text-left hidden lg:block">
                             <div class="text-[9px] text-amber-600 font-bold uppercase tracking-wide">พระมหากษัตริย์</div>
                             <div id="monarchName" class="font-bold leading-none text-slate-800 text-[11px]">-</div>
                         </div>
@@ -288,8 +333,15 @@
             </div>
 
             <div class="floating-controls">
+                <div class="view-mode-wrapper">
+                    <select id="treeViewMode" class="view-mode-selector" onchange="changeViewMode(this.value)">
+                        <option value="all">1. ภาพรวมทั้งหมด</option>
+                        <option value="descendants">2. สายสกุล (ลูกหลาน)</option>
+                        <option value="direct">3. สายตรง (บรรพบุรุษ+ลูกหลาน)</option>
+                    </select>
+                </div>
+                <div class="h-px w-20 bg-slate-300 mx-auto my-1"></div>
                 <button class="ctrl-btn" onclick="toggleOrientation()" title="สลับแนว"><i class="fa-solid fa-rotate"></i></button>
-                <div class="h-px w-6 bg-slate-300 mx-auto my-1"></div>
                 <button class="ctrl-btn" onclick="zoomIn()"><i class="fa-solid fa-plus"></i></button>
                 <button class="ctrl-btn" onclick="zoomOut()"><i class="fa-solid fa-minus"></i></button>
                 <button class="ctrl-btn" onclick="resetView()"><i class="fa-solid fa-crosshairs"></i></button>
@@ -356,7 +408,6 @@
                     </div>
                 </div>
                 
-                <!-- Added back the missing d_krom element -->
                 <p id="d_krom" class="text-xs font-bold text-amber-600 bg-amber-50 inline-block px-4 py-1.5 rounded-xl mb-4 border border-amber-200 shadow-sm hidden"></p>
 
                 <div id="d_badges" class="flex flex-wrap justify-center gap-2 mb-4"></div>
@@ -490,8 +541,6 @@
                                     <input type="text" id="p_nickname" class="w-full text-sm input-theme">
                                 </div>
                                 
-                                
-
                                 <div class="col-span-12 md:col-span-6"><label class="text-xs ml-2 text-slate-400">สร้อยพระนาม</label><select id="p_titleSuffix" class="w-full text-sm input-theme"></select></div>
                                 <div class="col-span-6 md:col-span-3"><label class="text-xs ml-2 text-slate-400">ยศกรม</label><select id="p_kromRank" class="w-full text-sm input-theme" onchange="toggleKrom()"><option value="">-</option><option value="กรมหมื่น">กรมหมื่น</option><option value="กรมขุน">กรมขุน</option><option value="กรมหลวง">กรมหลวง</option><option value="กรมพระ">กรมพระ</option><option value="กรมพระยา">กรมพระยา</option><option value="สมเด็จกรมพระ">สมเด็จกรมพระ</option></select></div>
                                 <div class="col-span-6 md:col-span-3"><label class="text-xs ml-2 text-slate-400">ราชทินนามกรม</label><input type="text" id="p_kromTitle" class="w-full text-sm hidden input-theme"></div>
@@ -590,13 +639,13 @@
     <div id="initialSetupModal" class="modal">
         <div class="modal-content w-full max-w-sm p-8 text-center relative">
             <button onclick="closeModal('initialSetupModal')" class="absolute top-4 right-4 text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
-            <h2 class="text-2xl font-cute font-bold mb-2" style="color: var(--text-main);">ยินดีต้อนรับ</h2>
-            <p class="text-sm mb-6" style="color: var(--text-sub);">เริ่มต้นสร้างราชวงศ์ของคุณ</p>
+            <h2 class="text-2xl font-cute font-bold mb-2" style="color: var(--text-main);">สร้างอาณาจักร</h2>
+            <p class="text-sm mb-6" style="color: var(--text-sub);">เริ่มต้นสร้างราชวงศ์ใหม่ของคุณ</p>
             <div class="space-y-3">
                 <input type="text" id="setupKingdomName" class="w-full input-theme text-center" placeholder="ชื่ออาณาจักร">
                 <input type="text" id="setupDynastyName" class="w-full input-theme text-center" placeholder="ชื่อราชวงศ์">
             </div>
-            <button onclick="completeInitialSetup()" class="btn-theme w-full mt-6 py-3 text-lg">เริ่มใช้งาน ✨</button>
+            <button onclick="completeInitialSetup()" class="btn-theme w-full mt-6 py-3 text-lg">สร้างเลย ✨</button>
         </div>
     </div>
 
@@ -627,7 +676,7 @@
         </div>
     </div>
 
-    <!-- Reign Name Selection Modal (NEW) -->
+    <!-- Reign Name Selection Modal -->
     <div id="reignSelectionModal" class="modal">
         <div class="modal-content w-full max-w-sm p-6 text-center">
             <h3 class="font-bold text-lg mb-4 text-amber-600">เลือกพระนามแผ่นดิน</h3>
@@ -676,11 +725,17 @@
     <div id="toast-container"></div>
 
 <script>
-// ================= CORE CONFIG & STATE =================
+// ================= CONFIG & CONSTANTS =================
 const DEFAULT_IMG_MALE = "https://cdn-icons-png.flaticon.com/512/4128/4128176.png";
 const DEFAULT_IMG_FEMALE = "https://cdn-icons-png.flaticon.com/512/4128/4128253.png";
 
 const BASE_CONFIG = { nodeWidth: 180, nodeHeight: 100, gapX: 40, gapY: 150, spouseGap: 50 };
+const RANK_CODES = { "เจ้าฟ้า (ชั้นเอก)":'1', "เจ้าฟ้า (ชั้นโท)":'2', "เจ้าฟ้า (ชั้นตรี)":'3', "พระองค์เจ้า (ชั้นเอก)":'4', "พระองค์เจ้า (ชั้นโท)":'5', "หม่อมเจ้า":'6', "เจ้าประเทศราช":'6', "สามัญชน":'7' };
+
+// ================= GLOBAL STATE =================
+let appIndex = []; // List of all kingdoms [{id, kingdomName, dynastyName}]
+let currentKingdomId = null;
+
 let state = {
     kingdomName: "อาณาจักร",
     dynastyName: "ราชวงศ์",
@@ -697,25 +752,145 @@ let state = {
     currentTheme: 'white',
     zoom: 1, panX: window.innerWidth/2, panY: 50, isDragging: false, isHorizontal: false,
     viewRootId: null, 
-    viewMode: 'tree'
+    viewMode: 'tree',
+    treeViewType: 'all' // all, descendants, direct
 };
 
-const RANK_CODES = { "เจ้าฟ้า (ชั้นเอก)":'1', "เจ้าฟ้า (ชั้นโท)":'2', "เจ้าฟ้า (ชั้นตรี)":'3', "พระองค์เจ้า (ชั้นเอก)":'4', "พระองค์เจ้า (ชั้นโท)":'5', "หม่อมเจ้า":'6', "เจ้าประเทศราช":'6', "สามัญชน":'7' };
-
-// ================= INIT =================
+// ================= INITIALIZATION & KINGDOM MANAGEMENT =================
 window.onload = () => {
-    const s = localStorage.getItem('royal_tree_v2');
-    if(s) { state = {...state, ...JSON.parse(s)}; }
-    else { document.getElementById('initialSetupModal').classList.add('active'); }
+    loadAppIndex();
     
-    setTheme(state.currentTheme || 'white');
+    // Check if we have any kingdoms
+    if(appIndex.length === 0) {
+        // Try to migrate from old single-save version
+        const oldSave = localStorage.getItem('royal_tree_v2');
+        if(oldSave) {
+            const oldData = JSON.parse(oldSave);
+            createNewKingdom(oldData.kingdomName || "อาณาจักรเดิม", oldData.dynastyName || "ราชวงศ์เดิม", oldData);
+            localStorage.removeItem('royal_tree_v2'); // Clean up old save
+        } else {
+            document.getElementById('initialSetupModal').classList.add('active');
+        }
+    } else {
+        // Load the last used kingdom or the first one
+        const lastId = localStorage.getItem('royal_tree_last_id');
+        if(lastId && appIndex.find(k => k.id === lastId)) {
+            switchKingdom(lastId);
+        } else {
+            switchKingdom(appIndex[0].id);
+        }
+    }
+    
     setupPanZoom();
-    switchView(state.viewMode || 'tree');
-    updateApp();
-    populateSearchLists();
 };
 
-function saveState() { localStorage.setItem('royal_tree_v2', JSON.stringify(state)); }
+function loadAppIndex() {
+    const raw = localStorage.getItem('royal_tree_index');
+    appIndex = raw ? JSON.parse(raw) : [];
+    renderKingdomSelector();
+}
+
+function saveAppIndex() {
+    localStorage.setItem('royal_tree_index', JSON.stringify(appIndex));
+    renderKingdomSelector();
+}
+
+function renderKingdomSelector() {
+    const sel = document.getElementById('kingdomSelector');
+    sel.innerHTML = '';
+    appIndex.forEach(k => {
+        const op = document.createElement('option');
+        op.value = k.id;
+        op.innerText = k.kingdomName + " (" + k.dynastyName + ")";
+        if(k.id === currentKingdomId) op.selected = true;
+        sel.appendChild(op);
+    });
+}
+
+function createNewKingdom(kName, dName, initialData = null) {
+    const newId = 'kingdom_' + Date.now();
+    const meta = { id: newId, kingdomName: kName, dynastyName: dName };
+    appIndex.push(meta);
+    saveAppIndex();
+
+    // Init state for new kingdom
+    let newState = JSON.parse(JSON.stringify(state)); // Clone default
+    if(initialData) newState = {...newState, ...initialData};
+    newState.kingdomName = kName;
+    newState.dynastyName = dName;
+    newState.members = initialData ? initialData.members : [];
+    
+    // Save new kingdom data
+    localStorage.setItem('royal_tree_data_' + newId, JSON.stringify(newState));
+    
+    switchKingdom(newId);
+}
+
+function switchKingdom(id) {
+    currentKingdomId = id;
+    localStorage.setItem('royal_tree_last_id', id);
+    
+    const dataRaw = localStorage.getItem('royal_tree_data_' + id);
+    if(dataRaw) {
+        state = JSON.parse(dataRaw);
+    } else {
+        // Fallback should not happen normally
+        state.members = [];
+    }
+
+    // Update UI
+    document.getElementById('kingdomSelector').value = id;
+    document.getElementById('dynastyLabel').innerText = state.dynastyName;
+    setTheme(state.currentTheme || 'white');
+    
+    // Restore View Settings
+    document.getElementById('treeViewMode').value = state.treeViewType || 'all';
+    
+    updateApp();
+}
+
+function deleteCurrentKingdom() {
+    if(appIndex.length <= 1) {
+        showToast("ไม่สามารถลบอาณาจักรสุดท้ายได้");
+        return;
+    }
+    if(!confirm(`ยืนยันการลบอาณาจักร "${state.kingdomName}" ? ข้อมูลจะหายไปถาวร`)) return;
+
+    localStorage.removeItem('royal_tree_data_' + currentKingdomId);
+    appIndex = appIndex.filter(k => k.id !== currentKingdomId);
+    saveAppIndex();
+    
+    switchKingdom(appIndex[0].id);
+    showToast("ลบอาณาจักรเรียบร้อย");
+}
+
+function completeInitialSetup() { 
+    const kName = document.getElementById('setupKingdomName').value || "อาณาจักร"; 
+    const dName = document.getElementById('setupDynastyName').value || "ราชวงศ์"; 
+    createNewKingdom(kName, dName);
+    closeModal('initialSetupModal'); 
+}
+
+function openCreateKingdomModal() {
+    document.getElementById('setupKingdomName').value = "";
+    document.getElementById('setupDynastyName').value = "";
+    document.getElementById('initialSetupModal').classList.add('active');
+}
+
+function saveState() { 
+    if(!currentKingdomId) return;
+    localStorage.setItem('royal_tree_data_' + currentKingdomId, JSON.stringify(state)); 
+    
+    // Update index name if changed
+    const idx = appIndex.findIndex(k => k.id === currentKingdomId);
+    if(idx !== -1) {
+        if(appIndex[idx].kingdomName !== state.kingdomName || appIndex[idx].dynastyName !== state.dynastyName) {
+            appIndex[idx].kingdomName = state.kingdomName;
+            appIndex[idx].dynastyName = state.dynastyName;
+            saveAppIndex();
+        }
+    }
+}
 
 function updateApp() {
     if(state.viewMode === 'tree') renderTree();
@@ -723,6 +898,8 @@ function updateApp() {
     renderMonarchBanner();
     populateSearchLists();
 }
+
+// ================= VIEW LOGIC =================
 
 function switchView(mode) {
     state.viewMode = mode;
@@ -745,183 +922,111 @@ function switchView(mode) {
     }
 }
 
-// ================= LOGIC: NAMING & DISPLAY =================
-function toThaiNumerals(num) {
-    if(num === null || num === undefined) return '';
-    const thai = ['๐','๑','๒','๓','๔','๕','๖','๗','๘','๙'];
-    return num.toString().split('').map(d => thai[d]||d).join('');
+function changeViewMode(mode) {
+    state.treeViewType = mode;
+    saveState();
+    renderTree();
+    showToast(`เปลี่ยนมุมมองเป็น: ${document.querySelector('#treeViewMode option:checked').text}`);
 }
 
-function getReignNameRank(p) {
-    if(!p.isMonarch || !p.useReignName || !p.reignNameBase) return null;
-    const sameName = state.members
-        .filter(m => m.isMonarch && m.useReignName && m.reignNameBase === p.reignNameBase)
-        .sort((a,b) => (parseInt(a.reignStart)||0) - (parseInt(b.reignStart)||0) || a.id.localeCompare(b.id));
-    return sameName.findIndex(m => m.id === p.id) + 1;
-}
-
-function getDisplayRank(rank) {
-    if(!rank) return '';
-    if(rank.includes('เจ้าฟ้า') || rank.includes('พระองค์เจ้า')) {
-        return rank.split(' ')[0]; 
-    }
-    return rank;
-}
-
-function getFullDisplayTitle(p) {
-    if (!p) return "";
-    let parts = [];
-    parts.push(p.titlePrefix || "");
-    
-    let rankName = "";
-    if (!p.hideRoyalRank && p.royalRank && !p.royalRank.includes('สามัญชน')) {
-        rankName += getDisplayRank(p.royalRank);
-    }
-    rankName += p.name;
-    parts.push(rankName);
-    
-    if (p.titleSuffix) parts.push(p.titleSuffix);
-    if (p.monarchSpouseContext) parts.push(p.monarchSpouseContext);
-
-    if (p.kromRank) {
-        parts.push(p.kromRank + (p.kromTitle || ""));
-    }
-
-    if (p.isMonarch && p.useReignName && p.reignNameBase) {
-        let reignStr = p.reignNameBase;
-        if(p.eraName) reignStr += " " + p.eraName;
-        const autoNum = getReignNameRank(p);
-        if(autoNum) reignStr += "ที่ " + toThaiNumerals(autoNum);
-        parts.push(reignStr);
-    }
-    
-    return parts.filter(s => s && s.trim() !== "").join(" ");
-}
-
-function getNicknameWithPrefix(p) {
-    if(!p.nickname) return '-';
-    let prefix = '';
-    const r = p.royalRank || '';
-    if(r.includes('เจ้าฟ้า (ชั้นเอก)')) prefix = 'ทูลกระหม่อม';
-    else if(r.includes('เจ้าฟ้า')) prefix = 'สมเด็จ'; 
-    else if(r.includes('พระองค์เจ้า (ชั้นเอก)') || r.includes('พระองค์เจ้า (ชั้นโท)')) prefix = 'เสด็จ';
-    else if(r.includes('หม่อมเจ้า')) prefix = p.gender === 'M' ? 'ท่านชาย' : 'ท่านหญิง';
-    return prefix + p.nickname;
-}
-
-function getTreeNodeName(p) { return p.name || "-"; }
-
-function getGlobalReignLabel(p) {
-    if(p.globalReignNumber) return `รัชกาลที่ ${toThaiNumerals(p.globalReignNumber)}`;
-    return '';
-}
-
-function getDeathTerm(p) {
-    if(p.hasUmbrella) {
-        if(p.umbrellaType.includes('นพดล') || p.umbrellaType.includes('สัปตดล')) return "สวรรคต";
-        if(p.umbrellaType.includes('เบญจดล')) return "ทิวงคต"; 
-    }
-    if(p.isMonarch || p.isQueenConsort) return "สวรรคต";
-    if(p.isHeir) return "สวรรคต"; 
-    const rank = p.royalRank || '';
-    if((p.relationship||'').includes('บาทบริจาริกา')) return "อสัญกรรม";
-    if(rank.includes('เจ้าฟ้า')) return "ทิวงคต";
-    if(rank.includes('พระองค์เจ้า')) return "สิ้นพระชนม์";
-    if(rank.includes('หม่อมเจ้า')) return "สิ้นชีพิตักษัย";
-    if(rank.includes('เจ้าประเทศราช')) return "พิลาลัย";
-    return "เสียชีวิต";
-}
-
-function generateRoyalId(gender, rankName) {
-    const d1 = gender === 'M' ? '1' : '2';
-    const d2 = RANK_CODES[rankName] || '7';
-    const d3 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(Math.floor(Math.random()*26));
-    const d4 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(Math.floor(Math.random()*26));
-    return `${d1}${d2}${d3}${d4}${Math.floor(Math.random()*1000000)}`;
-}
-
-function updateAutoId() {
-    try {
-        if (document.getElementById('p_isEditMode').value === 'true') return;
-        const gEl = document.querySelector('input[name="gender"]:checked');
-        const gender = gEl ? gEl.value : 'M';
-        const rank = document.getElementById('p_royalRank').value || 'สามัญชน';
-        document.getElementById('p_id').value = generateRoyalId(gender, rank);
-    } catch(e) { }
-}
-
-function renderTable() {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '';
-    const q = document.getElementById('tableSearch').value.toLowerCase();
-    const filterStatus = document.getElementById('tableFilterStatus').value;
-    
-    let list = state.members;
-    if(filterStatus === 'alive') list = list.filter(m => m.isAlive);
-    else if(filterStatus === 'dead') list = list.filter(m => !m.isAlive);
-    if(q) list = list.filter(m => getFullDisplayTitle(m).toLowerCase().includes(q) || (m.nickname||'').toLowerCase().includes(q));
-
-    list.sort((a,b) => {
-        if(a.isMonarch && !b.isMonarch) return -1;
-        if(!a.isMonarch && b.isMonarch) return 1;
-        if(a.isMonarch && b.isMonarch) return (parseInt(a.reignStart)||0) - (parseInt(b.reignStart)||0);
-        return 0;
-    });
-
-    if(list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">ไม่พบข้อมูล</td></tr>`; return; }
-
-    list.forEach(m => {
-        const dTerm = m.isAlive ? "" : getDeathTerm(m);
-        const statusHTML = m.isAlive 
-            ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 text-xs font-bold">มีชีวิต</span>'
-            : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 text-xs font-bold">${dTerm}</span>`;
-        const fName = state.members.find(x => x.id === m.fatherId)?.name || '-';
-        const mName = state.members.find(x => x.id === m.motherId)?.name || '-';
-        let fullName = getFullDisplayTitle(m);
-        if(m.isMonarch) { fullName += ` <span class="text-xs text-amber-600 font-bold bg-amber-50 px-1 rounded border border-amber-200 ml-1">${getGlobalReignLabel(m)}</span>`; }
-        const nn = getNicknameWithPrefix(m);
-        const nnHTML = nn !== '-' ? `<div class="text-xs text-slate-400 font-normal mt-0.5">(${nn})</div>` : '';
-
-        const row = document.createElement('tr');
-        row.className = "data-row transition border-b border-slate-100 hover:bg-slate-50";
-        row.innerHTML = `
-            <td class="text-center py-2"><img src="${m.image || (m.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE)}" class="w-8 h-8 rounded-full mx-auto object-cover border"></td>
-            <td class="py-2 text-sm font-bold text-slate-700 cursor-pointer hover:text-blue-500" onclick="showDetail('${m.id}')">${fullName}${nnHTML}</td>
-            <td class="py-2">${statusHTML}</td>
-            <td class="py-2"><span class="text-xs text-slate-500">${fName} / ${mName}</span></td>
-            <td class="text-center py-2">
-                <button onclick="editPersonDirect('${m.id}')" class="text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen-to-square"></i></button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-function editPersonDirect(id) { const m = state.members.find(x => x.id === id); if(m) openModal(m, true); }
-
-function findRootForDisplay(focusId) {
-    if(!focusId) {
-        const active = state.members.find(x => x.isMonarch && x.isAlive);
-        if(active) return active.id;
-        const anyMonarch = state.members.find(x => x.isMonarch);
-        return anyMonarch ? anyMonarch.id : (state.members[0]?.id || null);
-    }
-    let curr = state.members.find(m => m.id === focusId);
+// Helper: Find the absolute root ancestor of a person
+function findAbsoluteRoot(startId) {
+    if(!startId) return null;
+    let curr = state.members.find(m => m.id === startId);
     if(!curr) return null;
-    let safeGuard = 0;
-    while((curr.fatherId || curr.motherId) && safeGuard < 10) {
-        const dad = state.members.find(m => m.id === curr.fatherId);
-        const mom = state.members.find(m => m.id === curr.motherId);
-        if(dad) curr = dad; else if(mom) curr = mom; else break;
-        safeGuard++;
+    
+    // Climb up until no parents
+    // Prefer Father line, fallback to Mother line
+    let guard = 0;
+    while((curr.fatherId || curr.motherId) && guard < 50) {
+        let parent = null;
+        if(curr.fatherId) parent = state.members.find(m => m.id === curr.fatherId);
+        if(!parent && curr.motherId) parent = state.members.find(m => m.id === curr.motherId);
+        
+        if(parent) curr = parent;
+        else break;
+        guard++;
     }
     return curr.id;
 }
 
-function calculateTreeLayout(rootId) {
+// Helper: Get members for Direct Line view
+function getDirectLineMembers(focusId) {
+    const directIds = new Set();
+    const spousesToAdd = new Set();
+    
+    // 1. Trace Up (Ancestors)
+    let curr = state.members.find(m => m.id === focusId);
+    while(curr) {
+        directIds.add(curr.id);
+        if(curr.spouseIds) curr.spouseIds.forEach(s => spousesToAdd.add(s));
+        
+        // Find next parent (Prefer Father)
+        if(curr.fatherId) curr = state.members.find(m => m.id === curr.fatherId);
+        else if(curr.motherId) curr = state.members.find(m => m.id === curr.motherId);
+        else curr = null;
+    }
+
+    // 2. Trace Down (Descendants - Recursively)
+    function addDescendants(pid) {
+        const children = state.members.filter(m => m.fatherId === pid || m.motherId === pid);
+        children.forEach(c => {
+            directIds.add(c.id);
+            if(c.spouseIds) c.spouseIds.forEach(s => spousesToAdd.add(s));
+            addDescendants(c.id);
+        });
+    }
+    addDescendants(focusId);
+
+    // 3. Combine
+    spousesToAdd.forEach(s => directIds.add(s));
+    
+    // Return full objects
+    return state.members.filter(m => directIds.has(m.id));
+}
+
+function renderTree() {
+    const focusId = state.viewRootId || (state.members.find(x => x.isMonarch)?.id) || (state.members[0]?.id);
+    if(!focusId) { document.getElementById('empty-state').classList.remove('hidden'); return; }
+    document.getElementById('empty-state').classList.add('hidden');
+
+    let renderRootId = focusId;
+    let membersToRender = state.members;
+
+    // View Logic
+    if (state.treeViewType === 'all') {
+        // 1. Overview: Find absolute root, render everyone
+        renderRootId = findAbsoluteRoot(focusId);
+        membersToRender = state.members;
+    } else if (state.treeViewType === 'descendants') {
+        // 2. Lineage: Root is focus, render everyone (algorithm filters downwards naturally)
+        renderRootId = focusId;
+        membersToRender = state.members;
+    } else if (state.treeViewType === 'direct') {
+        // 3. Direct Line: Filter members first
+        renderRootId = findAbsoluteRoot(focusId);
+        membersToRender = getDirectLineMembers(focusId);
+    }
+
+    const layout = calculateTreeLayout(renderRootId, membersToRender);
+    
+    const svgL = document.getElementById('links-layer');
+    const svgN = document.getElementById('nodes-layer');
+    svgL.innerHTML = ''; svgN.innerHTML = '';
+    
+    layout.connections.forEach(c => {
+        const f = layout.nodes.find(n => n.data.id === c.from);
+        const t = layout.nodes.find(n => n.data.id === c.to);
+        if(f && t) drawLink(f, t, c.isSpouse, svgL);
+    });
+    layout.nodes.forEach(n => drawNode(n, svgN));
+}
+
+function calculateTreeLayout(rootId, memberList) {
     if(!rootId) return { nodes:[], connections:[] };
     const config = state.isHorizontal ? {...BASE_CONFIG, gapX: 40, gapY: 250} : BASE_CONFIG;
     const nodes = []; const connections = [];
-    const getP = (id) => state.members.find(m => m.id === id);
+    const getP = (id) => memberList.find(m => m.id === id);
 
     function build(pid, level) {
         const p = getP(pid);
@@ -930,22 +1035,20 @@ function calculateTreeLayout(rootId) {
         // 1. Identify Spouses
         let spouses = (p.spouseIds || []).map(id => getP(id)).filter(s => s);
         
-        // 2. Identify ALL Children
-        const allChildren = state.members.filter(m => m.fatherId === pid || m.motherId === pid)
-                                         .sort((a,b) => (parseInt(a.birthYear)||0) - (parseInt(b.birthYear)||0));
+        // 2. Identify Children (Only those in memberList)
+        const children = memberList.filter(m => m.fatherId === pid || m.motherId === pid)
+                                   .sort((a,b) => (parseInt(a.birthYear)||0) - (parseInt(b.birthYear)||0));
 
         // 3. Group Children
         const groups = [];
         
-        // 3a. Group by existing spouses
         spouses.forEach(s => {
-            const kids = allChildren.filter(c => c.fatherId === s.id || c.motherId === s.id);
+            const kids = children.filter(c => c.fatherId === s.id || c.motherId === s.id);
             groups.push({ spouse: s, children: kids });
         });
 
-        // 3b. Find "Lone" children
         const accountedChildrenIds = new Set(groups.flatMap(g => g.children.map(c => c.id)));
-        const loneChildren = allChildren.filter(c => !accountedChildrenIds.has(c.id));
+        const loneChildren = children.filter(c => !accountedChildrenIds.has(c.id));
         
         if (loneChildren.length > 0) {
             groups.push({ spouse: null, children: loneChildren });
@@ -955,7 +1058,6 @@ function calculateTreeLayout(rootId) {
             return { width: config.nodeWidth, nodes: [{ data: p, x: 0, y: 0, type: 'root' }] };
         }
 
-        // 4. Calculate Dimensions for each group
         let totalSubtreeWidth = 0;
         const groupLayouts = groups.map(g => {
             let childrenBlockWidth = 0;
@@ -968,8 +1070,6 @@ function calculateTreeLayout(rootId) {
                     childrenBlockWidth += res.width + config.gapX;
                 });
                 childrenBlockWidth -= config.gapX; 
-            } else {
-                childrenBlockWidth = 0; 
             }
             
             const groupWidth = Math.max(g.spouse ? config.nodeWidth : 0, childrenBlockWidth);
@@ -990,7 +1090,6 @@ function calculateTreeLayout(rootId) {
             const g = gl.group;
             const groupCenterX = currentX + gl.width / 2;
             
-            // 1. Place Spouse (if exists)
             if (g.spouse) {
                 const spouseX = groupCenterX - config.nodeWidth / 2;
                 localNodes.push({ data: g.spouse, x: spouseX, y: config.gapY, type: 'spouse', partnerId: pid });
@@ -1011,17 +1110,13 @@ function calculateTreeLayout(rootId) {
                 });
 
             } else {
-                // No Spouse (Lone Children)
                 let childX = currentX + (gl.width - (gl.childResults.reduce((a,c)=>a+c.width+config.gapX,0) - config.gapX))/2;
-                
                 gl.childResults.forEach(res => {
                     res.nodes.forEach(n => {
                         localNodes.push({ ...n, x: n.x + childX, y: n.y + config.gapY * 2 });
                     });
-                    
                     const childRoot = res.nodes.find(n => n.type === 'root');
                     if (childRoot) {
-                        // Connect Root directly to Child
                         connections.push({ from: pid, to: childRoot.data.id, isChild: false });
                     }
                     childX += res.width + config.gapX;
@@ -1037,22 +1132,7 @@ function calculateTreeLayout(rootId) {
     return { nodes: treeData.nodes, connections };
 }
 
-function renderTree() {
-    const root = findRootForDisplay(state.viewRootId);
-    const layout = calculateTreeLayout(root);
-    const svgL = document.getElementById('links-layer');
-    const svgN = document.getElementById('nodes-layer');
-    svgL.innerHTML = ''; svgN.innerHTML = '';
-    if(layout.nodes.length === 0) { document.getElementById('empty-state').classList.remove('hidden'); return; }
-    document.getElementById('empty-state').classList.add('hidden');
-    layout.connections.forEach(c => {
-        const f = layout.nodes.find(n => n.data.id === c.from);
-        const t = layout.nodes.find(n => n.data.id === c.to);
-        if(f && t) drawLink(f, t, c.isSpouse, svgL);
-    });
-    layout.nodes.forEach(n => drawNode(n, svgN));
-}
-
+// ================= DRAWING =================
 function drawNode(node, container) {
     const config = state.isHorizontal ? {...BASE_CONFIG, gapX: 40, gapY: 250} : BASE_CONFIG;
     const {x, y} = state.isHorizontal ? {x: node.y, y: node.x} : {x: node.x, y: node.y}; 
@@ -1138,7 +1218,143 @@ function drawLink(n1, n2, isSpouse, container) {
     }
 }
 
-// ================= MONARCH & SUCCESSION =================
+// ================= UTILS & HELPERS =================
+function toThaiNumerals(num) {
+    if(num === null || num === undefined) return '';
+    const thai = ['๐','๑','๒','๓','๔','๕','๖','๗','๘','๙'];
+    return num.toString().split('').map(d => thai[d]||d).join('');
+}
+function getReignNameRank(p) {
+    if(!p.isMonarch || !p.useReignName || !p.reignNameBase) return null;
+    const sameName = state.members
+        .filter(m => m.isMonarch && m.useReignName && m.reignNameBase === p.reignNameBase)
+        .sort((a,b) => (parseInt(a.reignStart)||0) - (parseInt(b.reignStart)||0) || a.id.localeCompare(b.id));
+    return sameName.findIndex(m => m.id === p.id) + 1;
+}
+function getDisplayRank(rank) {
+    if(!rank) return '';
+    if(rank.includes('เจ้าฟ้า') || rank.includes('พระองค์เจ้า')) {
+        return rank.split(' ')[0]; 
+    }
+    return rank;
+}
+function getFullDisplayTitle(p) {
+    if (!p) return "";
+    let parts = [];
+    parts.push(p.titlePrefix || "");
+    let rankName = "";
+    if (!p.hideRoyalRank && p.royalRank && !p.royalRank.includes('สามัญชน')) {
+        rankName += getDisplayRank(p.royalRank);
+    }
+    rankName += p.name;
+    parts.push(rankName);
+    if (p.titleSuffix) parts.push(p.titleSuffix);
+    if (p.monarchSpouseContext) parts.push(p.monarchSpouseContext);
+    if (p.kromRank) parts.push(p.kromRank + (p.kromTitle || ""));
+    if (p.isMonarch && p.useReignName && p.reignNameBase) {
+        let reignStr = p.reignNameBase;
+        if(p.eraName) reignStr += " " + p.eraName;
+        const autoNum = getReignNameRank(p);
+        if(autoNum) reignStr += "ที่ " + toThaiNumerals(autoNum);
+        parts.push(reignStr);
+    }
+    return parts.filter(s => s && s.trim() !== "").join(" ");
+}
+function getNicknameWithPrefix(p) {
+    if(!p.nickname) return '-';
+    let prefix = '';
+    const r = p.royalRank || '';
+    if(r.includes('เจ้าฟ้า (ชั้นเอก)')) prefix = 'ทูลกระหม่อม';
+    else if(r.includes('เจ้าฟ้า')) prefix = 'สมเด็จ'; 
+    else if(r.includes('พระองค์เจ้า (ชั้นเอก)') || r.includes('พระองค์เจ้า (ชั้นโท)')) prefix = 'เสด็จ';
+    else if(r.includes('หม่อมเจ้า')) prefix = p.gender === 'M' ? 'ท่านชาย' : 'ท่านหญิง';
+    return prefix + p.nickname;
+}
+function getTreeNodeName(p) { return p.name || "-"; }
+function getGlobalReignLabel(p) {
+    if(p.globalReignNumber) return `รัชกาลที่ ${toThaiNumerals(p.globalReignNumber)}`;
+    return '';
+}
+function getDeathTerm(p) {
+    if(p.hasUmbrella) {
+        if(p.umbrellaType.includes('นพดล') || p.umbrellaType.includes('สัปตดล')) return "สวรรคต";
+        if(p.umbrellaType.includes('เบญจดล')) return "ทิวงคต"; 
+    }
+    if(p.isMonarch || p.isQueenConsort) return "สวรรคต";
+    if(p.isHeir) return "สวรรคต"; 
+    const rank = p.royalRank || '';
+    if((p.relationship||'').includes('บาทบริจาริกา')) return "อสัญกรรม";
+    if(rank.includes('เจ้าฟ้า')) return "ทิวงคต";
+    if(rank.includes('พระองค์เจ้า')) return "สิ้นพระชนม์";
+    if(rank.includes('หม่อมเจ้า')) return "สิ้นชีพิตักษัย";
+    if(rank.includes('เจ้าประเทศราช')) return "พิลาลัย";
+    return "เสียชีวิต";
+}
+function generateRoyalId(gender, rankName) {
+    const d1 = gender === 'M' ? '1' : '2';
+    const d2 = RANK_CODES[rankName] || '7';
+    const d3 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(Math.floor(Math.random()*26));
+    const d4 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(Math.floor(Math.random()*26));
+    return `${d1}${d2}${d3}${d4}${Math.floor(Math.random()*1000000)}`;
+}
+function updateAutoId() {
+    try {
+        if (document.getElementById('p_isEditMode').value === 'true') return;
+        const gEl = document.querySelector('input[name="gender"]:checked');
+        const gender = gEl ? gEl.value : 'M';
+        const rank = document.getElementById('p_royalRank').value || 'สามัญชน';
+        document.getElementById('p_id').value = generateRoyalId(gender, rank);
+    } catch(e) { }
+}
+function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    const q = document.getElementById('tableSearch').value.toLowerCase();
+    const filterStatus = document.getElementById('tableFilterStatus').value;
+    
+    let list = state.members;
+    if(filterStatus === 'alive') list = list.filter(m => m.isAlive);
+    else if(filterStatus === 'dead') list = list.filter(m => !m.isAlive);
+    if(q) list = list.filter(m => getFullDisplayTitle(m).toLowerCase().includes(q) || (m.nickname||'').toLowerCase().includes(q));
+
+    list.sort((a,b) => {
+        if(a.isMonarch && !b.isMonarch) return -1;
+        if(!a.isMonarch && b.isMonarch) return 1;
+        if(a.isMonarch && b.isMonarch) return (parseInt(a.reignStart)||0) - (parseInt(b.reignStart)||0);
+        return 0;
+    });
+
+    if(list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">ไม่พบข้อมูล</td></tr>`; return; }
+
+    list.forEach(m => {
+        const dTerm = m.isAlive ? "" : getDeathTerm(m);
+        const statusHTML = m.isAlive 
+            ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 text-xs font-bold">มีชีวิต</span>'
+            : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 text-xs font-bold">${dTerm}</span>`;
+        const fName = state.members.find(x => x.id === m.fatherId)?.name || '-';
+        const mName = state.members.find(x => x.id === m.motherId)?.name || '-';
+        let fullName = getFullDisplayTitle(m);
+        if(m.isMonarch) { fullName += ` <span class="text-xs text-amber-600 font-bold bg-amber-50 px-1 rounded border border-amber-200 ml-1">${getGlobalReignLabel(m)}</span>`; }
+        const nn = getNicknameWithPrefix(m);
+        const nnHTML = nn !== '-' ? `<div class="text-xs text-slate-400 font-normal mt-0.5">(${nn})</div>` : '';
+
+        const row = document.createElement('tr');
+        row.className = "data-row transition border-b border-slate-100 hover:bg-slate-50";
+        row.innerHTML = `
+            <td class="text-center py-2"><img src="${m.image || (m.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE)}" class="w-8 h-8 rounded-full mx-auto object-cover border"></td>
+            <td class="py-2 text-sm font-bold text-slate-700 cursor-pointer hover:text-blue-500" onclick="showDetail('${m.id}')">${fullName}${nnHTML}</td>
+            <td class="py-2">${statusHTML}</td>
+            <td class="py-2"><span class="text-xs text-slate-500">${fName} / ${mName}</span></td>
+            <td class="text-center py-2">
+                <button onclick="editPersonDirect('${m.id}')" class="text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen-to-square"></i></button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+function editPersonDirect(id) { const m = state.members.find(x => x.id === id); if(m) openModal(m, true); }
+
+// ================= MONARCH =================
 function renderMonarchBanner() {
     try {
         const activeMonarch = state.members.find(m => m.isMonarch && m.isAlive);
@@ -1155,7 +1371,6 @@ function renderMonarchBanner() {
         }
     } catch(e) { console.error("Banner Render Error:", e); }
 }
-
 function openAppointModal() {
     const s = document.getElementById('appointSelectModal'); s.innerHTML = '';
     const eligible = state.members.filter(m => m.isAlive && !m.royalRank.includes('หม่อมเจ้า') && !m.royalRank.includes('สามัญชน') && !(m.relationship||'').includes('บาทบริจาริกา'));
@@ -1163,14 +1378,12 @@ function openAppointModal() {
     eligible.forEach(m => { const op = document.createElement('option'); op.value = m.id; op.innerText = `${m.royalRank} ${m.name}`; s.appendChild(op); });
     document.getElementById('appointModal').classList.add('active');
 }
-
 let tempAppointId = null;
 function appointFromModal() {
     const id = document.getElementById('appointSelectModal').value;
     closeModal('appointModal');
     openReignNameSelectionModal(id);
 }
-
 function openReignNameSelectionModal(id) {
     tempAppointId = id;
     const s = document.getElementById('reignSelectionInput');
@@ -1182,7 +1395,6 @@ function openReignNameSelectionModal(id) {
     });
     document.getElementById('reignSelectionModal').classList.add('active');
 }
-
 function confirmReignSelection() {
     const rName = document.getElementById('reignSelectionInput').value;
     if(tempAppointId && rName) {
@@ -1190,13 +1402,10 @@ function confirmReignSelection() {
         closeModal('reignSelectionModal');
     }
 }
-
 function performSuccession(newMonarchId, reignNameBase) {
     const m = state.members.find(x => x.id === newMonarchId);
     if(m) { 
-        m.relationship = "พระมหากษัตริย์"; // Auto update relationship
-        
-        // Auto set titles from hierarchy
+        m.relationship = "พระมหากษัตริย์";
         if(state.hierarchy["พระมหากษัตริย์"]) {
             const defaults = state.hierarchy["พระมหากษัตริย์"];
             if(defaults.prefixes && defaults.prefixes.length > 0) {
@@ -1206,27 +1415,18 @@ function performSuccession(newMonarchId, reignNameBase) {
                 }
             }
         }
-
         m.isMonarch = true; 
         m.isHeir = false; 
         m.heirOrder = null;
         m.reignStart = new Date().getFullYear() + 543; 
-        
-        // Auto set Reign Name
         m.useReignName = true;
         m.reignNameBase = reignNameBase;
-
-        // Auto-run Global Reign Number
         const monarchs = state.members.filter(x => x.isMonarch);
         const maxGlobal = Math.max(0, ...monarchs.map(x => parseInt(x.globalReignNumber||0)));
         m.globalReignNumber = maxGlobal + 1;
-
-        saveState(); 
-        updateApp(); 
-        showFantasyPopup(m); 
+        saveState(); updateApp(); showFantasyPopup(m); 
     }
 }
-
 function handleMonarchDeath(monarch) {
     if(monarch.spouseIds && monarch.spouseIds.length > 0) {
         const reignNum = getGlobalReignLabel(monarch); 
@@ -1242,17 +1442,12 @@ function handleMonarchDeath(monarch) {
         const successor = heirs[0];
         showToast(`กำลังสถาปนา ${successor.name} ขึ้นครองราชย์...`);
         setTimeout(() => {
-            // Trigger flow: Open modal to pick reign name for successor
             openReignNameSelectionModal(successor.id);
-            // Shift other heirs
-            state.members.filter(m => m.isHeir && m.isAlive).forEach(h => {
-                if(h.heirOrder > 1) h.heirOrder--;
-            });
+            state.members.filter(m => m.isHeir && m.isAlive).forEach(h => { if(h.heirOrder > 1) h.heirOrder--; });
             saveState();
         }, 2000);
     }
 }
-
 function handleHeirDeath(p) {
     if (!p.heirOrder) return;
     const deadOrder = parseInt(p.heirOrder);
@@ -1263,17 +1458,13 @@ function handleHeirDeath(p) {
         }
     });
 }
-
 function showFantasyPopup(monarch) {
     const modal = document.getElementById('fantasyModal');
     document.getElementById('fan_name').innerText = getFullDisplayTitle(monarch);
     document.getElementById('fan_rama').innerText = getGlobalReignLabel(monarch);
     document.getElementById('fan_img').src = monarch.image || (monarch.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE);
-    
-    // Set Dynasty and Kingdom
     document.getElementById('fan_dynasty').innerText = state.dynastyName || '-';
     document.getElementById('fan_kingdom').innerText = state.kingdomName || '-';
-
     const pc = document.getElementById('fantasyParticles'); pc.innerHTML = '';
     for(let i=0; i<30; i++) {
         const p = document.createElement('div'); p.className = 'particle';
@@ -1283,7 +1474,7 @@ function showFantasyPopup(monarch) {
     modal.classList.add('active');
 }
 
-// ================= DATA MANAGEMENT =================
+// ================= MODAL & FORM =================
 function handleSavePerson(e) {
     try {
         e.preventDefault();
@@ -1327,8 +1518,6 @@ function handleSavePerson(e) {
             monarchSpouseContext: (oldP && oldP.relationship === document.getElementById('p_relationship').value) ? oldP.monarchSpouseContext : null
         };
 
-        const queenSelect = document.getElementById('p_queenSelectForKing');
-        
         if(isEdit) {
             const idx = state.members.findIndex(m => m.id === id);
             if(idx !== -1) {
@@ -1364,29 +1553,21 @@ function handleSavePerson(e) {
         alert('เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
     }
 }
-
-// ================= MODAL OPENERS =================
 function openModal(d={}, edit=false, contextTitle=null) {
     try {
         const f = document.getElementById('personForm'); f.reset();
         document.getElementById('p_isEditMode').value = edit;
-        
         const titleEl = document.getElementById('modalTitle');
         if(contextTitle) { titleEl.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>เพิ่มข้อมูลบุคคล (${contextTitle})`; } 
         else { titleEl.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>ข้อมูลบุคคล`; }
-        
         if (!edit && !d.gender) { const mRadio = document.querySelector('input[name="gender"][value="M"]'); if(mRadio) mRadio.checked = true; } 
         else if(d.gender) { document.querySelector(`input[name="gender"][value="${d.gender}"]`).checked = true; }
-
         document.getElementById('p_royalRank').value = d.royalRank || 'สามัญชน';
         document.getElementById('p_hideRoyalRank').checked = !!d.hideRoyalRank;
-
         if(!edit) { updateAutoId(); } else { document.getElementById('p_id').value = d.id || ''; }
-
         document.getElementById('p_name').value = d.name || '';
         document.getElementById('p_nickname').value = d.nickname || '';
         document.getElementById('p_isAlive').checked = d.isAlive !== false;
-        
         populateRelSelect(d.relationship);
         updatePrefixOptions(d.titlePrefix);
         updateSuffixOptions(d.titleSuffix);
@@ -1397,22 +1578,18 @@ function openModal(d={}, edit=false, contextTitle=null) {
         document.getElementById('p_isMonarch').checked = !!d.isMonarch;
         document.getElementById('p_useReignName').checked = !!d.useReignName;
         populateReignSelect(d.reignNameBase);
-        
         if(!edit && d.isMonarch === undefined) {
              const monarchs = state.members.filter(x => x.isMonarch);
              const maxGlobal = Math.max(0, ...monarchs.map(x => parseInt(x.globalReignNumber||0)));
              document.getElementById('p_globalReignNumber').value = maxGlobal + 1;
         } else { document.getElementById('p_globalReignNumber').value = d.globalReignNumber || ''; }
-        
         document.getElementById('p_reignStart').value = d.reignStart || '';
         document.getElementById('p_reignEnd').value = d.reignEnd || '';
         document.getElementById('p_eraName').value = d.eraName || '';
         toggleMonarch();
-        
         document.getElementById('p_isHeir').checked = !!d.isHeir;
         document.getElementById('p_heirOrder').value = d.heirOrder || '';
         toggleHeirOrder();
-
         document.getElementById('p_isQueenConsort').checked = !!d.isQueenConsort;
         document.getElementById('p_hasUmbrella').checked = !!d.hasUmbrella;
         document.getElementById('p_umbrellaType').value = d.umbrellaType || 'ตรีดลเศวตฉัตร';
@@ -1430,7 +1607,6 @@ function openModal(d={}, edit=false, contextTitle=null) {
         document.getElementById('personModal').classList.add('active');
     } catch(e) { console.error(e); }
 }
-
 function updateQueenConsortSelector(d) {
     const selDiv = document.getElementById('maleMonarchQueenSelect');
     const sel = document.getElementById('p_queenSelectForKing');
@@ -1455,7 +1631,6 @@ function updateQueenConsortSelector(d) {
         if(currentQueenId) sel.value = currentQueenId;
     } else { selDiv.classList.add('hidden'); }
 }
-
 function openAddRootModal() { openModal({}); }
 function editCurrent() { closeModal('detailModal'); openModal(state.members.find(m=>m.id===window.curPID), true); }
 function toggleDeath() { 
@@ -1512,7 +1687,7 @@ function delData(type, val) {
 function selectRel(k){ selR=k; const l=document.getElementById('pl'); l.innerHTML=''; state.hierarchy[k].prefixes.forEach(p=>l.innerHTML+=itemHTML(p,`delData('pre','${p}')`,`selectPre('${p}')`)); }
 function selectPre(p){ selP=p; const l=document.getElementById('sl'); l.innerHTML=''; (state.hierarchy[selR].suffixes[p]||[]).forEach(s=>l.innerHTML+=itemHTML(s,`delData('suf','${s}')`)); }
 
-// ================= HELPERS & UI =================
+// ================= HELPERS UI =================
 function showDetail(id) {
     window.curPID = id;
     const m = state.members.find(x => x.id === id);
@@ -1547,10 +1722,27 @@ function showDetail(id) {
     document.getElementById('d_umbrella').innerText = m.hasUmbrella ? m.umbrellaType : "-";
     const cr = document.getElementById('d_crown');
     if(m.isMonarch || m.isQueenConsort) { cr.classList.remove('hidden'); cr.className = `fa-solid fa-crown absolute -top-6 left-1/2 -translate-x-1/2 text-3xl drop-shadow-md ${m.isAlive?'text-yellow-400 animate-pulse':'text-slate-500'}`; } else { cr.classList.add('hidden'); }
+    
+    // Set root context for button
+    state.viewRootId = id; 
     document.getElementById('detailModal').classList.add('active');
 }
-function setAsRoot(id) { state.viewRootId = id; saveState(); closeModal('detailModal'); renderTree(); resetView(); }
-function focusOnPerson(val) { const id = val.split(':')[0].trim(); if(state.members.find(m => m.id === id)) { state.viewRootId = id; renderTree(); } }
+function setAsRoot(id) { 
+    state.viewRootId = id; 
+    // Default to 'descendants' when clicking from modal for intuitive behavior, or keep current
+    // state.treeViewType = 'descendants'; 
+    saveState(); 
+    closeModal('detailModal'); 
+    renderTree(); 
+    resetView(); 
+}
+function focusOnPerson(val) { 
+    const id = val.split(':')[0].trim(); 
+    if(state.members.find(m => m.id === id)) { 
+        state.viewRootId = id; 
+        renderTree(); 
+    } 
+}
 function focusOnMonarch() { const m = state.members.find(x => x.isMonarch && x.isAlive); if(m) { state.viewRootId = m.id; renderTree(); resetView(); } }
 function populateSearchLists() { const dl = document.getElementById('focusOptions'); dl.innerHTML = ''; state.members.forEach(m => { const op = document.createElement('option'); op.value = `${m.id} : ${m.name}`; dl.appendChild(op); }); }
 function openAddParentModal(childId) { closeModal('detailModal'); openModal({}, false); showToast("สร้างบุคคลใหม่ แล้วนำ ID ไปใส่ในช่อง พระบิดา/พระมารดา ของลูก"); }
@@ -1560,22 +1752,14 @@ function openAddChildModal(id) {
     const m = state.members.find(x => x.id === id); 
     const defaults = m.gender === 'M' ? { fatherId: id } : { motherId: id }; 
     openModal(defaults, false, `ลูกของ ${m.name}`); 
-    
     const otherInputId = m.gender === 'M' ? 'p_motherSearch' : 'p_fatherSearch';
     const type = m.gender === 'M' ? 'mother' : 'father';
     const inputEl = document.getElementById(otherInputId);
-
     if(inputEl) {
-        // Fix: Use addEventListener to avoid overwriting inline handlers, but since we need both...
-        // The cleanest way is to attach a function that does BOTH
         inputEl.onchange = function() {
-            // 1. Run Validation (Critical Fix)
             validateParent(type);
-            
-            // 2. Update Title
             setTimeout(() => {
                 const val = this.value.trim();
-                // The value might be name now if validation succeeded
                 const baseTitle = `ลูกของ ${m.name}`;
                 const newTitle = val ? `${baseTitle} กับ ${val}` : baseTitle;
                 document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>เพิ่มข้อมูลบุคคล (${newTitle})`;
@@ -1609,11 +1793,7 @@ function addSpouse() {
     const m = state.members.find(x => x.id === val || x.name === val); 
     if(m) { 
         const ul = document.getElementById('p_spouseList'); 
-        // Check for duplicates
-        if([...ul.children].some(li => li.dataset.id === m.id)) {
-            showToast("มีรายชื่อนี้อยู่แล้ว");
-            return;
-        }
+        if([...ul.children].some(li => li.dataset.id === m.id)) { showToast("มีรายชื่อนี้อยู่แล้ว"); return; }
         addSpouseLi(m); 
         document.getElementById('p_spouseSearch').value = ''; 
         updateQueenConsortSelector(); 
@@ -1625,10 +1805,7 @@ function updateDefaultImage(){ if(!document.getElementById('p_imageFinal').value
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 function showToast(msg) { const c = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = msg; c.appendChild(t); setTimeout(()=>t.remove(), 3000); }
 function copyToClipboard(t){ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('คัดลอก ID แล้ว'); }
-function resetData() { if(confirm('รีเซตข้อมูลทั้งหมด?')) { localStorage.removeItem('royal_tree_v2'); location.reload(); } }
 function setTheme(t) { document.body.setAttribute('data-theme', t); state.currentTheme=t; saveState(); }
-function completeInitialSetup() { state.kingdomName = document.getElementById('setupKingdomName').value || "อาณาจักร"; state.dynastyName = document.getElementById('setupDynastyName').value || "ราชวงศ์"; saveState(); closeModal('initialSetupModal'); }
-function openCreateKingdomModal() { document.getElementById('initialSetupModal').classList.add('active'); }
 function setupPanZoom() { const c = document.getElementById('canvas-container'); c.addEventListener('mousedown',e=>{ if(e.target.id!=='main-svg' && e.target.id!=='viewport-group') return; state.isDragging=true; state.startX=e.clientX-state.panX; state.startY=e.clientY-state.panY; }); window.addEventListener('mouseup',()=>{state.isDragging=false;}); window.addEventListener('mousemove',e=>{ if(!state.isDragging)return; e.preventDefault(); state.panX=e.clientX-state.startX; state.panY=e.clientY-state.startY; updateTrans(); }); c.addEventListener('wheel',e=>{ e.preventDefault(); state.zoom = Math.min(Math.max(0.1, state.zoom + (-e.deltaY*0.001)), 5); updateTrans(); }, {passive:false}); }
 function updateTrans(){ document.getElementById('viewport-group').setAttribute("transform", `translate(${state.panX},${state.panY}) scale(${state.zoom})`); }
 function zoomIn(){ state.zoom *= 1.2; updateTrans(); }
@@ -1638,4 +1815,3 @@ function toggleOrientation(){ state.isHorizontal=!state.isHorizontal; renderTree
 </script>
 </body>
 </html>
-
