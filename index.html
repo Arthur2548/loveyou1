@@ -3307,6 +3307,18 @@ function reorderState(type, parentEl) {
             });
 
 
+        // --- ค้นหาบรรทัดที่ 1442 ในไฟล์ index.html ---
+            
+            // [แทรกโค้ดนี้ก่อนบรรทัด saveState();]
+            // สั่งให้บันทึกประวัติใหม่สำหรับทุกคนที่ยศเปลี่ยนจากรัชกาลใหม่
+            state.members.forEach(member => {
+                recordTitleHistory(member);
+            });
+            // ---------------------------------------
+
+            saveState(); 
+            updateApp(); 
+            showFantasyPopup(m);    
             saveState(); updateApp(); showFantasyPopup(m); 
         }
     }
@@ -3838,20 +3850,25 @@ function recordTitleHistory(p) {
                 }
             }
             
-            if (!isEdit && (p.fatherId || p.motherId)) {
-                [p.fatherId, p.motherId].forEach(parentId => {
-                    if (parentId) {
-                        const parent = state.members.find(m => m.id === parentId);
-                        if (parent) {
-                            const updatedParent = checkConsortMotherhood(parent);
-                            if (updatedParent.titlePrefix !== parent.titlePrefix) {
-                                const idx = state.members.findIndex(x => x.id === parentId);
-                                if(idx !== -1) state.members[idx] = updatedParent;
-                            }
-                        }
-                    }
-                });
+            // --- ค้นหาช่วงบรรทัดที่ 1750 ในฟังก์ชัน handleSavePerson ---
+
+if (!isEdit && (p.fatherId || p.motherId)) {
+    [p.fatherId, p.motherId].forEach(parentId => {
+        if (parentId) {
+            const parent = state.members.find(m => m.id === parentId);
+            if (parent) {
+                const updatedParent = checkConsortMotherhood(parent);
+                
+                // [เพิ่มบรรทัดนี้ เพื่อบันทึกประวัติให้พ่อ/แม่ที่ยศเปลี่ยนจากการมีลูก]
+                recordTitleHistory(updatedParent); 
+                // ----------------------------------------------------
+
+                const idx = state.members.findIndex(x => x.id === parentId);
+                if(idx !== -1) state.members[idx] = updatedParent;
             }
+        }
+    });
+}
 saveState();
 recordTitleHistory(p); // บันทึกยศใหม่เข้าทำเนียบ (ถ้ามีการเปลี่ยนแปลง)
 saveState(); // บันทึกข้อมูลลงฐานข้อมูล
