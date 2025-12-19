@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Royal Family Tree (Enhanced Lineage & Surnames)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&family=Mali:wght@400;600&family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -71,6 +72,7 @@
         h1, h2, h3, .font-cute { font-family: 'Mali', cursive; }
         .font-royal { font-family: 'Chakra Petch', sans-serif; }
 
+        
         /* ================= CANVAS AREA (SVG) ================= */
         #canvas-container {
             flex: 1;
@@ -563,6 +565,9 @@
                             <i class="fa-solid fa-baby"></i> เพิ่มลูก
                         </button>
                     </div>
+                    <button onclick="showHistoryModal(window.curPID)" class="w-full py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center gap-2 mb-2">
+    <i class="fa-solid fa-scroll"></i> ทำเนียบพระยศ
+</button>
                     <button onclick="openAddParentModal(window.curPID)" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-arrow-up"></i> เพิ่มพระบิดา/พระมารดา
                     </button>
@@ -809,6 +814,7 @@
         </div>
     </div>
 
+    
     <!-- Initial Setup Modal -->
     <div id="initialSetupModal" class="modal">
         <div class="modal-content w-full max-w-sm p-8 text-center relative">
@@ -825,56 +831,65 @@
 
     <!-- Rank & Data Management Modal (Updated HTML with Scores) -->
     <div id="rankManagementModal" class="modal">
-        <div class="modal-content rounded-3xl p-0 w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden bg-[#f8fafc]">
-            <div class="p-5 bg-white border-b flex justify-between items-center shadow-sm z-10">
-                <h2 class="font-cute font-bold text-xl text-slate-800">จัดการข้อมูลและยศ (โปเจียม)</h2>
-                <button onclick="closeModal('rankManagementModal')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100"><i class="fa-solid fa-times"></i></button>
+    <div class="modal-content rounded-3xl p-0 w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden bg-[#f8fafc]">
+        <div class="p-5 bg-white border-b flex justify-between items-center shadow-sm z-10">
+            <h2 class="font-cute font-bold text-xl text-slate-800">จัดการข้อมูลและยศ (โปเจียม)</h2>
+            <button onclick="closeModal('rankManagementModal')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100">✕</button>
+        </div>
+
+        <div class="flex flex-1 overflow-hidden p-6 gap-4 flex-col lg:flex-row bg-[#f8fafc]">
+            <div class="flex-1 min-w-0 bg-white rounded-[2rem] border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                <div class="p-4 border-b flex items-center gap-2 text-indigo-600 font-bold"><i class="fa-solid fa-layer-group"></i> 1. ความสัมพันธ์</div>
+                <div class="p-4 bg-slate-50/50 border-b">
+                    <div class="flex gap-2">
+                        <input id="nr" class="flex-1 min-w-0 px-3 py-2 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="เพิ่มใหม่...">
+                        <button onclick="addData('rel')" class="bg-indigo-500 text-white w-10 h-10 rounded-xl hover:bg-indigo-600 transition flex items-center justify-center shrink-0"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+                <ul id="rl" class="flex-1 overflow-y-auto p-2 space-y-1"></ul>
             </div>
-            <div class="flex flex-1 overflow-hidden p-6 gap-4 flex-col md:flex-row">
-                <!-- 1. ความสัมพันธ์ -->
-                <div class="flex-1 flex flex-col bg-white rounded-2xl border p-4">
-                    <h3 class="font-bold mb-2 text-indigo-600">1. ความสัมพันธ์</h3>
-                    <div class="flex gap-2 mb-2">
-                        <input id="nr" class="input-theme w-full text-xs" placeholder="ชื่อ...">
-                        <button onclick="addData('rel')" class="btn-theme text-xs">+</button>
+
+            <div class="flex-1 min-w-0 bg-white rounded-[2rem] border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                <div class="p-4 border-b flex items-center gap-2 text-pink-600 font-bold"><i class="fa-solid fa-tag"></i> 2. คำนำหน้า</div>
+                <div class="p-4 bg-slate-50/50 border-b">
+                    <div class="space-y-2">
+                        <div class="flex gap-1">
+                            <input id="np" class="flex-grow min-w-0 px-2 py-2 rounded-xl border text-xs outline-none" placeholder="ชื่อ..">
+                            <input id="np_score" type="number" class="w-16 shrink-0 px-1 py-2 rounded-xl border text-xs text-center outline-none" placeholder="คะแนน">
+                        </div>
+                        <button onclick="addData('pre')" class="w-full bg-pink-500 text-white py-2 rounded-xl font-bold text-xs hover:bg-pink-600 transition">+ เพิ่ม</button>
                     </div>
-                    <ul id="rl" class="overflow-y-auto flex-1 text-sm space-y-1"></ul>
                 </div>
-                
-                <!-- 2. คำนำหน้า (เพิ่มช่องคะแนน) -->
-                <div class="flex-1 flex flex-col bg-white rounded-2xl border p-4">
-                    <h3 class="font-bold mb-2 text-pink-600">2. คำนำหน้า</h3>
-                    <div class="flex gap-1 mb-2">
-                        <input id="np" class="input-theme w-full text-xs" placeholder="คำนำหน้า...">
-                        <input id="np_score" type="number" class="input-theme w-16 text-xs text-center" placeholder="คะแนน">
-                        <button onclick="addData('pre')" class="btn-theme text-xs">+</button>
+                <ul id="pl" class="flex-1 overflow-y-auto p-2 space-y-1"></ul>
+            </div>
+
+            <div class="flex-1 min-w-0 bg-white rounded-[2rem] border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                <div class="p-4 border-b flex items-center gap-2 text-emerald-600 font-bold"><i class="fa-solid fa-medal"></i> 3. สร้อยพระนาม</div>
+                <div class="p-4 bg-slate-50/50 border-b">
+                    <div class="space-y-2">
+                        <div class="flex gap-1">
+                            <input id="ns" class="flex-grow min-w-0 px-2 py-2 rounded-xl border text-xs outline-none" placeholder="สร้อย..">
+                            <input id="ns_score" type="number" class="w-16 shrink-0 px-1 py-2 rounded-xl border text-xs text-center outline-none" value="0">
+                        </div>
+                        <button onclick="addData('suf')" class="w-full bg-emerald-500 text-white py-2 rounded-xl font-bold text-xs hover:bg-emerald-600 transition">+ เพิ่ม</button>
                     </div>
-                    <ul id="pl" class="overflow-y-auto flex-1 text-sm space-y-1"></ul>
                 </div>
-                
-                <!-- 3. สร้อยพระนาม (เพิ่มช่องคะแนน) -->
-                <div class="flex-1 flex flex-col bg-white rounded-2xl border p-4">
-                    <h3 class="font-bold mb-2 text-emerald-600">3. สร้อยพระนาม</h3>
-                    <div class="flex gap-1 mb-2">
-                        <input id="ns" class="input-theme w-full text-xs" placeholder="สร้อย...">
-                        <input id="ns_score" type="number" class="input-theme w-16 text-xs text-center" placeholder="คะแนน">
-                        <button onclick="addData('suf')" class="btn-theme text-xs">+</button>
+                <ul id="sl" class="flex-1 overflow-y-auto p-2 space-y-1"></ul>
+            </div>
+
+            <div class="flex-1 min-w-0 bg-amber-50/30 rounded-[2rem] border border-amber-200 shadow-sm flex flex-col overflow-hidden">
+                <div class="p-4 border-b flex items-center gap-2 text-amber-600 font-bold"><i class="fa-solid fa-crown"></i> 4. นามแผ่นดิน</div>
+                <div class="p-4 bg-white/50 border-b">
+                    <div class="flex gap-2">
+                        <input id="nreign" class="flex-1 min-w-0 px-3 py-2 rounded-xl border border-amber-100 outline-none text-sm" placeholder="ชื่อแผ่นดิน...">
+                        <button onclick="addData('reign')" class="bg-amber-500 text-white w-10 h-10 rounded-xl hover:bg-amber-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-plus"></i></button>
                     </div>
-                    <ul id="sl" class="overflow-y-auto flex-1 text-sm space-y-1"></ul>
                 </div>
-                
-                <!-- 4. นามแผ่นดิน -->
-                <div class="flex-1 flex flex-col bg-white rounded-2xl border p-4 border-amber-200 bg-amber-50/30">
-                    <h3 class="font-bold mb-2 text-amber-600">4. นามแผ่นดิน</h3>
-                    <div class="flex gap-2 mb-2">
-                        <input id="nreign" class="input-theme w-full text-xs" placeholder="ชื่อ...">
-                        <button onclick="addData('reign')" class="btn-theme text-xs">+</button>
-                    </div>
-                    <ul id="reignl" class="overflow-y-auto flex-1 text-sm space-y-1"></ul>
-                </div>
+                <ul id="reignl" class="flex-1 overflow-y-auto p-2 space-y-1"></ul>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Appoint Modal -->
     <div id="appointModal" class="modal">
@@ -1022,6 +1037,16 @@
     </div>
     <!-- End Spouse Selection Method Modal -->
 
+    <div id="historyModal" class="modal">
+    <div class="modal-content w-full max-w-md p-6 relative">
+        <button onclick="closeModal('historyModal')" class="absolute top-4 right-4 text-slate-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
+        <h3 class="font-cute font-bold text-xl mb-4 text-center text-slate-700">
+            <i class="fa-solid fa-history mr-2"></i>ทำเนียบพระยศ
+        </h3>
+        <div id="historyList" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            </div>
+    </div>
+</div>
     <!-- Toast Container -->
     <div id="toast-container"></div>
 
@@ -2575,110 +2600,252 @@ function renderTree() {
         showToast("รีคำนวณลำดับเรียบร้อย");
     }
 
-    // ================= RANK MANAGER =================
+// ================= RANK MANAGER (เวอร์ชันแก้ไขในแถวตามรูปภาพ) =================
+let selR = null, selP = null;
+let editingItem = { type: null, value: null }; // เก็บว่ากำลังแก้ไขแถวไหนอยู่
 
-    let selR=null, selP=null;
-    function openRankManagementModal() { renderRM(); document.getElementById('rankManagementModal').classList.add('active'); }
+function openRankManagementModal() { 
+    editingItem = { type: null, value: null }; // รีเซ็ตสถานะแก้ไข
+    renderRM(); 
+    document.getElementById('rankManagementModal').classList.add('active'); 
+    setTimeout(initSortableColumns, 100); 
+}
 
-    function renderRM() {
-        if(!state.prefixScores) state.prefixScores = {};
-        if(!state.suffixScores) state.suffixScores = {};
+// ฟังก์ชันเปิดโหมดแก้ไขในแถว
+function editData(type, value) {
+    editingItem = { type: type, value: value };
+    renderRM();
+}
 
-        const rl = document.getElementById('rl'); rl.innerHTML='';
-        Object.keys(state.hierarchy).forEach(k => rl.innerHTML += itemHTML(k, `delData('rel','${k}')`, `selectRel('${k}')`));
-        
-        const gl = document.getElementById('reignl'); gl.innerHTML='';
-        state.reignNames.forEach(n => gl.innerHTML += itemHTML(n, `delData('reign','${n}')`));
-        
-        const pl = document.getElementById('pl');
-        pl.innerHTML = selR ? '' : '<li class="text-slate-400 text-xs italic p-2">เลือกความสัมพันธ์ก่อน...</li>';
-        if(selR) {
-            state.hierarchy[selR].prefixes.forEach(p => {
-                const score = state.prefixScores[p] || 0;
-                const badge = score > 0 ? `<span class="text-[10px] bg-pink-100 text-pink-600 px-1 rounded ml-1">+${score.toLocaleString()}</span>` : '';
-                pl.innerHTML += `<li class="flex justify-between items-center p-2 border-b hover:bg-slate-50 rounded cursor-pointer group" onclick="selectPre('${p}')"><span>${p} ${badge}</span><button onclick="event.stopPropagation(); delData('pre','${p}')" class="text-red-300 hover:text-red-500 hidden group-hover:block"><i class="fa-solid fa-trash"></i></button></li>`;
-            });
+// ฟังก์ชันยกเลิกการแก้ไข
+function cancelInlineEdit() {
+    editingItem = { type: null, value: null };
+    renderRM();
+}
+
+// ฟังก์ชันบันทึกการแก้ไขจากในแถว
+function saveInlineEdit(type, oldVal) {
+    const nameInput = document.getElementById('inline_edit_name');
+    const scoreInput = document.getElementById('inline_edit_score');
+    
+    const newVal = nameInput ? nameInput.value.trim() : oldVal;
+    const newScore = scoreInput ? parseInt(scoreInput.value) || 0 : 0;
+
+    if (!newVal) return showToast("กรุณากรอกชื่อ");
+
+    if (type === 'rel') {
+        state.hierarchy[newVal] = state.hierarchy[oldVal];
+        if (newVal !== oldVal) delete state.hierarchy[oldVal];
+        if (selR === oldVal) selR = newVal;
+    } 
+    else if (type === 'pre') {
+        const idx = state.hierarchy[selR].prefixes.indexOf(oldVal);
+        if (idx !== -1) state.hierarchy[selR].prefixes[idx] = newVal;
+        if (newVal !== oldVal) {
+            state.hierarchy[selR].suffixes[newVal] = state.hierarchy[selR].suffixes[oldVal];
+            delete state.hierarchy[selR].suffixes[oldVal];
+            if (selP === oldVal) selP = newVal;
         }
-
-        const sl = document.getElementById('sl');
-        sl.innerHTML = selP ? '' : '<li class="text-slate-400 text-xs italic p-2">เลือกคำนำหน้าก่อน...</li>';
-        if(selR && selP && state.hierarchy[selR].suffixes[selP]) {
-            state.hierarchy[selR].suffixes[selP].forEach(s => {
-                const score = state.suffixScores[s] || 0;
-                const badge = score > 0 ? `<span class="text-[10px] bg-emerald-100 text-emerald-600 px-1 rounded ml-1">+${score.toLocaleString()}</span>` : '';
-                sl.innerHTML += `<li class="flex justify-between items-center p-2 border-b hover:bg-slate-50 rounded cursor-pointer group"><span>${s} ${badge}</span><button onclick="delData('suf','${s}')" class="text-red-300 hover:text-red-500 hidden group-hover:block"><i class="fa-solid fa-trash"></i></button></li>`;
-            });
-        }
+        state.prefixScores[newVal] = newScore;
+        if (newVal !== oldVal) delete state.prefixScores[oldVal];
+    } 
+    else if (type === 'suf') {
+        const idx = state.hierarchy[selR].suffixes[selP].indexOf(oldVal);
+        if (idx !== -1) state.hierarchy[selR].suffixes[selP][idx] = newVal;
+        state.suffixScores[newVal] = newScore;
+        if (newVal !== oldVal) delete state.suffixScores[oldVal];
+    }
+    else if (type === 'reign') {
+        const idx = state.reignNames.indexOf(oldVal);
+        if (idx !== -1) state.reignNames[idx] = newVal;
     }
 
-    function itemHTML(txt, delFn, clickFn="") {
-        return `<li class="flex justify-between items-center p-2 border-b hover:bg-slate-50 rounded cursor-pointer group" onclick="${clickFn}"><span>${txt}</span><button onclick="event.stopPropagation(); ${delFn}" class="text-red-300 hover:text-red-500 hidden group-hover:block"><i class="fa-solid fa-trash"></i></button></li>`;
-    }
+    editingItem = { type: null, value: null };
+    saveState();
+    renderRM();
+    refreshAllDisplays();
+    showToast("บันทึกการแก้ไขเรียบร้อย ✨");
+}
 
-    function addData(type) {
-        if(!state.prefixScores) state.prefixScores = {};
-        if(!state.suffixScores) state.suffixScores = {};
-        let changed = false;
+function renderRM() {
+    if(!state.prefixScores) state.prefixScores = {};
+    if(!state.suffixScores) state.suffixScores = {};
 
-        if(type === 'rel') {
-            const v = document.getElementById('nr').value; 
-            if(v) { state.hierarchy[v] = {prefixes:[], suffixes:{}}; changed=true; document.getElementById('nr').value=''; }
-        } 
-        else if(type === 'pre' && selR) {
-            const v = document.getElementById('np').value; 
-            if(v) {
-                const score = parseInt(document.getElementById('np_score').value) || 0;
-                state.hierarchy[selR].prefixes.push(v);
-                state.hierarchy[selR].suffixes[v]=[];
-                state.prefixScores[v] = score;
-                document.getElementById('np').value = '';
-                document.getElementById('np_score').value = '';
-                changed=true;
+    // 1. คอลัมน์ความสัมพันธ์
+    const rl = document.getElementById('rl'); rl.innerHTML = '';
+    Object.keys(state.hierarchy).forEach(k => {
+        if (editingItem.type === 'rel' && editingItem.value === k) {
+            rl.innerHTML += inlineEditHTML('rel', k);
+        } else {
+            rl.innerHTML += itemHTML('rel', k, `delData('rel','${k}')`, `selectRel('${k}')`, null, selR === k);
+        }
+    });
+
+    // 2. คอลัมน์คำนำหน้า
+    const pl = document.getElementById('pl');
+    pl.innerHTML = selR ? '' : '<div class="text-center py-10 text-slate-300 text-[10px] italic">← เลือกหมวดก่อน</div>';
+    if(selR) {
+        state.hierarchy[selR].prefixes.forEach(p => {
+            const score = state.prefixScores[p] || 0;
+            if (editingItem.type === 'pre' && editingItem.value === p) {
+                pl.innerHTML += inlineEditHTML('pre', p, score);
+            } else {
+                pl.innerHTML += itemHTML('pre', p, `delData('pre','${p}')`, `selectPre('${p}')`, score, selP === p);
             }
-        } 
-        else if(type === 'suf' && selR && selP) {
-            const v = document.getElementById('ns').value; 
-            if(v) {
-                const score = parseInt(document.getElementById('ns_score').value) || 0;
-                state.hierarchy[selR].suffixes[selP].push(v);
-                state.suffixScores[v] = score;
-                document.getElementById('ns').value = '';
-                document.getElementById('ns_score').value = '';
-                changed=true;
-            }
-        } 
-        else if(type === 'reign') {
-            const v = document.getElementById('nreign').value; 
-            if(v) { state.reignNames.push(v); changed=true; document.getElementById('nreign').value=''; }
-        }
-        
-        if(changed) {
-            saveState(); 
-            renderRM(); 
-            if(type==='pre') selectRel(selR); 
-            if(type==='suf') selectPre(selP);
-            refreshAllDisplays();
-            showToast("บันทึกข้อมูลและอัปเดตลำดับแล้ว");
-        }
+        });
     }
 
-    function delData(type, val) {
-        if(!confirm('ยืนยันการลบ?')) return;
-        if(type==='rel') delete state.hierarchy[val];
-        else if(type==='pre') {
-            state.hierarchy[selR].prefixes = state.hierarchy[selR].prefixes.filter(x=>x!==val);
-            if(state.prefixScores) delete state.prefixScores[val];
-        }
-        else if(type==='suf') {
-            state.hierarchy[selR].suffixes[selP] = state.hierarchy[selR].suffixes[selP].filter(x=>x!==val);
-            if(state.suffixScores) delete state.suffixScores[val];
-        }
-        else if(type==='reign') state.reignNames = state.reignNames.filter(x=>x!==val);
-        saveState(); 
-        renderRM();
-        if(type==='pre') selectRel(selR); if(type==='suf') selectPre(selP);
-        refreshAllDisplays();
+    // 3. คอลัมน์สร้อยพระนาม
+    const sl = document.getElementById('sl');
+    sl.innerHTML = (selR && selP) ? '' : '<div class="text-center py-10 text-slate-300 text-[10px] italic">← เลือกคำนำหน้าก่อน</div>';
+    if(selR && selP) {
+        (state.hierarchy[selR].suffixes[selP] || []).forEach(s => {
+            const score = state.suffixScores[s] || 0;
+            if (editingItem.type === 'suf' && editingItem.value === s) {
+                sl.innerHTML += inlineEditHTML('suf', s, score);
+            } else {
+                sl.innerHTML += itemHTML('suf', s, `delData('suf','${s}')`, "", score);
+            }
+        });
     }
+
+    // 4. คอลัมน์นามแผ่นดิน
+    const gl = document.getElementById('reignl'); gl.innerHTML = '';
+    state.reignNames.forEach(n => { 
+        if (editingItem.type === 'reign' && editingItem.value === n) {
+            gl.innerHTML += inlineEditHTML('reign', n);
+        } else {
+            gl.innerHTML += itemHTML('reign', n, `delData('reign','${n}')`); 
+        }
+    });
+}
+
+// สร้าง HTML สำหรับโหมดแก้ไขในแถว (ตามรูปภาพที่คุณวิทยาแนบมา)
+function inlineEditHTML(type, value, score = 0) {
+    const showScore = (type === 'pre' || type === 'suf');
+    return `
+        <div class="p-3 bg-white rounded-2xl border-2 border-blue-100 shadow-sm mb-2 space-y-2 animate-fade-in">
+            <div class="flex gap-2">
+                <input id="inline_edit_name" class="flex-1 px-3 py-2 rounded-xl border-2 border-sky-400 outline-none text-sm font-bold" value="${value}">
+                ${showScore ? `<input id="inline_edit_score" type="number" class="w-16 px-1 py-2 rounded-xl border-2 border-slate-100 outline-none text-sm text-center" value="${score}">` : ''}
+            </div>
+            <div class="flex gap-2">
+                <button onclick="saveInlineEdit('${type}', '${value}')" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-save"></i> บันทึกการแก้ไข
+                </button>
+                <button onclick="cancelInlineEdit()" class="px-4 bg-slate-400 hover:bg-slate-500 text-white py-2 rounded-xl text-[11px] font-bold transition">
+                    ยกเลิก
+                </button>
+            </div>
+        </div>`;
+}
+
+function itemHTML(type, value, deleteFn, clickFn = "", score = null, isSelected = false) {
+    const scoreBadge = score !== null ? `<div class="text-[10px] text-slate-400 font-mono">คะแนน: ${score}</div>` : '';
+    const activeClass = isSelected ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-50';
+    return `
+        <li data-id="${value}" data-type="${type}" class="flex justify-between items-center p-3 border rounded-2xl transition group ${activeClass} mb-1" onclick="${clickFn}">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <i class="fa-solid fa-grip-vertical text-slate-200 text-xs shrink-0 cursor-grab"></i>
+                <div class="truncate">
+                    <div class="text-sm font-bold ${isSelected ? 'text-indigo-600' : 'text-slate-700'} truncate">${value}</div>
+                    ${scoreBadge}
+                </div>
+            </div>
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                <button onclick="event.stopPropagation(); editData('${type}', '${value}')" class="p-1.5 text-blue-400 hover:bg-blue-50 rounded-lg">
+                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                </button>
+                <button onclick="event.stopPropagation(); ${deleteFn}" class="p-1.5 text-red-300 hover:text-red-500">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+            </div>
+        </li>`;
+}
+
+function selectRel(k){ selR=k; selP=null; renderRM(); }
+function selectPre(p){ selP=p; renderRM(); }
+
+function addData(type) {
+    if (type === 'rel') {
+        const val = document.getElementById('nr').value.trim();
+        if (!val) return showToast("กรุณากรอกชื่อความสัมพันธ์");
+        state.hierarchy[val] = { prefixes: [], suffixes: {} };
+        document.getElementById('nr').value = '';
+    } 
+    else if (type === 'pre') {
+        if (!selR) return showToast("โปรดเลือกความสัมพันธ์ก่อน");
+        const val = document.getElementById('np').value.trim();
+        const score = parseInt(document.getElementById('np_score').value) || 0;
+        if (!val) return showToast("กรุณากรอกคำนำหน้า");
+        state.hierarchy[selR].prefixes.push(val);
+        state.hierarchy[selR].suffixes[val] = [];
+        state.prefixScores[val] = score;
+        document.getElementById('np').value = ''; document.getElementById('np_score').value = '';
+    } 
+    else if (type === 'suf') {
+        if (!selR || !selP) return showToast("โปรดเลือกคำนำหน้าก่อน");
+        const val = document.getElementById('ns').value.trim();
+        const score = parseInt(document.getElementById('ns_score').value) || 0;
+        if (!val) return showToast("กรุณากรอกสร้อยพระนาม");
+        state.hierarchy[selR].suffixes[selP].push(val);
+        state.suffixScores[val] = score;
+        document.getElementById('ns').value = ''; document.getElementById('ns_score').value = '0';
+    } 
+    else if (type === 'reign') {
+        const val = document.getElementById('nreign').value.trim();
+        if (!val) return showToast("กรุณากรอกนามแผ่นดิน");
+        state.reignNames.push(val);
+        document.getElementById('nreign').value = '';
+    }
+    saveState(); renderRM(); refreshAllDisplays(); showToast("เพิ่มข้อมูลเรียบร้อย ✨");
+}
+
+function delData(type, val) {
+    if(!confirm('ยืนยันการลบ?')) return;
+    if(type==='rel') delete state.hierarchy[val];
+    else if(type==='pre') {
+        state.hierarchy[selR].prefixes = state.hierarchy[selR].prefixes.filter(x=>x!==val);
+        if(state.prefixScores) delete state.prefixScores[val];
+    }
+    else if(type==='suf') {
+        state.hierarchy[selR].suffixes[selP] = state.hierarchy[selR].suffixes[selP].filter(x=>x!==val);
+        if(state.suffixScores) delete state.suffixScores[val];
+    }
+    else if(type==='reign') state.reignNames = state.reignNames.filter(x=>x!==val);
+    saveState(); renderRM(); refreshAllDisplays();
+}
+
+function initSortableColumns() {
+    const config = {
+        animation: 150, handle: '.fa-grip-vertical',
+        onEnd: function(evt) {
+            const type = evt.item.getAttribute('data-type');
+            reorderState(type, evt.from);
+        }
+    };
+    if (document.getElementById('rl')) new Sortable(document.getElementById('rl'), config);
+    if (document.getElementById('pl')) new Sortable(document.getElementById('pl'), config);
+    if (document.getElementById('sl')) new Sortable(document.getElementById('sl'), config);
+    if (document.getElementById('reignl')) new Sortable(document.getElementById('reignl'), config);
+}
+
+function reorderState(type, parentEl) {
+    const newOrder = Array.from(parentEl.children).map(li => li.getAttribute('data-id')).filter(id => id);
+    if (type === 'rel') {
+        const newHierarchy = {};
+        newOrder.forEach(key => { if(state.hierarchy[key]) newHierarchy[key] = state.hierarchy[key]; });
+        state.hierarchy = newHierarchy;
+    } else if (type === 'pre' && selR) {
+        state.hierarchy[selR].prefixes = newOrder;
+    } else if (type === 'suf' && selR && selP) {
+        state.hierarchy[selR].suffixes[selP] = newOrder;
+    } else if (type === 'reign') {
+        state.reignNames = newOrder;
+    }
+    saveState(); refreshAllDisplays();
+}
+    
 
     function selectRel(k){ selR=k; renderRM(); }
     function selectPre(p){ selP=p; renderRM(); }
@@ -3504,6 +3671,40 @@ function renderTree() {
 
     // ================= END NEW SPOUSE SELECTION MODAL LOGIC =================
     
+function recordTitleHistory(p) {
+    if (!p.titleHistory) p.titleHistory = [];
+    
+    // ดึงค่ารัชกาลปัจจุบัน
+    const activeMonarch = state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
+    const currentReign = activeMonarch ? `รัชกาลที่ ${toThaiNumerals(activeMonarch.globalReignNumber)}` : "ก่อนเริ่มรัชกาล/ปฐมวงศ์";
+    
+    // สร้าง "ลายเซ็นข้อมูล" จากทั้ง 7 ฟิลด์เพื่อตรวจสอบความเปลี่ยนแปลง
+    const currentDataSignature = [
+        p.relationship,
+        p.titlePrefix,
+        p.royalRank,
+        p.name,
+        p.titleSuffix,
+        p.kromRank,
+        p.kromTitle
+    ].join('|');
+    
+    // ตรวจสอบกับรายการล่าสุดในประวัติ
+    const lastEntry = p.titleHistory[p.titleHistory.length - 1];
+    const lastSignature = lastEntry ? lastEntry.signature : null;
+    
+    // ถ้าข้อมูลเปลี่ยนไปจากเดิมแม้แต่นิดเดียว หรือยังไม่มีประวัติเลย ให้บันทึกใหม่
+    if (currentDataSignature !== lastSignature) {
+        const fullTitle = getFullDisplayTitle(p);
+        p.titleHistory.push({ 
+            title: fullTitle, 
+            reign: currentReign, 
+            year: new Date().getFullYear() + 543,
+            signature: currentDataSignature // เก็บไว้เพื่อเปรียบเทียบครั้งต่อไป
+        });
+    }
+}
+
     function handleSavePerson(e) {
         try {
             e.preventDefault();
@@ -3551,6 +3752,11 @@ function renderTree() {
                 hideRoyalRank: document.getElementById('p_hideRoyalRank').checked,
                 birthYear: document.getElementById('p_birthYear').value || null,
                 
+                // --- เพิ่มบรรทัดนี้ลงไปตรงนี้ ---
+    titleHistory: oldP?.titleHistory || [], 
+    // ----------------------------
+
+    isRoyalSurnameFounder: isFounder,
                 // --- Surname Logic Mapping ---
                 // isRoyalSurnameFounder: Use checkbox state if checked, otherwise default to false (or keep old if editing)
                 isRoyalSurnameFounder: isFounder,
@@ -3646,7 +3852,9 @@ function renderTree() {
                     }
                 });
             }
-
+saveState();
+recordTitleHistory(p); // บันทึกยศใหม่เข้าทำเนียบ (ถ้ามีการเปลี่ยนแปลง)
+saveState(); // บันทึกข้อมูลลงฐานข้อมูล
             saveState();
             closeModal('personModal');
             if(p.isMonarch && !isEdit && p.isAlive) showFantasyPopup(p);
@@ -4018,23 +4226,57 @@ function renderTree() {
     function toggleUmbrella() { const h = document.getElementById('p_hasUmbrella').checked; document.getElementById('p_umbrellaType').classList.toggle('hidden', !h); }
     function toggleKrom() { const v = document.getElementById('p_kromRank').value; document.getElementById('p_kromTitle').classList.toggle('hidden', !v); }
     function populateReignSelect(selVal) { const s = document.getElementById('p_reignNameSelect'); s.innerHTML = ''; state.reignNames.forEach(n => s.innerHTML += `<option value="${n}">${n}</option>`); if(selVal) s.value = selVal; }
-    function populateRelSelect(v) { 
-        const s = document.getElementById('p_relationship'); 
-        s.innerHTML='<option value="">-</option>'; 
-        const prioritizedRels = ["พระมหากษัตริย์", "พระราชินีนาถ", "รัชทายาท", "พระราชโอรส", "พระราชธิดา", "พระเจ้าหลานเธอ", "พระเจ้าพี่น้องร่วมพระมารดา", "พระบรมวงศ์", "พระอนุวงศ์", "พระภรรยาเจ้า", "บาทบริจาริกา", "พระชายา", "หม่อม", "สามัญชน"];
-        
-        prioritizedRels.forEach(k => {
-            if (state.hierarchy[k]) s.innerHTML += `<option value="${k}">${k}</option>`;
-        });
-        
-        Object.keys(state.hierarchy)
-            .filter(k => !prioritizedRels.includes(k))
-            .forEach(k => s.innerHTML += `<option value="${k}">${k}</option>`);
+  // 1. ฟังก์ชันเลือกความสัมพันธ์ (ดึงลำดับตามที่คุณจัดไว้ในหน้าจัดการยศ)
+function populateRelSelect(v) { 
+    const s = document.getElementById('p_relationship'); 
+    s.innerHTML = '<option value="">- เลือกความสัมพันธ์ -</option>'; 
+    
+    // ดึงลำดับจากสิ่งที่คุณลากวางไว้ในหน้าจัดการยศมาแสดง
+    Object.keys(state.hierarchy).forEach(rel => {
+        const op = new Option(rel, rel);
+        s.add(op);
+    });
 
-        if(v) s.value = v; 
+    if(v) s.value = v; 
+    s.onchange = () => updatePrefixOptions();
+}
+
+// 2. ฟังก์ชันเลือกคำนำหน้า (จะกรองมาเฉพาะที่อยู่ในหมวดความสัมพันธ์นั้น)
+function updatePrefixOptions(v) { 
+    const rel = document.getElementById('p_relationship').value; 
+    const s = document.getElementById('p_titlePrefix'); 
+    s.innerHTML = '<option value="">- เลือกคำนำหน้า -</option>'; 
+    
+    if(rel && state.hierarchy[rel]) {
+        state.hierarchy[rel].prefixes.forEach(p => {
+            s.add(new Option(p, p));
+        });
     }
-    function updatePrefixOptions(v) { const r = document.getElementById('p_relationship').value; const s = document.getElementById('p_titlePrefix'); s.innerHTML = ''; if(state.hierarchy[r]) state.hierarchy[r].prefixes.forEach(p => s.innerHTML += `<option value="${p}">${p}</option>`); if(v) s.value = v; updateSuffixOptions(); }
-    function updateSuffixOptions(v) { const r = document.getElementById('p_relationship').value; const p = document.getElementById('p_titlePrefix').value; const s = document.getElementById('p_titleSuffix'); s.innerHTML = ''; if(state.hierarchy[r] && state.hierarchy[r].suffixes[p]) state.hierarchy[r].suffixes[p].forEach(x => s.innerHTML += `<option value="${x}">${x}</option>`); if(v) s.value = v; }
+    
+    if(v) s.value = v; 
+    s.onchange = () => {
+        updateSuffixOptions();
+        checkQueenConsortEligible(); 
+    };
+    
+    updateSuffixOptions(); 
+}
+
+// 3. ฟังก์ชันเลือกสร้อยพระนาม (จะกรองมาเฉพาะที่คู่กับคำนำหน้านั้น)
+function updateSuffixOptions(v) { 
+    const rel = document.getElementById('p_relationship').value; 
+    const pre = document.getElementById('p_titlePrefix').value; 
+    const s = document.getElementById('p_titleSuffix'); 
+    s.innerHTML = '<option value="">- ไม่มีสร้อย -</option>'; 
+    
+    if(rel && pre && state.hierarchy[rel] && state.hierarchy[rel].suffixes[pre]) {
+        state.hierarchy[rel].suffixes[pre].forEach(x => {
+            s.add(new Option(x, x));
+        });
+    }
+    
+    if(v) s.value = v; 
+}
     
     function updateDatalists(selfId, filteredFatherList, filteredMotherList) { 
         const fo = document.getElementById('fatherOptions'); fo.innerHTML=''; 
@@ -4137,6 +4379,50 @@ function renderTree() {
         updateTrans(); 
     }
     function toggleOrientation(){ state.isHorizontal=!state.isHorizontal; renderTree(); resetView(); }
+   function showHistoryModal(id) {
+    const p = state.members.find(m => m.id === id);
+    if (!p) return;
+    
+    if (!p.titleHistory || p.titleHistory.length === 0) recordTitleHistory(p);
+    
+    const list = document.getElementById('historyList');
+    list.innerHTML = '';
+    
+    p.titleHistory.forEach((h, index) => {
+        const item = document.createElement('div');
+        item.className = "relative pl-8 border-l-2 border-slate-100 pb-4 last:pb-0 group";
+        item.innerHTML = `
+            <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-200 border-2 border-white"></div>
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-500 inline-block mb-1">
+                        สมัย${h.reign}
+                    </div>
+                    <div class="text-sm font-bold text-slate-700 leading-snug">${h.title}</div>
+           
+                </div>
+                <button onclick="deleteHistoryEntry('${p.id}', ${index})" class="opacity-0 group-hover:opacity-100 p-1.5 text-red-300 hover:text-red-500 transition-all">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+    
+    document.getElementById('historyModal').classList.add('active');
+}
+function deleteHistoryEntry(personId, index) {
+    if (!confirm("ต้องการลบรายการประวัตินี้ใช่หรือไม่?")) return;
+
+    const p = state.members.find(m => m.id === personId);
+    if (p && p.titleHistory) {
+        p.titleHistory.splice(index, 1);
+        saveState();
+        showHistoryModal(personId); // รีเฟรชหน้าต่างทำเนียบ
+        showToast("ลบข้อมูลเรียบร้อย");
+    }
+}
+
 </script>
 </body>
 </html>
