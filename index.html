@@ -723,7 +723,7 @@
                                 <div class="col-span-6 md:col-span-3">
                                     <label class="text-xs ml-2 text-slate-400">ยศกรม</label>
                                     <select id="p_kromRank" class="w-full text-sm input-theme" onchange="toggleKrom()">
-                                        <option value="">-</option><option value="กรมหมื่น">กรมหมื่น</option><option value="กรมขุน">กรมขุน</option><option value="กรมหลวง">กรมหลวง</option><option value="กรมพระ">กรมพระ</option><option value="กรมพระยา">กรมพระยา</option><option value="สมเด็จกรมพระ">สมเด็จกรมพระ</option>
+                                        <option value="">-</option><option value="กรมหมื่น">กรมหมื่น</option><option value="กรมขุน">กรมขุน</option><option value="กรมหลวง">กรมหลวง</option><option value="กรมพระ">กรมพระ</option><option value="กรมพระยา">กรมพระยา</option><option value="กรมสมเด็จพระ">กรมสมเด็จพระ</option>
                                     </select>
                                 </div>
                                 <div class="col-span-6 md:col-span-3">
@@ -2557,7 +2557,7 @@ function renderTree() {
             score += parseInt(state.suffixScores[person.titleSuffix]);
         }
 
-        const kromScoreMap = { "สมเด็จกรมพระ": 50, "กรมพระยา": 40, "กรมพระ": 30, "กรมหลวง": 20, "กรมขุน": 10, "กรมหมื่น": 5 };
+        const kromScoreMap = { "กรมสมเด็จพระ": 50, "กรมพระยา": 40, "กรมพระ": 30, "กรมหลวง": 20, "กรมขุน": 10, "กรมหมื่น": 5 };
         score += kromScoreMap[person.kromRank] || 0;
         
         if (person.hasUmbrella) {
@@ -3309,7 +3309,6 @@ function reorderState(type, parentEl) {
 
         // --- ค้นหาบรรทัดที่ 1442 ในไฟล์ index.html ---
             
-            // [แทรกโค้ดนี้ก่อนบรรทัด saveState();]
             // สั่งให้บันทึกประวัติใหม่สำหรับทุกคนที่ยศเปลี่ยนจากรัชกาลใหม่
             state.members.forEach(member => {
                 recordTitleHistory(member);
@@ -3690,7 +3689,8 @@ function recordTitleHistory(p) {
     const activeMonarch = state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
     const currentReign = activeMonarch ? `รัชกาลที่ ${toThaiNumerals(activeMonarch.globalReignNumber)}` : "ก่อนเริ่มรัชกาล/ปฐมวงศ์";
     
-    // สร้าง "ลายเซ็นข้อมูล" จากทั้ง 7 ฟิลด์เพื่อตรวจสอบความเปลี่ยนแปลง
+    // สร้าง "ลายเซ็นข้อมูล" เพื่อตรวจสอบความเปลี่ยนแปลง
+    // เพิ่ม isExMonarch และ monarchSpouseContext เพื่อให้บันทึกเมื่อสละราชสมบัติหรือเปลี่ยนสร้อย
     const currentDataSignature = [
         p.relationship,
         p.titlePrefix,
@@ -3698,21 +3698,21 @@ function recordTitleHistory(p) {
         p.name,
         p.titleSuffix,
         p.kromRank,
-        p.kromTitle
+        p.kromTitle,
+        p.isExMonarch,        // สถานะอดีตกษัตริย์
+        p.monarchSpouseContext // สร้อย "ในรัชกาลที่..."
     ].join('|');
     
-    // ตรวจสอบกับรายการล่าสุดในประวัติ
     const lastEntry = p.titleHistory[p.titleHistory.length - 1];
     const lastSignature = lastEntry ? lastEntry.signature : null;
     
-    // ถ้าข้อมูลเปลี่ยนไปจากเดิมแม้แต่นิดเดียว หรือยังไม่มีประวัติเลย ให้บันทึกใหม่
     if (currentDataSignature !== lastSignature) {
         const fullTitle = getFullDisplayTitle(p);
         p.titleHistory.push({ 
             title: fullTitle, 
             reign: currentReign, 
             year: new Date().getFullYear() + 543,
-            signature: currentDataSignature // เก็บไว้เพื่อเปรียบเทียบครั้งต่อไป
+            signature: currentDataSignature 
         });
     }
 }
