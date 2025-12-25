@@ -339,6 +339,60 @@
             pointer-events: none;
             font-size: 10px;
         }
+    /* --- สไตล์โหมดลูกหลวงที่ปรับปรุงใหม่ --- */
+.mother-tag-container {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    border: 1px solid #dbeafe;
+    border-radius: 6px;
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+.mother-tag-label {
+    background-color: #eff6ff; /* พื้นสีฟ้าอ่อน */
+    color: #1e40af; /* ฟอนต์สีน้ำเงินเข้ม */
+    padding: 2px 6px;
+}
+
+.mother-tag-value {
+    background-color: #eff6ff; /* พื้นสีฟ้าอ่อน */
+    color: #92400e; /* ฟอนต์สีน้ำตาลสว่าง (Amber/Brown) */
+    padding: 2px 8px;
+    border-left: 1px solid #dbeafe;
+}
+
+.mother-group-header {
+    background-color: #f8fafc;
+    border-left: 4px solid #3b82f6;
+}
+
+.mother-group-header td {
+    padding: 12px 20px;
+    font-weight: bold;
+    color: #1e40af;
+    font-size: 14px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.child-index-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background-color: #eff6ff;
+    color: #3b82f6;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 12px;
+    border: 1px solid #dbeafe;
+}
+/* -------------------------------------- */
+
     </style>
 </head>
 <body>
@@ -445,10 +499,12 @@
                 <div class="view-mode-wrapper">
                     <select id="treeViewMode" class="view-mode-selector" onchange="changeViewMode(this.value)">
                         <option value="all">1. ภาพรวมทั้งหมด</option>
-                        <option value="descendants">2. สายสกุล (ลูกหลาน)</option>
-                        <option value="direct">3. สายตรง (บรรพบุรุษ+ลูกหลาน)</option>
-                        <option value="ancestors">4. สายบรรพบุรุษ (Ancestors)</option>
-                        <option value="royalSurname">5. มุมมองสายราชสกุล</option>
+                        <option value="all_v2">2. โหมดผังรวม (v2)</option> 
+                        <option value="descendants">3. สายสกุล (ลูกหลาน)</option>
+                        <option value="direct">4. สายตรง (บรรพบุรุษ+ลูกหลาน)</option>
+                        <option value="ancestors">5. สายบรรพบุรุษ (Ancestors)</option>
+                        <option value="royalSurname">6. มุมมองสายราชสกุล</option>
+                        
                     </select>
                 </div>
 
@@ -489,20 +545,31 @@
                             <i class="fa-solid fa-rotate-left mr-1"></i> รีเซ็ตลำดับ
                         </button>
                     
-                        <select id="tableFilterStatus" class="bg-white px-4 py-1.5 rounded-full border border-slate-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition cursor-pointer" onchange="renderTable()">
-                            <option value="all">แสดงทั้งหมด</option>
-                            <option value="alive" selected>เฉพาะผู้มีชีวิต</option>
-                            <option value="dead">เฉพาะผู้เสียชีวิต</option>
-                            <option value="precedence">✨ เรียงตามลำดับโปเจียม</option>
-                        </select>
-                    
-                        <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-search text-slate-400 group-focus-within:text-primary transition"></i>
-                            </div>
-                            <input type="text" id="tableSearch" oninput="renderTable()" placeholder="ค้นหาชื่อ, ฉายา..." class="pl-10 pr-4 py-1.5 rounded-full border border-slate-200 text-sm focus:border-primary focus:ring-2 focus:ring-blue-100 outline-none transition w-64 bg-white shadow-sm">
-                        </div>
-                    </div>
+                     <div id="monarchFilterContainer" class="hidden flex gap-2">
+            <select id="monarchFilterSelect" class="bg-amber-50 px-4 py-1.5 rounded-full border border-amber-200 text-sm font-bold text-amber-700 outline-none shadow-sm" onchange="renderTable()">
+                <option value="">-- เลือกพระมหากษัตริย์ --</option>
+            </select>
+            
+            <select id="royalSubFilter" class="bg-blue-50 px-4 py-1.5 rounded-full border border-blue-200 text-sm font-bold text-blue-700 outline-none shadow-sm" onchange="renderTable()">
+                <option value="mother_rank">เรียงตามศักดิ์มารดา</option>
+                <option value="age_all">เรียงตามลำดับอายุ (รวมทุกคน)</option>
+            </select>
+        </div>
+
+        <select id="tableFilterStatus" class="bg-white px-4 py-1.5 rounded-full border border-slate-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition cursor-pointer shadow-sm" onchange="onTableFilterChange()">
+            <option value="all">แสดงทั้งหมด</option>
+            <option value="alive" selected>เฉพาะผู้มีชีวิต</option>
+            <option value="dead">เฉพาะผู้เสียชีวิต</option>
+            <option value="precedence">✨ เรียงตามลำดับโปเจียม</option>
+            <option value="royal_children">👑 เฉพาะลูกหลวง</option>
+        </select>
+
+        <div class="relative group">
+            <input type="text" id="tableSearch" oninput="renderTable()" placeholder="ค้นหาชื่อ..." class="pl-10 pr-4 py-1.5 rounded-full border border-slate-200 text-sm focus:border-primary outline-none transition w-64 bg-white shadow-sm">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        </div>
+    </div>
+</div>
                     <!-- จบส่วนควบคุมตาราง -->
 
                 </div>
@@ -583,18 +650,18 @@
 
                 <!-- UPDATED BUTTONS BLOCK: King will always have 4 buttons (Edit, Abdicate, Death, Delete) -->
                 <div class="flex gap-2 justify-center border-t pt-4 border-slate-100">
-                    <button onclick="editCurrent()" class="btn-icon w-10 h-10 flex items-center justify-center text-lg" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
-                    
-                    <!-- Abdicate Button (Only visible for active monarch) -->
-                    <button onclick="abdicateCurrent()" id="btnAbdicate" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-purple-600 hover:text-purple-700 hidden" title="สละราชสมบัติ">
-                        <i class="fa-solid fa-person-walking-arrow-right"></i>
-                    </button>
+    <button onclick="editCurrent()" class="btn-icon w-10 h-10 flex items-center justify-center text-lg" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+    
+    <button onclick="promoteMomChao()" id="btnPromoteMC" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-amber-500 hidden" title="สถาปนาเป็นพระองค์เจ้า">
+        <i class="fa-solid fa-medal"></i>
+    </button>
 
-                    <!-- Death Button (Always visible) -->
-                    <button onclick="toggleDeath()" id="btnDeath" class="btn-icon w-10 h-10 flex items-center justify-center text-lg" title="แจ้งตาย/คืนชีพ"><i class="fa-solid fa-skull"></i></button>
-                    
-                    <button onclick="deleteCurrent()" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-red-400" title="ลบ"><i class="fa-solid fa-trash"></i></button>
-                </div>
+    <button onclick="abdicateCurrent()" id="btnAbdicate" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-purple-600 hover:text-purple-700 hidden" title="สละราชสมบัติ">
+        <i class="fa-solid fa-person-walking-arrow-right"></i>
+    </button>
+    <button onclick="toggleDeath()" id="btnDeath" class="btn-icon w-10 h-10 flex items-center justify-center text-lg" title="แจ้งตาย/คืนชีพ"><i class="fa-solid fa-skull"></i></button>
+    <button onclick="deleteCurrent()" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-red-400" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+</div>
             </div>
         </div>
     </div>
@@ -667,6 +734,7 @@
                                         <option value="เจ้าฟ้า (ชั้นตรี)">เจ้าฟ้า (ชั้นตรี)</option>
                                         <option value="พระองค์เจ้า (ชั้นเอก)">พระองค์เจ้า (ชั้นเอก)</option>
                                         <option value="พระองค์เจ้า (ชั้นโท)">พระองค์เจ้า (ชั้นโท)</option>
+                                        <option value="พระองค์เจ้า (ชั้นตรี)">พระองค์เจ้า (ชั้นตรี)</option>
                                         <option value="หม่อมเจ้า">หม่อมเจ้า</option>
                                         <option value="หม่อมราชวงศ์">หม่อมราชวงศ์</option>
                                         <option value="หม่อมหลวง">หม่อมหลวง</option>
@@ -1056,9 +1124,9 @@ const DEFAULT_IMG_MALE = "https://cdn-icons-png.flaticon.com/512/4128/4128176.pn
 const DEFAULT_IMG_FEMALE = "https://cdn-icons-png.flaticon.com/512/4128/4128253.png";
 
 const BASE_CONFIG = { nodeWidth: 180, nodeHeight: 100, gapX: 40, gapY: 150, spouseGap: 50 };
-const ANCESTOR_CONFIG = { nodeWidth: 160, nodeHeight: 90, gapX: 50, gapY: 120 };
+const ANCESTOR_CONFIG = { nodeWidth: 160, nodeHeight: 90, gapX: 100, gapY: 150 };
 // Added new ranks for MR/ML
-const RANK_CODES = { "เจ้าฟ้า (ชั้นเอก)":'1', "เจ้าฟ้า (ชั้นโท)":'2', "เจ้าฟ้า (ชั้นตรี)":'3', "พระองค์เจ้า (ชั้นเอก)":'4', "พระองค์เจ้า (ชั้นโท)":'5', "หม่อมเจ้า":'6', "หม่อมราชวงศ์":'7', "หม่อมหลวง":'8', "เจ้าประเทศราช":'9', "สามัญชน":'A' };
+const RANK_CODES = { "เจ้าฟ้า (ชั้นเอก)":'1', "เจ้าฟ้า (ชั้นโท)":'2', "เจ้าฟ้า (ชั้นตรี)":'3', "พระองค์เจ้า (ชั้นเอก)":'4', "พระองค์เจ้า (ชั้นโท)":'5',"พระองค์เจ้า (ชั้นตรี)":'B', "หม่อมเจ้า":'6', "หม่อมราชวงศ์":'7', "หม่อมหลวง":'8', "เจ้าประเทศราช":'9', "สามัญชน":'A' };
 
 // ================= GLOBAL STATE =================
 let appIndex = []; // List of all kingdoms [{id, kingdomName, dynastyName}]
@@ -1069,11 +1137,59 @@ let state = {
     dynastyName: "ราชวงศ์",
     members: [],
     reignNames: ["พระรามาธิบดี", "พระปรเมนทร", "พระปรมินทร", "พระมหาธรรมราชา", "พระร่วงเจ้า", "พระบรมราชา", "พระมหาจักรพรรดิ"], 
-    hierarchy: {
+   hierarchy: {
         "พระมหากษัตริย์": { prefixes: ["สมเด็จพระ"], suffixes: { "สมเด็จพระ": ["เจ้าอยู่หัว"] } },
         "พระราชินีนาถ": { prefixes: ["สมเด็จพระนางเจ้า"], suffixes: { "สมเด็จพระนางเจ้า": ["พระบรมราชินีนาถ"] } },
-        "พระภรรยาเจ้า": { prefixes: ["สมเด็จพระนางเจ้า", "พระราชชายา"], suffixes: { "สมเด็จพระนางเจ้า": ["พระบรมราชินี", "พระบรมราชเทวี"], "พระราชชายา": [""] } }, // Added Phra Ratchachaya suffix option
-        "บาทบริจาริกา": { prefixes: ["เจ้าจอม", "เจ้าคุณจอม", "เจ้าจอมมารดา", "เจ้าคุณจอมมารดา"], suffixes: {} }, // Consort of Monarch
+        "พระภรรยาเจ้า": { 
+            prefixes: [
+                "สมเด็จพระนางเจ้า", 
+                "สมเด็จพระราชินี", 
+                "สมเด็จพระนางนาฏ", 
+                "พระนางนาฏ", 
+                "พระนางเจ้า", 
+                "พระนางเธอ", 
+                "พระอรรคชายาเธอ", 
+                "พระวรราชชายาเธอ", 
+                "พระวรราชชายา", 
+                "พระราชชายา"
+            ], 
+            suffixes: { 
+                "สมเด็จพระนางเจ้า": [
+                    "พระบรมราชินีนาถ", 
+                    "พระบรมราชราชินี", 
+                    "พระบรมราชินี", 
+                    "พระบรมอัครราชเทวี", 
+                    "พระบรมราชเทวี", 
+                    "พระอัครเทวี", 
+                    "พระวรราชเทวี", 
+                    "พระราชเทวี"
+                ],
+                "สมเด็จพระนางนาฏ": ["บรมอัครราชเทวี"],
+                "พระนางนาฏ": ["บรมอัครราชเทวี", "ราชเทวี"],
+                "พระนางเจ้า": ["พระวรราชเทวี", "พระราชเทวี"],
+                "สมเด็จพระราชินี": [""],
+                "พระนางเธอ": [""],
+                "พระอรรคชายาเธอ": [""],
+                "พระวรราชชายาเธอ": [""],
+                "พระวรราชชายา": [""],
+                "พระราชชายา": [""]
+            } 
+        },
+        "บาทบริจาริกา": { 
+            prefixes: [
+                "เจ้าคุณพระ", 
+                "พระ", 
+                "ท้าวอินทรสุเรนทร์", 
+                "ท้าวอินทรเทวี", 
+                "ท้าวศรีสุดาจันทร์", 
+                "ท้าวศรีจุฬาลักษณ์", 
+                "เจ้าคุณจอมมารดา", 
+                "เจ้าจอมมารดา", 
+                "เจ้าคุณจอม", 
+                "เจ้าจอม"
+            ], 
+            suffixes: {} 
+        },
         
         // Non-Monarch Consorts (NEW)
         "พระชายา": { prefixes: ["พระชายา", "หม่อมเจ้า"], suffixes: {} }, // Royal Consort of a Prince
@@ -1084,8 +1200,9 @@ let state = {
         
         // NEW SUCCESSION RANKS
         "พระเจ้าพี่น้องร่วมพระมารดา": { prefixes: ["สมเด็จพระเจ้าพี่ยาเธอ", "สมเด็จพระเจ้าน้องยาเธอ", "พระเจ้าพี่ยาเธอ", "พระเจ้าน้องยาเธอ", "สมเด็จพระเจ้าพี่นางเธอ", "สมเด็จพระเจ้าน้องนางเธอ", "พระเจ้าพี่นางเธอ", "พระเจ้าน้องนางเธอ"], suffixes: {} },
+        "พระเจ้าพี่น้องต่างพระมารดา": { prefixes: ["สมเด็จพระพี่ยาเธอ", "สมเด็จพระน้องยาเธอ", "พระเพี่ยาเธอ", "พระน้องยาเธอ", "สมเด็จพระพี่นางเธอ", "สมเด็จพระน้องนางเธอ", "พระพี่นางเธอ", "พระน้องนางเธอ"], suffixes: {} },
         "พระบรมวงศ์": { prefixes: ["สมเด็จพระเจ้าบรมวงศ์เธอ", "พระเจ้าบรมวงศ์เธอ"], suffixes: {} },
-        "พระอนุวงศ์": { prefixes: ["สมเด็จพระเจ้าวรวงศ์เธอ", "พระเจ้าวรวงศ์เธอ"], suffixes: {} },
+        "พระอนุวงศ์": { prefixes: ["สมเด็จพระเจ้าวรวงศ์เธอ", "พระเจ้าวรวงศ์เธอ", "พระวรวงศ์เธอ", "หม่อมเจ้า"], suffixes: {} },
         
         "พระเจ้าหลานเธอ": { prefixes: ["สมเด็จพระเจ้าหลานเธอ", "พระเจ้าหลานเธอ"], suffixes: {} }, // สำหรับหลานสายตรงของพระมหากษัตริย์
         "รัชทายาท": { prefixes: ["สมเด็จพระบรมโอรสาธิราช"], suffixes: { "สมเด็จพระบรมโอรสาธิราช": ["สยามมกุฎราชกุมาร"] } },
@@ -1543,11 +1660,12 @@ function renderTree() {
 
     let renderRootId = focusId;
     let membersToRender = state.members;
+    
 
-    if (state.treeViewType === 'all') {
-        renderRootId = findAbsoluteRoot(focusId);
-        membersToRender = state.members;
-    } else if (state.treeViewType === 'descendants') {
+    if (state.treeViewType === 'all' || state.treeViewType === 'all_v2') { 
+    renderRootId = findAbsoluteRoot(focusId);
+    membersToRender = state.members;
+} else if (state.treeViewType === 'descendants') {
         renderRootId = focusId;
         membersToRender = state.members;
     } else if (state.treeViewType === 'direct') {
@@ -1611,113 +1729,118 @@ function renderTree() {
     layout.nodes.forEach(n => drawNode(n, svgN));
 }
 
-    function calculateAncestryLayout(rootId) {
-        const nodes = [];
-        const connections = [];
-        const maxGen = 4; // Self(0), Parents(1), Grand(2), Great(3), GreatGreat(4)
-        
-        function getRelName(path) {
-            if(path === "") return "ตนเอง";
-            const p = path.toLowerCase();
-            if(p === "f") return "พ่อ";
-            if(p === "m") return "แม่";
-            if(p === "ff") return "ปู่";
-            if(p === "fm") return "ย่า";
-            if(p === "mf") return "ตา";
-            if(p === "mm") return "ยาย";
-            if(p.length === 3) return "ทวด";
-            if(p.length === 4) return "เทียด";
-            return "";
+ function calculateAncestryLayout(rootId) {
+    const nodes = [];
+    const connections = [];
+    
+    // --- [จุดที่ 1] คุณสามารถปรับจำนวนรุ่นที่ต้องการดูได้ตรงนี้ ---
+    const maxGen = 5; // เช่น ปรับเป็น 5 หรือ 6 รุ่น ผังจะกางออกกว้างขึ้นโดยอัตโนมัติ
+    
+    const config = ANCESTOR_CONFIG;
+
+    function getRelName(path) {
+        if(path === "") return "ตนเอง";
+        const p = path.toLowerCase();
+        if(p === "f") return "พ่อ";
+        if(p === "m") return "แม่";
+        if(p === "ff") return "ปู่";
+        if(p === "fm") return "ย่า";
+        if(p === "mf") return "ตา";
+        if(p === "mm") return "ยาย";
+        if(p.length >= 3) {
+             const prefix = "ทวด".repeat(p.length - 2); // รองรับ ทวด, เทียด, และชั้นสูงขึ้นไป
+             return prefix;
         }
-
-        function addAncestor(id, gen, path, yOffset, range) {
-            if (gen > maxGen) return;
-            const p = state.members.find(m => m.id === id);
-            if (!p) return;
-            
-            // [เพิ่ม layoutId ใน ancestor view ด้วย]
-            const ancestorLayoutId = `ancestor_${id}_${gen}_${path}`;
-
-            let x, y;
-            if(state.isHorizontal) {
-                // Horizontal: Root Left -> Ancestors Right
-                x = gen * (ANCESTOR_CONFIG.nodeWidth + ANCESTOR_CONFIG.gapX);
-                y = yOffset;
-            } else {
-                // Vertical: Root Bottom -> Ancestors Top
-                x = yOffset;
-                y = -(gen * (ANCESTOR_CONFIG.nodeHeight + ANCESTOR_CONFIG.gapY));
-            }
-
-            nodes.push({ data: p, x, y, type: 'ancestor', ancestorLabel: getRelName(path), layoutId: ancestorLayoutId });
-
-            const nextRange = range / 2;
-            
-            if (p.fatherId) {
-                // Father (Top in Horizontal, Left in Vertical)
-                const fOffset = state.isHorizontal ? y - nextRange : x - nextRange;
-                const fatherLayoutId = `ancestor_${p.fatherId}_${gen + 1}_${path}f`;
-                addAncestor(p.fatherId, gen + 1, path + "f", fOffset, nextRange);
-                // [เชื่อมด้วย UUID]
-                connections.push({ fromUUID: ancestorLayoutId, toUUID: fatherLayoutId });
-            }
-            
-            if (p.motherId) {
-                // Mother (Bottom in Horizontal, Right in Vertical)
-                const mOffset = state.isHorizontal ? y + nextRange : x + nextRange;
-                const motherLayoutId = `ancestor_${p.motherId}_${gen + 1}_${path}m`;
-                addAncestor(p.motherId, gen + 1, path + "m", mOffset, nextRange);
-                // [เชื่อมด้วย UUID]
-                connections.push({ fromUUID: ancestorLayoutId, toUUID: motherLayoutId });
-            }
-        }
-
-        // Initial Range Calculation
-        // Level 4 needs 16 slots. Range should be big enough to separate leaf nodes.
-        const initialRange = (Math.pow(2, maxGen-1)) * (state.isHorizontal ? ANCESTOR_CONFIG.nodeHeight : ANCESTOR_CONFIG.nodeWidth) * 0.8; 
-        
-        addAncestor(rootId, 0, "", 0, initialRange);
-        
-        // Convert old connection format to new UUID format for Ancestor View (since the build uses the simplified object)
-        const finalConnections = connections.map(c => ({ 
-            fromUUID: c.fromUUID, 
-            toUUID: c.toUUID, 
-            isSpouse: false 
-        }));
-        
-        return { nodes, connections: finalConnections };
+        return "";
     }
 
+    function addAncestor(id, gen, path, spreadOffset, currentRange) {
+        if (gen > maxGen) return;
+        const p = state.members.find(m => m.id === id);
+        if (!p) return;
+        
+        const ancestorLayoutId = `ancestor_${id}_${gen}_${path}`;
+        let x, y;
+
+        if(state.isHorizontal) {
+            x = gen * (config.nodeWidth + config.gapX);
+            y = spreadOffset;
+        } else {
+            x = spreadOffset;
+            y = -(gen * (config.nodeHeight + config.gapY));
+        }
+
+        nodes.push({ data: p, x, y, type: 'ancestor', ancestorLabel: getRelName(path), layoutId: ancestorLayoutId });
+
+        const nextRange = currentRange / 2;
+        
+        if (p.fatherId) {
+            const fOffset = spreadOffset - nextRange;
+            addAncestor(p.fatherId, gen + 1, path + "f", fOffset, nextRange);
+            connections.push({ fromUUID: ancestorLayoutId, toUUID: `ancestor_${p.fatherId}_${gen + 1}_${path}f`, isSpouse: false });
+        }
+        
+        if (p.motherId) {
+            const mOffset = spreadOffset + nextRange;
+            addAncestor(p.motherId, gen + 1, path + "m", mOffset, nextRange);
+            connections.push({ fromUUID: ancestorLayoutId, toUUID: `ancestor_${p.motherId}_${gen + 1}_${path}m`, isSpouse: false });
+        }
+    }
+
+    // --- [จุดที่ 2] สูตรคำนวณระยะกางเริ่มต้นแบบ Dynamic ---
+    // ระยะห่างที่น้อยที่สุดในรุ่นบนสุดต้องไม่น้อยกว่าขนาดกล่อง + ช่องไฟ
+    const safeSpace = state.isHorizontal ? (config.nodeHeight + 50) : (config.nodeWidth + 80);
+    
+    // สูตร: 2^(จำนวนรุ่น - 1) * ระยะห่างที่ปลอดภัย
+    const initialRange = Math.pow(2, maxGen - 1) * safeSpace;
+    
+    addAncestor(rootId, 0, "", 0, initialRange);
+    
+    return { nodes, connections };
+}
     // [แก้ไข: ฟังก์ชันนี้ถูกแทนที่เพื่อแก้ปัญหาเส้นไขว้]
-    function calculateTreeLayout(rootId, memberList) {
+  function calculateTreeLayout(rootId, memberList) {
         if(!rootId) return { nodes:[], connections:[] };
         
         // [เพิ่มใหม่] ฟังก์ชันสร้าง ID ชั่วคราวสำหรับแต่ละ "กล่อง" บนหน้าจอ
         const uuid = () => 'layout_' + Math.random().toString(36).substr(2, 9);
         
-        // Priority 1: Use Birth Year for children sorting (oldest first, i.e., left to right)
+        // Priority 1: Use Birth Year for children sorting (oldest first)
         const childSortFn = (a, b) => {
             const aYear = parseInt(a.birthYear) || Infinity;
             const bYear = parseInt(b.birthYear) || Infinity;
             if (aYear !== bYear) return aYear - bYear;
-            return a.id.localeCompare(b.id); // Secondary sort by ID for stability
+            return a.id.localeCompare(b.id); 
         };
         
         const config = state.isHorizontal ? {...BASE_CONFIG, gapX: 40, gapY: 250} : BASE_CONFIG;
         const nodes = []; 
-        const connections = []; // จะเก็บ { fromUUID, toUUID, isSpouse }
-        const getP = (id) => memberList.find(m => m.id === id);
+        const connections = []; 
 
         function build(pid, level) {
             const p = getP(pid);
             if(!p) return { width: config.nodeWidth, nodes: [] };
 
-            // [เพิ่มใหม่] สร้าง Layout ID เฉพาะสำหรับร่างนี้ (ตัวเอง)
             const myLayoutId = uuid();
 
             let spouses = (p.spouseIds || []).map(id => getP(id)).filter(s => s);
-            const children = memberList.filter(m => m.fatherId === pid || m.motherId === pid)
-                                       .sort(childSortFn); 
+            
+            // --- เริ่มส่วนที่แก้ไข: กรองบุตรหลานสำหรับโหมด All View (v2) ---
+            const children = memberList.filter(m => {
+                const isChild = m.fatherId === pid || m.motherId === pid;
+                if (!isChild) return false;
+
+                // กฎสำหรับโหมด All View (v2): ลดความซ้ำซ้อนกรณีแต่งงานในเครือญาติ
+                if (state.treeViewType === 'all_v2') {
+                    // ถ้าบุคคลปัจจุบันเป็น "แม่" (F) และมี "พ่อ" ของลูกอยู่ในผังนี้ด้วย
+                    // เราจะไม่แตกกิ่งลูกหลานที่นี่ (เพื่อให้ไปปรากฏที่กิ่งของพ่อเพียงที่เดียว)
+                    if (p.gender === 'F' && m.fatherId && memberList.some(x => x.id === m.fatherId)) {
+                        return false;
+                    }
+                }
+                return true;
+            }).sort(childSortFn); 
+            // --- สิ้นสุดส่วนที่แก้ไข ---
 
             const groups = [];
             spouses.forEach(s => {
@@ -1732,7 +1855,7 @@ function renderTree() {
             if (groups.length === 0) { 
                 return { 
                     width: config.nodeWidth, 
-                    nodes: [{ data: p, x: 0, y: 0, type: 'root', layoutId: myLayoutId }] // [เพิ่ม layoutId]
+                    nodes: [{ data: p, x: 0, y: 0, type: 'root', layoutId: myLayoutId }] 
                 }; 
             }
 
@@ -1743,7 +1866,6 @@ function renderTree() {
                 if (g.children.length > 0) {
                     g.children.forEach(child => {
                         const res = build(child.id, level + 1);
-                        // [เพิ่มใหม่] เก็บ Layout ID ของลูกไว้เชื่อมเส้น
                         const childRootNode = res.nodes.find(n => n.type === 'root' && n.data.id === child.id); 
                         childResults.push({ ...res, childRootLayoutId: childRootNode ? childRootNode.layoutId : null });
                         childrenBlockWidth += res.width + config.gapX;
@@ -1761,7 +1883,6 @@ function renderTree() {
             const localNodes = [];
             const rootX = totalSubtreeWidth / 2 - config.nodeWidth / 2;
             
-            // [เพิ่มใหม่] ใส่ layoutId ลงใน Node ตัวเอง
             localNodes.push({ data: p, x: rootX, y: 0, type: 'root', layoutId: myLayoutId });
 
             let currentX = 0;
@@ -1771,7 +1892,7 @@ function renderTree() {
                 
                 if (g.spouse) {
                     const spouseX = groupCenterX - config.nodeWidth / 2;
-                    const spouseLayoutId = uuid(); // [เพิ่มใหม่] สร้างร่างแยกให้คู่สมรส
+                    const spouseLayoutId = uuid(); 
 
                     localNodes.push({ 
                         data: g.spouse, 
@@ -1779,22 +1900,19 @@ function renderTree() {
                         y: config.gapY, 
                         type: 'spouse', 
                         partnerId: pid,
-                        layoutId: spouseLayoutId // [เพิ่มใหม่]
+                        layoutId: spouseLayoutId 
                     });
 
-                    // [เพิ่มใหม่] เชื่อมเส้นโดยใช้ UUID แทน ID ข้อมูล
                     connections.push({ fromUUID: myLayoutId, toUUID: spouseLayoutId, isSpouse: true });
                     
                     let childX = currentX + (gl.width - (gl.childResults.reduce((a,c)=>a+c.width+config.gapX,0) - config.gapX))/2;
                     if (gl.childResults.length === 0) childX = currentX; 
 
                     gl.childResults.forEach(res => {
-                        // [เพิ่ม layoutId ใน Node ลูกทั้งหมด]
                         res.nodes.forEach(n => {
                             localNodes.push({ ...n, x: n.x + childX, y: n.y + config.gapY * 2 });
                         });
                         
-                        // [เพิ่มใหม่] เชื่อมเส้นจากร่างแยกคู่สมรส ลงไปหาลูก
                         if (res.childRootLayoutId) { 
                             connections.push({ fromUUID: spouseLayoutId, toUUID: res.childRootLayoutId, isSpouse: false }); 
                         } 
@@ -1804,12 +1922,10 @@ function renderTree() {
                 } else {
                     let childX = currentX + (gl.width - (gl.childResults.reduce((a,c)=>a+c.width+config.gapX,0) - config.gapX))/2;
                     gl.childResults.forEach(res => {
-                        // [เพิ่ม layoutId ใน Node ลูกทั้งหมด]
                         res.nodes.forEach(n => {
                             localNodes.push({ ...n, x: n.x + childX, y: n.y + config.gapY * 2 });
                         });
                         
-                        // [เพิ่มใหม่] เชื่อมเส้นจากตัวเอง (Main Parent) ลงไปหาลูก
                         if (res.childRootLayoutId) { 
                             connections.push({ fromUUID: myLayoutId, toUUID: res.childRootLayoutId, isSpouse: false }); 
                         }
@@ -1820,6 +1936,8 @@ function renderTree() {
             });
             return { width: totalSubtreeWidth, nodes: localNodes };
         }
+        
+        const getP = (id) => memberList.find(m => m.id === id);
         const treeData = build(rootId, 0);
         return { nodes: treeData.nodes, connections };
     }
@@ -1889,6 +2007,7 @@ function renderTree() {
         } else if (!p.isMonarch && p.kromRank) {
             // NOTE: Krom Rank is kept in node badge, but removed from full name display (per request)
             badgeHTML += `<div class="badge-krom truncate w-full text-center mt-1">${p.kromRank}${p.kromTitle||''}</div>`;
+            
         }
         
         // --- MODIFICATION FOR RULE 2: Royal Surname Badge (Removed from Node) ---
@@ -2033,128 +2152,103 @@ function renderTree() {
     /**
      * UPDATED LOGIC: Implements all name display rules as requested, including surname.
      */
-    function getFullDisplayTitle(p) {
-        if (!p) return "";
-        let finalNameParts = [];
-        
-        // --- Condition for Hiding Surname ---
-        if (p.hideSurname) {
-             // If surname is explicitly hidden, skip all surname logic below.
-        } else {
-             // --- 1. Surname Inheritance/Auto-Population ---
-             // Only auto-inherit if it's NOT a founder and NOT explicitly a commoner outside the royal lineage
-             // (Otherwise rely on saved/inherited values in p.royalSurname or p.surname)
-             if (!p.royalSurname) {
-                 let primaryParent = state.members.find(m => m.id === p.fatherId);
-                 // If mother is higher rank or female monarch/heir, check mother's lineage first.
-                 if (p.motherId) {
-                      const mother = state.members.find(m => m.id === p.motherId);
-                      const isMonarchMother = mother?.isMonarch || (mother?.isHeir && parseInt(mother?.heirOrder) === 1);
-                      if (isMonarchMother || p.gender === 'F' && mother?.royalRank) {
-                           primaryParent = mother;
-                      }
-                 }
-                 
-                 // If the primary parent has a royal surname lineage, inherit it.
-                 if (primaryParent?.royalSurname) {
-                     p.royalSurname = primaryParent.royalSurname;
-                 } else if (primaryParent?.royalRank.includes('สามัญชน') && primaryParent.surname) {
-                      // If parent is a non-royal commoner who married in, they keep their commoner name, but the child is outside the *royal* lineage surname flow unless the princess rule applies.
-                 }
-             }
-        }
-        // --- END Surname Inheritance/Auto-Population ---
+    /**
+ * ฟังก์ชันแสดงพระนาม/ชื่อ แบบเต็ม พร้อมกฎนามราชสกุลและการใช้ "ณ"
+ */
+function getFullDisplayTitle(p) {
+    if (!p) return "";
 
-        // Rule 3 Exceptions: King, Queen Consort, Heir Apparent (No Royal Rank, No Krom)
-        const isHighRoyalTitle = p.isMonarch || p.isQueenConsort || (p.isHeir && parseInt(p.heirOrder) === 1); 
-
-        // --- 1. Prefix (คำนำหน้าชื่อ) ---
-        if (p.titlePrefix) {
-            finalNameParts.push(p.titlePrefix);
-        }
-
-        // --- 2. Royal Rank (อิสริยยศ) and Name (ชื่อ) ---
-        let rankAndName = "";
-
-        // Determine if the rank should be explicitly shown (not hidden, not a high royal title)
-        // NOTE: M.R.W. and M.L. should show their full rank/prefix in the full title (Rule 3)
-        const shouldShowRoyalRank = !p.hideRoyalRank && !isCommonerDescendant(p) && !isHighRoyalTitle;
-        
-        if (shouldShowRoyalRank) {
-            rankAndName += getDisplayRank(p.royalRank); // e.g., เจ้าฟ้า, พระองค์เจ้า
-        }
-        
-        rankAndName += p.name;
-        finalNameParts.push(rankAndName);
-        
-        // --- 2.5 Surname Logic (Display) ---
-        if (!p.hideSurname) {
-            const isRoyalLineageSurname = !!p.royalSurname && p.royalSurname.trim() !== '';
-            const isGeneralCommonerPrefix = ['นาย', 'นาง', 'นางสาว', 'คุณ', 'คุณหญิง', 'ท่านผู้หญิง'].includes(p.titlePrefix);
-            const isMRWMLPrefix = ['หม่อมเจ้า', 'หม่อมราชวงศ์', 'หม่อมหลวง'].includes(p.titlePrefix); // Include หม่อมเจ้า here for surname display rule
-            
-            if (isRoyalLineageSurname) {
-                
-                // A. If M.C., M.R.W., or M.L. (Must display Royal Surname, no ณ)
-                if (isMRWMLPrefix) {
-                    if (p.royalSurname) finalNameParts.push(p.royalSurname);
-                } 
-                // B. If general commoner prefix (นาย, นาง, คุณ, etc.) and has royal lineage (Must display with ณ)
-                else if (isGeneralCommonerPrefix) {
-                     if (p.royalSurname) finalNameParts.push(`${p.royalSurname} ณ ${state.kingdomName}`);
-                }
-                // C. For other high royal ranks (เจ้าฟ้า, พระองค์เจ้า) surnames are typically suppressed by custom unless overridden by prefix (already checked above) or explicitly set to be shown (which we don't have a separate toggle for yet).
-                
-            } else if (p.royalRank === 'สามัญชน' && p.surname) {
-                 // Case D: Explicit Commoner Surname (Non-Royal Lineage)
-                 // Rule: Non-Royal Lineage Surname MUST NOT have the ณ suffix.
-                 finalNameParts.push(p.surname);
-            }
-        }
-        // --- End Surname Logic (Display) ---
-
-        // --- 3. Suffix (สร้อยพระนาม) ---
-        if (p.titleSuffix) {
-            finalNameParts.push(p.titleSuffix);
-        }
-        
-        // --- 4. Krom Rank and Title (ยศกรมและราชทินนามกรม) ---
-        const showKrom = !isHighRoyalTitle && p.kromRank; 
-        
-        if (showKrom) {
-            finalNameParts.push(p.kromRank + (p.kromTitle || "")); 
-        }
-        
-        // --- 5. Monarch Spouse Context ---
-        const activeMonarch = state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
-        const isCurrentMonarchConsort = activeMonarch && (activeMonarch.spouseIds || []).includes(p.id);
-        
-        if (p.monarchSpouseContext && !isCurrentMonarchConsort) {
-            finalNameParts.push(p.monarchSpouseContext);
-        }
-
-        // --- 6. Reign Name (สำหรับกษัตริย์ที่มีนามแผ่นดิน) ---
-        if (p.isMonarch && p.useReignName && p.reignNameBase && !p.isExMonarch) {
-            let reignStr = p.reignNameBase;
-            if(p.eraName) reignStr += " " + p.eraName;
+    // 1. กรณีพระมหากษัตริย์รัชกาลปัจจุบัน (เน้นนามแผ่นดิน)
+    if (p.isMonarch && p.isAlive && !p.isExMonarch) {
+        let mainTitle = (p.titlePrefix || "") + p.name + (p.titleSuffix || "");
+        let reignPart = "";
+        if (p.useReignName && p.reignNameBase) {
+            reignPart = p.reignNameBase;
             const autoNum = getReignNameRank(p);
-            if(autoNum) reignStr += "ที่ " + toThaiNumerals(autoNum);
-            finalNameParts.push(reignStr);
+            if (autoNum) reignPart += "ที่ " + toThaiNumerals(autoNum);
         }
-        
-        // --- 7. Ex-Monarch Suffix (NEW RULE) ---
-        // Apply only if they are marked as Ex-Monarch AND are currently alive (suffix is removed upon death)
-        if (p.isMonarch && p.isExMonarch && p.isAlive) {
-            const reignLabel = p.globalReignNumber ? `รัชกาลที่ ${toThaiNumerals(p.globalReignNumber)}` : '';
-            // MODIFICATION: Use requested phrasing: อดีตพระมหากษัตริย์รัชกาลที่{เลขรัชกาล}
-            finalNameParts.push(`อดีตพระมหากษัตริย์${reignLabel}`);
-        }
-        // --- END NEW RULE ---
-
-        // Rule: แสดงผลเป็น คำนำหน้า ชื่อ สกุล ณ{ชื่ออาณาจักร} ห่างกันด้วย space
-        return finalNameParts.filter(s => s && s.trim() !== "").join(" ");
+        return (mainTitle + (reignPart ? " " + reignPart : "")).trim();
     }
 
+    let finalNameParts = [];
+    
+    // --- เริ่มต้นการคำนวณชื่อและนามสกุลสำหรับบุคคลทั่วไป ---
+
+    // 2. คำนำหน้า (เช่น สมเด็จพระ, นาย, หม่อมหลวง)
+    if (p.titlePrefix) {
+        finalNameParts.push(p.titlePrefix);
+    }
+
+    /// 3. จัดการ "ยศ" และ "ชื่อ" (ตามเงื่อนไขใหม่ของคุณวิทยา)
+    let displayName = p.name || "";
+    
+    // ตรวจสอบว่าเป็นเจ้า (ไม่ใช่สามัญชน) และไม่ใช่กษัตริย์
+    if (!p.hideRoyalRank && p.royalRank && p.royalRank !== 'สามัญชน' && !p.isMonarch) {
+        // แยกเอาเฉพาะชื่อยศ เช่น "พระองค์เจ้า" หรือ "เจ้าฟ้า" (ตัดส่วนในวงเล็บออก)
+        const simpleRank = p.royalRank.split(' ')[0]; 
+        
+        // ตรวจสอบว่าในคำนำหน้า (Prefix) มีชื่อยศนี้อยู่แล้วหรือไม่ เพื่อไม่ให้แสดงซ้ำ
+        // เช่น ถ้า Prefix คือ "หม่อมหลวง" และ Rank คือ "หม่อมหลวง" จะไม่แสดงซ้ำ
+        if (!p.titlePrefix.includes(simpleRank)) {
+            displayName = simpleRank + displayName;
+        }
+    }
+    
+    
+    finalNameParts.push(displayName);
+
+    // 4. กฎการแสดงนามราชสกุลและการใช้ "ณ {ชื่ออาณาจักร}" (ข้อกำหนดใหม่)
+    if (!p.hideSurname) {
+        const isRoyalLineageSurname = !!p.royalSurname && p.royalSurname.trim() !== '';
+        
+        // เช็คคำนำหน้าว่าเป็น ม.จ., ม.ร.ว. หรือ ม.ล. หรือไม่
+        const isMRWMLPrefix = ['หม่อมเจ้า', 'หม่อมราชวงศ์', 'หม่อมหลวง'].includes(p.titlePrefix);
+        
+        // เช็คว่าเป็นสามัญชนหรือคู่สมรส (นาย, นาง, นางสาว, คุณ ฯลฯ)
+        const isCommonerPrefix = ['นาย', 'นาง', 'นางสาว', 'คุณ', 'คุณหญิง', 'ท่านผู้หญิง'].includes(p.titlePrefix);
+
+        if (isRoyalLineageSurname) {
+            if (isMRWMLPrefix) {
+                // กฎ: ม.จ. / ม.ร.ว. / ม.ล. ให้ต่อนามราชสกุลทันที (ไม่มี ณ)
+                finalNameParts.push(p.royalSurname);
+            } 
+            else if (isCommonerPrefix || p.royalRank === 'สามัญชน') {
+                // กฎ: คู่สมรสของ ม.ร.ว./ม.ล. และลูกหลานสามัญชน
+                // รูปแบบ: [นามราชสกุล] [เว้นวรรค] ณ [เว้นวรรค] [ชื่ออาณาจักร]
+                finalNameParts.push(`${p.royalSurname} ณ ${state.kingdomName}`);
+            }
+        } 
+        else if (p.royalRank === 'สามัญชน' && p.surname) {
+            // กรณีเป็นสามัญชนทั่วไปที่ไม่มีสายเลือดราชสกุล (ไม่มี ณ)
+            finalNameParts.push(p.surname);
+        }
+    }
+
+    // 5. สร้อยพระนาม (ถ้ามี)
+    if (p.titleSuffix) {
+        finalNameParts.push(p.titleSuffix);
+    }
+
+    // 6. ยศกรม (ถ้าไม่ใช่กษัตริย์หรือรัชทายาทอันดับ 1)
+    const isHighRoyalTitle = p.isMonarch || (p.isHeir && parseInt(p.heirOrder) === 1);
+    if (p.kromRank && !isHighRoyalTitle) {
+        finalNameParts.push(p.kromRank + (p.kromTitle || ""));
+    }
+
+    // 7. บริบทคู่สมรส (เช่น ในรัชกาลที่...)
+    if (p.monarchSpouseContext) {
+        finalNameParts.push(p.monarchSpouseContext);
+    }
+
+    // 8. กรณีอดีตกษัตริย์ที่ยังทรงพระชนม์ (สละราชสมบัติ)
+    if (p.isMonarch && p.isExMonarch && p.isAlive) {
+        const reignLabel = p.globalReignNumber ? `รัชกาลที่ ${toThaiNumerals(p.globalReignNumber)}` : '';
+        finalNameParts.push(`อดีตพระมหากษัตริย์${reignLabel}`);
+    }
+
+    // รวมทุกส่วนเข้าด้วยกันโดยเว้นวรรค 1 เคาะ ระหว่างส่วน (ตามเงื่อนไขที่คุณระบุ)
+    return finalNameParts.join(" ").trim();
+}
 
     function getNicknameWithPrefix(p) {
         if(!p.nickname) return '-';
@@ -2162,7 +2256,7 @@ function renderTree() {
         const r = p.royalRank || '';
         if(r.includes('เจ้าฟ้า (ชั้นเอก)')) prefix = 'ทูลกระหม่อม';
         else if(r.includes('เจ้าฟ้า')) prefix = 'สมเด็จ'; 
-        else if(r.includes('พระองค์เจ้า (ชั้นเอก)') || r.includes('พระองค์เจ้า (ชั้นโท)')) prefix = 'เสด็จ';
+        else if(r.includes('พระองค์เจ้า (ชั้นเอก)') || r.includes('พระองค์เจ้า (ชั้นโท)') || r.includes('พระองค์เจ้า (ชั้นตรี)')) prefix = 'เสด็จ';
         else if(r.includes('หม่อมเจ้า')) prefix = p.gender === 'M' ? 'ท่านชาย' : 'ท่านหญิง';
         return prefix + p.nickname;
     }
@@ -2454,140 +2548,98 @@ function renderTree() {
     
     // ================= PRECEDENCE LOGIC (ระบบลำดับโปเจียม Micro Scale) =================
 
-    function refreshAllDisplays() {
-        saveState();
-        updateApp(); // Call updateApp instead of just renderTable to refresh tree too
+    // ============================================================
+// THE SUPREME POJIAM LOGIC 2025 (Unified Version)
+// ระบบคำนวณลำดับโปเจียมหนึ่งเดียว: รวมกษัตริย์, รัชทายาท, วังหน้า-หลัง
+// ============================================================
+function calculatePojiamScore(person) {
+    if (!person) return 0;
+
+
+
+    // --- 1. กฎการยกเว้น (Exclusion): บาทบริจาริกา และสามัญชน ไม่มีลำดับโปเจียม ---
+    if (!person.isQueenConsort) {
+        if ((person.relationship || '').includes('บาทบริจาริกา') || person.relationship === 'หม่อม') {
+            return 0; 
+        }
+        if (person.royalRank === 'สามัญชน' || person.royalRank === 'หม่อมราชวงศ์' || person.royalRank === 'หม่อมหลวง') {
+            return 0;
+        }
     }
 
-    function calculatePojiamScore(person) {
-        if (!person) return 0;
-
-        // --- 1. FILTER: Exclude Consorts and Commoners from Precedence (unless Queen Consort) ---
-        if (!person.isQueenConsort) {
-            // Rule: ตำแหน่งบาทบริจาริกา, เจ้าจอม, เจ้าจอมมารดา, หม่อม ไม่ถูกนับในลำดับโปรเจียม
-            if ((person.relationship || '').includes('บาทบริจาริกา')) {
-                return 0; // IMPLEMENTATION of user's rule: บาทบริจาริกาไม่มีโปรเจียม
-            }
-            // Exclude Commoners and others not explicitly royalty (covers หม่อม and commoner status)
-            if (person.royalRank === 'สามัญชน' || person.royalRank === 'หม่อมราชวงศ์' || person.royalRank === 'หม่อมหลวง') {
-                return 0;
-            }
-        }
-
-        // --- 2. ZONE A: ชนชั้นปกครอง (8,000 - 10,000) ---
-        // Find Active Monarch
-        const activeMonarch = state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
-        
-        // Monarchs (Active or Ex)
-        if (person.isMonarch) {
-            if (person.isAlive && !person.isExMonarch) return 10000; // Active Monarch
-            
-            // Ex-Monarch (Alive) - Score must be lower than current Queen Consort (9800)
-            if (person.isExMonarch && person.isAlive) {
-                 // MODIFICATION (Rule 4): Score is 9780, placing it after current Queen Consort (9800) but above others.
-                 return 9780;
-            }
-            
-            // Deceased Monarchs 
-            if (!person.isAlive) return 9900 + (parseInt(person.globalReignNumber) || 0); 
-        }
-
-        if (person.isQueenConsort) {
-            const isCurrentSpouse = activeMonarch && (activeMonarch.spouseIds || []).includes(person.id);
-            
-            if (isCurrentSpouse) return 9800; // ราชินีปัจจุบัน (Higher than Ex-Monarch)
-            else {
-                let score = 9500; // Queen Consorts of previous Monarchs
-                const spouses = person.spouseIds || [];
-                
-                const royalHusbands = state.members.filter(m => spouses.includes(m.id) && m.isMonarch);
-                
-                if (royalHusbands.length > 0) {
-                    const husband = royalHusbands[0];
-                    const rNum = parseInt(husband.globalReignNumber) || 999;
-                    score += (100 - rNum);
-                }
-                
-                return score; 
-            }
-        }
-
-        const monarch = activeMonarch; // Use active monarch for proximity and high-rank spouse checks
-        if (monarch && person.id !== monarch.id) {
-            const hasSpecialPrefix = state.prefixScores && person.titlePrefix && state.prefixScores[person.titlePrefix] > 0;
-            const hasSpecialSuffix = state.suffixScores && person.titleSuffix && state.suffixScores[person.titleSuffix] > 0;
-
-            if (hasSpecialPrefix || hasSpecialSuffix) {
-                if (person.id === monarch.motherId) return 9400;
-                if (person.id === monarch.fatherId) return 9300;
-                
-                const father = state.members.find(m => m.id === monarch.fatherId);
-                const mother = state.members.find(m => m.id === monarch.motherId);
-                
-                if (father) {
-                    if (person.id === father.motherId) return 9200;
-                    if (person.id === father.fatherId) return 9100;
-                }
-                if (mother) {
-                    if (person.id === mother.motherId) return 9000;
-                    if (person.id === mother.fatherId) return 8900;
-                }
-            }
-        }
-
-        const heirOrder = parseInt(person.heirOrder) || 999;
-        if (person.isHeir && heirOrder === 1) {
-            return 8000;
-        }
-
-        // --- 3. ZONE B: เจ้านายทั่วไป (คิดคะแนนสะสม) ---
-        let score = 0;
-
-        const rankScoreMap = {
-            "เจ้าฟ้า (ชั้นเอก)": 700, "เจ้าฟ้า (ชั้นโท)": 600, "เจ้าฟ้า (ชั้นตรี)": 500,
-            "พระองค์เจ้า (ชั้นเอก)": 400, "พระองค์เจ้า (ชั้นโท)": 300,
-            "หม่อมเจ้า": 200, "เจ้าประเทศราช": 150, "สามัญชน": 0, "หม่อมราชวงศ์": 0, "หม่อมหลวง": 0
-        };
-        score += rankScoreMap[person.royalRank] || 0;
-
-        if (state.prefixScores && person.titlePrefix && state.prefixScores[person.titlePrefix]) {
-            score += parseInt(state.prefixScores[person.titlePrefix]);
-        }
-        if (state.suffixScores && person.titleSuffix && state.suffixScores[person.titleSuffix]) {
-            score += parseInt(state.suffixScores[person.titleSuffix]);
-        }
-
-        const kromScoreMap = { "กรมสมเด็จพระ": 50, "กรมพระยา": 40, "กรมพระ": 30, "กรมหลวง": 20, "กรมขุน": 10, "กรมหมื่น": 5 };
-        score += kromScoreMap[person.kromRank] || 0;
-        
-        if (person.hasUmbrella) {
-            if (person.umbrellaType.includes("นพดล")) score += 9;
-            else if (person.umbrellaType.includes("สัปตดล")) score += 7;
-            else if (person.umbrellaType.includes("เบญจดล")) score += 5;
-            else if (person.umbrellaType.includes("ตรีดล")) score += 3;
-        }
-
-        if (monarch && person.id !== monarch.id) {
-            let proximityBonus = 0;
-            if ((monarch.spouseIds || []).includes(person.id)) proximityBonus = 4;
-            else if (person.fatherId === monarch.id || person.motherId === monarch.id) proximityBonus = 5;
-            else if (person.fatherId && (person.fatherId === monarch.fatherId || person.motherId === monarch.motherId)) proximityBonus = 3;
-            else if (person.fatherId || person.motherId) {
-                 const father = state.members.find(m => m.id === person.fatherId);
-                 const mother = state.members.find(m => m.id === person.motherId);
-                 const fatherIsChild = father && (father.fatherId === monarch.id || father.motherId === monarch.id);
-                 const motherIsChild = mother && (mother.fatherId === monarch.id || mother.motherId === monarch.id);
-                 if (fatherIsChild || motherIsChild) proximityBonus = 2;
-            }
-            score += proximityBonus;
-        }
-
-        // ลบค่า seniority เพื่อให้คนที่ ID ต่ำ (สร้างก่อน) มีคะแนนสูงกว่า
-        let seniorityScore = parseInt(person.id.substring(person.id.length - 6)) / 1000000;
-        score -= seniorityScore;
-
-        return score;
+    // ดึงข้อมูลกษัตริย์ปัจจุบันเพื่อใช้เทียบเคียง
+    const activeMonarch = state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
+    
+    // --- 2. ZONE A: ชนชั้นปกครองสูงสุด (8,000 - 10,000) ---
+    
+    // พระมหากษัตริย์
+    if (person.isMonarch) {
+        if (person.isAlive && !person.isExMonarch) return 10000; // รัชกาลปัจจุบัน
+        if (person.isExMonarch && person.isAlive) return 9780;   // อดีตกษัตริย์ (ที่ยังทรงพระชนม์)
+        if (!person.isAlive) return 9900 + (parseInt(person.globalReignNumber) || 0); // บูรพมหากษัตริยาธิราช
     }
+
+    // พระมหาราชินี (Queen Consort)
+    if (person.isQueenConsort) {
+        const isCurrentSpouse = activeMonarch && (activeMonarch.spouseIds || []).includes(person.id);
+        if (isCurrentSpouse) return 9800; // สมเด็จพระบรมราชินีนาถ/ราชินีปัจจุบัน
+        return 9500; // พระบรมราชินีในรัชกาลก่อน
+    }
+
+    // รัชทายาทอันดับ 1
+    const heirOrder = parseInt(person.heirOrder) || 999;
+    if (person.isHeir && heirOrder === 1) return 8000;
+
+    
+
+    // --- 3. ZONE B: เจ้านายและพระบรมวงศ์ (คะแนนสะสมตามฐานันดร) ---
+    let score = 0;
+
+    // คะแนนจากชั้นยศ (Royal Rank)
+    const rankScoreMap = {
+        "เจ้าฟ้า (ชั้นเอก)": 700, "เจ้าฟ้า (ชั้นโท)": 600, "เจ้าฟ้า (ชั้นตรี)": 500,
+        "พระองค์เจ้า (ชั้นเอก)": 400, "พระองค์เจ้า (ชั้นโท)": 300, "พระองค์เจ้า (ชั้นตรี)": 250,
+        "หม่อมเจ้า": 200
+    };
+    score += rankScoreMap[person.royalRank] || 0;
+
+    // คะแนนพิเศษจาก "ความสัมพันธ์" (ดึงมาจากตรรกะ Engine ตัวหลัง)
+    if (person.relationship?.includes("พระราชโอรส") || person.relationship?.includes("พระราชธิดา")) {
+        score += 50; // สายตรงกษัตริย์
+    } else if (person.titlePrefix?.includes("ราชวรวงศ์")) {
+        score += 40; // สายวังหน้า
+    } else if (person.titlePrefix?.includes("ประพันธวงศ์")) {
+        score += 30; // สายวังหลัง
+    }
+
+    // คะแนนจากคำนำหน้าและสร้อยพระนาม (ถ้ามีการกำหนดคะแนนไว้ในหน้าจัดการยศ)
+    if (state.prefixScores && person.titlePrefix && state.prefixScores[person.titlePrefix]) {
+        score += parseInt(state.prefixScores[person.titlePrefix]);
+    }
+    if (state.suffixScores && person.titleSuffix && state.suffixScores[person.titleSuffix]) {
+        score += parseInt(state.suffixScores[person.titleSuffix]);
+    }
+
+    // คะแนนจากยศกรม (Krom Rank)
+    const kromScoreMap = { 
+        "กรมสมเด็จพระ": 50, "กรมพระยา": 40, "กรมพระ": 30, 
+        "กรมหลวง": 20, "กรมขุน": 10, "กรมหมื่น": 5 
+    };
+    score += kromScoreMap[person.kromRank] || 0;
+    
+    // คะแนนจากฉัตร (Umbrella)
+    if (person.hasUmbrella) {
+        if (person.umbrellaType.includes("นพดล")) score += 9;
+        else if (person.umbrellaType.includes("สัปตดล")) score += 7;
+        else if (person.umbrellaType.includes("เบญจดล")) score += 5;
+    }
+
+    // กฎ Seniority (Tie-breaker): ใครสร้างก่อน (ID น้อยกว่า) อยู่สูงกว่าเล็กน้อยในระดับยศเดียวกัน
+    let seniorityScore = parseInt(person.id.substring(person.id.length - 6)) / 1000000;
+    score -= seniorityScore;
+
+    return score;
+}
 
     function movePrecedence(id, direction) {
         showToast("ระบบคำนวณอัตโนมัติทำงานอยู่ ไม่สามารถย้ายด้วยมือได้");
@@ -2852,144 +2904,257 @@ function reorderState(type, parentEl) {
 
     // ================= TABLE RENDER =================
 
-    function renderTable() {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-        const q = document.getElementById('tableSearch').value.toLowerCase();
-        const filterStatus = document.getElementById('tableFilterStatus').value;
-        const btnReset = document.getElementById('btnResetPrecedence');
-        if(btnReset) btnReset.classList.toggle('hidden', filterStatus !== 'precedence');
+  // ฟังก์ชันจัดการการเปลี่ยนโหมดตัวกรอง
+// 1. ฟังก์ชันจัดการตัวกรองเมื่อเปลี่ยนโหมด
+function onTableFilterChange() {
+    const filterStatus = document.getElementById('tableFilterStatus').value;
+    const monarchContainer = document.getElementById('monarchFilterContainer');
+    const royalHeader = document.getElementById('royalChildrenHeader');
+    
+    if (filterStatus === 'royal_children') {
+        monarchContainer.classList.remove('hidden');
+        monarchContainer.classList.add('flex');
+        populateMonarchFilterSelect();
+    } else {
+        monarchContainer.classList.add('hidden');
+        monarchContainer.classList.remove('flex');
+        if (royalHeader) royalHeader.classList.add('hidden');
+    }
+    renderTable();
+}
 
-        let list = [...state.members];
-        const activeMonarch = state.members.find(x => x.isMonarch && x.isAlive && !x.isExMonarch);
+// 2. ฟังก์ชันโหลดรายชื่อกษัตริย์
+function populateMonarchFilterSelect() {
+    const sel = document.getElementById('monarchFilterSelect');
+    const currentVal = sel.value;
+    sel.innerHTML = '<option value="">-- เลือกพระมหากษัตริย์ (รัชกาลที่...) --</option>';
+    
+    const monarchs = state.members
+        .filter(m => m.isMonarch)
+        .sort((a, b) => (parseInt(a.globalReignNumber) || 0) - (parseInt(b.globalReignNumber) || 0));
+        
+    monarchs.forEach(m => {
+        const reignText = m.globalReignNumber ? `รัชกาลที่ ${toThaiNumerals(m.globalReignNumber)}` : '';
+        const op = new Option(`${reignText} ${m.name}`, m.id);
+        sel.add(op);
+    });
+    if (currentVal) sel.value = currentVal;
+}
 
-        if (filterStatus === 'alive') list = list.filter(m => m.isAlive);
-        else if (filterStatus === 'dead') list = list.filter(m => !m.isAlive);
-        else if (filterStatus === 'precedence') {
-             list = list.filter(m => m.isAlive && calculatePojiamScore(m) > 0); 
+// 3. ฟังก์ชันวาดตารางหลัก
+// ฟังก์ชันวาดตารางหลัก (ฉบับสมบูรณ์: คืนค่าป้ายรัชกาล และเพิ่มระบบจัดกลุ่มลูกหลวง 2 แบบ)
+// ฟังก์ชันกำหนดศักดิ์มารดาตามบัญชีรายพระนามที่คุณวิทยากำหนด (สูงสุดไปต่ำสุด)
+function getMotherRankScore(p) {
+    if (!p) return 0;
+    const pre = p.titlePrefix || "";
+    const suf = p.titleSuffix || "";
+    const full = pre + suf;
+
+    // ลำดับที่ 1-15 (กลุ่มพระมเหสี/พระภรรยาเจ้าชั้นสูง)
+    if (full.includes("พระบรมราชินีนาถ")) return 1000;
+    if (full.includes("พระบรมราชราชินี")) return 990;
+    if (full.includes("พระบรมราชินี")) return 980;
+    if (pre === "สมเด็จพระราชินี") return 970;
+    if (full.includes("พระบรมอัครราชเทวี")) return 960;
+    if (full.includes("พระบรมราชเทวี")) return 950;
+    if (full.includes("พระอัครเทวี")) return 940;
+    if (full.includes("พระวรราชเทวี")) return 930;
+    if (full.includes("พระราชเทวี")) return 920;
+    if (pre.includes("สมเด็จพระนางนาฏ") && suf.includes("บรมอัครราชเทวี")) return 910;
+    if (pre.includes("พระนางนาฏ") && suf.includes("บรมอัครราชเทวี")) return 900;
+    if (pre.includes("พระนางเจ้า") && suf.includes("พระวรราชเทวี")) return 890;
+    if (pre.includes("พระนางเจ้า") && suf.includes("พระราชเทวี")) return 880;
+    if (pre.includes("พระนางนาฏ") && suf.includes("ราชเทวี")) return 870;
+    if (pre === "พระนางเธอ") return 860;
+
+    // ลำดับที่ 16-20 (กลุ่มพระชายา/เจ้าคุณพระ)
+    if (pre === "พระอรรคชายาเธอ") return 850;
+    if (pre.includes("พระวรราชชายา")) return 840;
+    if (pre === "พระราชชายาเธอ") return 830;
+     if (pre === "พระราชชายา") return 825;
+    if (pre === "เจ้าคุณพระ") return 820;
+    if (pre === "พระ") return 810;
+
+    // ลำดับที่ 21-24 (กลุ่มท้าว/พระสนมเอก)
+    if (pre.includes("ท้าวอินทรสุเรนทร์")) return 800;
+    if (pre.includes("ท้าวอินทรเทวี")) return 790;
+    if (pre.includes("ท้าวศรีสุดาจันทร์")) return 780;
+    if (pre.includes("ท้าวศรีจุฬาลักษณ์")) return 770;
+
+    // ลำดับที่ 25-28 (กลุ่มเจ้าจอมมารดา)
+    if (pre === "เจ้าคุณจอมมารดา") return 760;
+    if (pre === "เจ้าจอมมารดา") return 750;
+    if (pre === "เจ้าคุณจอม") return 740;
+    if (pre === "เจ้าจอม") return 730;
+
+    return calculatePojiamScore(p); // กรณีอื่นๆ ใช้คะแนนมาตรฐาน
+}
+
+function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const q = document.getElementById('tableSearch').value.toLowerCase();
+    const filterStatus = document.getElementById('tableFilterStatus').value;
+    const royalHeader = document.getElementById('royalChildrenHeader');
+    const subFilter = document.getElementById('royalSubFilter') ? document.getElementById('royalSubFilter').value : 'mother_rank';
+    const activeMonarchData = state.members.find(x => x.isMonarch && x.isAlive && !x.isExMonarch);
+    
+    let list = [...state.members];
+
+    // ================= โหมดเฉพาะลูกหลวง (Royal Children) =================
+    if (filterStatus === 'royal_children') {
+        const selectedMonarchId = document.getElementById('monarchFilterSelect').value;
+        if (!selectedMonarchId) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-slate-400 italic">โปรดเลือกพระมหากษัตริย์</td></tr>`;
+            if (royalHeader) royalHeader.classList.add('hidden');
+            return;
         }
         
-        if(q) list = list.filter(m => getFullDisplayTitle(m).toLowerCase().includes(q) || (m.nickname||'').toLowerCase().includes(q));
-
-        if (filterStatus === 'precedence') {
-            list.sort((a,b) => {
-                const scoreA = calculatePojiamScore(a);
-                const scoreB = calculatePojiamScore(b);
-                return scoreB - scoreA;
-            });
-        } else {
-            // Sort by Birth Year (oldest first) as a secondary sort for all other views
-             list.sort((a,b) => {
-                // MODIFICATION: Rely on isMonarch (historical) and isAlive/isExMonarch (active status)
-                const aActive = a.isMonarch && a.isAlive && !a.isExMonarch;
-                const bActive = b.isMonarch && b.isAlive && !b.isExMonarch;
-                
-                if(aActive && !bActive) return -1;
-                if(!aActive && bActive) return 1;
-                
-                // If both are monarchs (historical or active), sort by reign start
-                if(a.isMonarch && b.isMonarch) return (parseInt(a.reignStart)||0) - (parseInt(b.reignStart)||0);
-                
-                // Fallback sort by Birth Year
-                const aYear = parseInt(a.birthYear) || Infinity;
-                const bYear = parseInt(b.birthYear) || Infinity;
-                if (aYear !== bYear) return aYear - bYear;
-                
-                return 0;
-            });
+        const monarch = state.members.find(m => m.id === selectedMonarchId);
+        if (monarch && royalHeader) {
+            royalHeader.innerText = `พระราชโอรส พระราชธิดาใน ${getFullDisplayTitle(monarch)}`;
+            royalHeader.classList.remove('hidden');
         }
 
-        if(list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">ไม่พบข้อมูล</td></tr>`; return; }
+        let children = state.members.filter(m => m.fatherId === selectedMonarchId || m.motherId === selectedMonarchId);
 
-        list.forEach((m, index) => {
-            const dTerm = m.isAlive ? "" : getDeathTerm(m);
-            const statusHTML = m.isAlive 
-                ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 text-xs font-bold">มีชีวิต</span>'
-                : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 text-xs font-bold">${dTerm}</span>`;
-            
-            const fName = state.members.find(x => x.id === m.fatherId)?.name || '-';
-            const mName = state.members.find(x => x.id === m.motherId)?.name || '-';
-            let fullName = getFullDisplayTitle(m);
-            
-            // --- NEW LABEL LOGIC ---
-            let postNameTag = '';
-            const reignLabel = m.globalReignNumber ? `รัชกาลที่ ${toThaiNumerals(m.globalReignNumber)}` : '';
-            const isActiveMonarch = m.isMonarch && m.isAlive && !m.isExMonarch;
-            const isCurrentMonarchConsort = m.isQueenConsort && activeMonarch && (activeMonarch.spouseIds||[]).includes(m.id);
-            const isHeirApparent = m.isHeir && parseInt(m.heirOrder) === 1;
+        if (subFilter === 'age_all') {
+            // --- 1. กรองตามอายุ (พี่ไปน้องทุกคน ไม่แยกกลุ่ม มีป้ายมารดา) ---
+            children.sort((a, b) => (parseInt(a.birthYear) || 9999) - (parseInt(b.birthYear) || 9999) || a.id.localeCompare(b.id));
+            if (q) children = children.filter(m => getFullDisplayTitle(m).toLowerCase().includes(q));
 
-            if (filterStatus === 'precedence') {
-                if (isActiveMonarch) {
-                    // Current Monarch in Precedence view (Yellow, Glowing)
-                    postNameTag = `<span class="monarch-tag-table">พระมหากษัตริย์ ${reignLabel}</span>`;
-                } else if (isCurrentMonarchConsort) {
-                    // Current Queen Consort in Precedence view (Pink, Glowing)
-                    postNameTag = `<span class="queen-consort-tag-table">พระมหาราชินีคู่บัลลังก์</span>`;
-                } else if (isHeirApparent) {
-                    // Heir Apparent Order 1 in Precedence view (Red, Glowing)
-                    postNameTag = `<span class="heir-tag-table">พระมหารัชทายาท</span>`;
+            children.forEach((m, idx) => {
+                const otherParentId = (m.fatherId === selectedMonarchId) ? m.motherId : m.fatherId;
+                const mother = state.members.find(p => p.id === otherParentId);
+                renderRoyalRow(tbody, m, idx + 1, mother, true); // แสดงป้ายชื่อแม่
+            });
+        } else {
+            // --- 2. กรองตามศักดิ์มารดา (จัดกลุ่มแม่ ไม่แสดงป้ายชื่อแม่หลังชื่อลูก) ---
+            children.sort((a, b) => {
+                const mIdA = (a.fatherId === selectedMonarchId) ? a.motherId : a.fatherId;
+                const mIdB = (b.fatherId === selectedMonarchId) ? b.motherId : b.fatherId;
+                const motherA = state.members.find(p => p.id === mIdA);
+                const motherB = state.members.find(p => p.id === mIdB);
+                
+                const scoreA = getMotherRankScore(motherA);
+                const scoreB = getMotherRankScore(motherB);
+                
+                if (scoreB !== scoreA) return scoreB - scoreA; // เรียงศักดิ์แม่
+                if (mIdA !== mIdB) return mIdA.localeCompare(mIdB); // รวมกลุ่มแม่คนเดียวกัน
+                return (parseInt(a.birthYear) || 9999) - (parseInt(b.birthYear) || 9999); // อายุลูกในกลุ่ม
+            });
+
+            if (q) children = children.filter(m => getFullDisplayTitle(m).toLowerCase().includes(q));
+            let currentMotherId = null;
+            let localIdx = 0;
+
+            children.forEach((m) => {
+                const motherId = (m.fatherId === selectedMonarchId) ? m.motherId : m.fatherId;
+                const mother = state.members.find(p => p.id === motherId);
+                
+                if (motherId !== currentMotherId) {
+                    currentMotherId = motherId;
+                    localIdx = 1; 
+                    const hRow = document.createElement('tr');
+                    hRow.className = "mother-group-header";
+                    hRow.innerHTML = `<td colspan="5"><i class="fa-solid fa-crown mr-2 text-amber-500"></i> ใน ${mother ? getFullDisplayTitle(mother) : 'ไม่ปรากฏนามมารดา'}</td>`;
+                    tbody.appendChild(hRow);
+                } else {
+                    localIdx++;
                 }
-            } 
-            
-            // Apply Deceased Monarch Tag for 'all' and 'dead' views
-            if ((filterStatus === 'all' || filterStatus === 'dead') && !m.isAlive && m.isMonarch && m.globalReignNumber) {
-                 // Deceased Monarch in All or Dead view (Yellow, Glowing)
-                 postNameTag = `<span class="monarch-tag-table">${reignLabel}</span>`;
-            }
-            
-            // Default active monarch label for 'all'/'alive' view if no special tag
-            if (isActiveMonarch && !postNameTag) { 
-                const reignLabelDefault = getGlobalReignLabel(m);
-                // Use the standard, non-glowing badge for non-precedence views
-                fullName += ` <span class="text-xs text-amber-600 font-bold bg-amber-50 px-1 rounded border border-amber-200 ml-1">${reignLabelDefault}</span>`; 
-            }
-            
-            if (postNameTag) {
-                fullName += postNameTag;
-            }
-
-            const nn = getNicknameWithPrefix(m);
-            const nnHTML = nn !== '-' ? `<div class="text-xs text-slate-400 font-normal mt-0.5">(${nn})</div>` : '';
-
-            let rankIndex = '';
-            if (filterStatus === 'precedence') {
-                const pojiamScore = calculatePojiamScore(m);
-                if (pojiamScore > 0) {
-                    const rankNum = index + 1;
-                    
-                    let isGoldRank = false;
-                    
-                    if (isActiveMonarch || isCurrentMonarchConsort || isHeirApparent) isGoldRank = true;
-                    else if (m.isExMonarch && m.isAlive) { // Highlight Ex-Monarch
-                        isGoldRank = true;
-                    }
-
-                    if (isGoldRank) {
-                        rankIndex = `<div class="inline-flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-amber-100 text-amber-600 font-bold text-xs shadow-sm border border-amber-200">#${rankNum}</div>`;
-                    } else {
-                        rankIndex = `<span class="inline-block w-6 text-center font-mono text-xs text-slate-400 mr-2">#${rankNum}</span>`;
-                    }
-                } 
-            }
-
-            const row = document.createElement('tr');
-            row.className = "data-row transition border-b border-slate-100 hover:bg-slate-50";
-            row.innerHTML = `
-                <td class="text-center py-2"><img src="${m.image || (m.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE)}" class="w-8 h-8 rounded-full mx-auto object-cover border"></td>
-                <td class="py-2 text-sm font-bold text-slate-700 cursor-pointer hover:text-blue-500" onclick="showDetail('${m.id}')">
-                    ${rankIndex}${fullName}${nnHTML}
-                </td>
-                <td class="py-2">${statusHTML}</td>
-                <td class="py-2"><span class="text-xs text-slate-500">${fName} / ${mName}</span></td>
-                <td class="text-center py-2">
-                    <button onclick="editPersonDirect('${m.id}')" class="text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen-to-square"></i></button>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
+                renderRoyalRow(tbody, m, localIdx, mother, false); // ไม่แสดงป้ายชื่อแม่
+            });
+        }
+        return; 
     }
 
-    function editPersonDirect(id) { const m = state.members.find(x => x.id === id); if(m) openModal(m, true); }
+    // ================= โหมดปกติ (All, Alive, Dead, Precedence) =================
+    if (filterStatus === 'alive') list = list.filter(m => m.isAlive);
+    else if (filterStatus === 'dead') list = list.filter(m => !m.isAlive);
+    else if (filterStatus === 'precedence') list = list.filter(m => m.isAlive && calculatePojiamScore(m) > 0);
+    
+    if (q) list = list.filter(m => getFullDisplayTitle(m).toLowerCase().includes(q));
+
+    list.sort((a,b) => (filterStatus === 'precedence') ? (calculatePojiamScore(b) - calculatePojiamScore(a)) : ((parseInt(a.birthYear)||Infinity) - (parseInt(b.birthYear)||Infinity)));
+
+    list.forEach((m, index) => {
+        const dTerm = m.isAlive ? "" : getDeathTerm(m);
+        const statusHTML = m.isAlive 
+            ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 text-xs font-bold">มีชีวิต</span>'
+            : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 text-xs font-bold">${dTerm}</span>`;
+        
+        let fullName = getFullDisplayTitle(m);
+        let postNameTag = '';
+        const reignLabel = m.globalReignNumber ? `รัชกาลที่ ${toThaiNumerals(m.globalReignNumber)}` : '';
+
+        // --- แก้ไขจุดสำคัญ: คืนค่าป้ายรัชกาลที่ สำหรับกษัตริย์/อดีตกษัตริย์ ในทุกสถานะ ---
+        if (m.isMonarch) {
+            if (m.isAlive && !m.isExMonarch) {
+                postNameTag = `<span class="monarch-tag-table">พระมหากษัตริย์ ${reignLabel}</span>`;
+            } else if (m.isExMonarch && m.isAlive) {
+                postNameTag = `<span class="monarch-tag-table bg-purple-50 text-purple-600 border-purple-200">${reignLabel}</span>`;
+            } else {
+                postNameTag = `<span class="monarch-tag-table opacity-70 border-slate-300 text-slate-600 bg-slate-50">${reignLabel}</span>`;
+            }
+        } else if (m.isQueenConsort && activeMonarchData && (activeMonarchData.spouseIds||[]).includes(m.id)) {
+            postNameTag = `<span class="queen-consort-tag-table">พระมหาราชินีคู่บัลลังก์</span>`;
+        } else if (m.isHeir && parseInt(m.heirOrder) === 1) {
+            postNameTag = `<span class="heir-tag-table">พระมหารัชทายาท</span>`;
+        }
+
+        const row = document.createElement('tr');
+        row.className = "data-row transition border-b border-slate-100 hover:bg-slate-50";
+        row.innerHTML = `
+            <td class="text-center py-2"><img src="${m.image || (m.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE)}" class="w-8 h-8 rounded-full mx-auto object-cover border"></td>
+            <td class="py-2 text-sm font-bold text-slate-700" onclick="showDetail('${m.id}')">
+                ${filterStatus === 'precedence' ? `<span class="mr-2 text-slate-400 font-mono">${index + 1}</span>` : ''}${fullName}${postNameTag}
+            </td>
+            <td class="py-2">${statusHTML}</td>
+            <td class="py-2 text-xs text-slate-500">${state.members.find(x=>x.id===m.fatherId)?.name || '-'} / ${state.members.find(x=>x.id===m.motherId)?.name || '-'}</td>
+            <td class="text-center py-2"><button onclick="editPersonDirect('${m.id}')" class="text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen-to-square"></i></button></td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function renderRoyalRow(tbody, m, displayIdx, mother, showMotherTag) {
+    let fullName = getFullDisplayTitle(m);
+    if (m.monarchSpouseContext) fullName = fullName.replace(m.monarchSpouseContext, "").trim();
+
+    const row = document.createElement('tr');
+    row.className = "data-row border-b border-slate-100 hover:bg-slate-50 transition";
+    
+    let motherTagHTML = "";
+    if (showMotherTag) {
+        motherTagHTML = `
+            <div class="mother-tag-container">
+                <span class="mother-tag-label">มารดา:</span>
+                <span class="mother-tag-value">${mother ? getFullDisplayTitle(mother).replace(/ในรัชกาลที่\s*\d+/, "").trim() : '-'}</span>
+            </div>
+        `;
+    }
+
+    row.innerHTML = `
+        <td class="text-center py-3"><img src="${m.image || (m.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE)}" class="w-10 h-10 rounded-full mx-auto object-cover border shadow-sm"></td>
+        <td class="py-3 text-sm font-bold text-slate-700" onclick="showDetail('${m.id}')">
+            <div class="flex items-center">
+                <span class="child-index-circle">${toThaiNumerals(displayIdx)}</span>
+                <div class="ml-3">
+                    <div class="flex items-center flex-wrap gap-y-1">
+                        ${fullName}
+                        ${motherTagHTML}
+                    </div>
+                </div>
+            </div>
+        </td>
+        <td class="py-3">${m.isAlive ? '<span class="text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-full text-[11px]">มีชีวิต</span>' : '<span class="text-slate-400 bg-slate-50 px-2 py-1 rounded-full text-[11px]">'+getDeathTerm(m)+'</span>'}</td>
+        <td class="py-3 text-xs text-slate-500">พ.ศ. ${m.birthYear ? toThaiNumerals(m.birthYear) : '-'}</td>
+        <td class="text-center py-3"><button onclick="editPersonDirect('${m.id}')" class="text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen-to-square"></i></button></td>
+    `;
+    tbody.appendChild(row);
+}
 
     // ================= MONARCH & MODAL HELPERS (RESTORED) =================
 
@@ -3093,369 +3258,280 @@ function reorderState(type, parentEl) {
         }
     }
 
-    function performSuccession(newMonarchId, reignNameBase) {
-        const m = state.members.find(x => x.id === newMonarchId);
-        if(m) { 
-            // 1. Demote/Clear former Monarchs/Heirs
-            state.members.forEach(p => {
-                if (p.isHeir) {
-                    p.isHeir = false;
-                    p.heirOrder = null;
-                }
-                
-                // If the person was the active monarch (not the new one), mark them as ex-monarch.
-                if (p.id !== newMonarchId && p.isMonarch) {
-                    if (!p.reignEnd) p.reignEnd = new Date().getFullYear() + 543;
-                    // Keep isMonarch: true (as requested).
-                    // Set isExMonarch based on whether they are alive or recently active.
-                    if (p.isAlive) {
-                        p.isExMonarch = true; // Still alive, now a former monarch.
-                    } else {
-                         p.isExMonarch = false; // Deceased historical monarch.
-                    }
-                }
-            });
-            
-            // 2. Set new Monarch properties
-            m.relationship = "พระมหากษัตริย์";
-            if(state.hierarchy["พระมหากษัตริย์"]) {
-                const defaults = state.hierarchy["พระมหากษัตริย์"];
-                if(defaults.prefixes && defaults.prefixes.length > 0) {
-                    m.titlePrefix = defaults.prefixes[0];
-                    if(defaults.suffixes && defaults.suffixes[m.titlePrefix] && defaults.suffixes[m.titlePrefix].length > 0) {
-                        m.titleSuffix = defaults.suffixes[m.titlePrefix][0];
-                    }
-                }
+ // ================= SUCCESSION & LIFE EVENTS LOGIC =================
+
+function performSuccession(newMonarchId, reignNameBase) {
+    const newMonarch = state.members.find(m => m.id === newMonarchId);
+    if (!newMonarch) return;
+
+    // 1. จัดการสถานะกษัตริย์เดิมและรัชทายาท
+    state.members.forEach(p => {
+        if (p.isHeir && p.id !== newMonarchId) {
+            if (p.heirOrder && parseInt(p.heirOrder) > 1) {
+                p.heirOrder = parseInt(p.heirOrder) - 1;
             }
-            m.isMonarch = true; 
-            m.isExMonarch = false; // Ensure new monarch is not marked as ex-monarch
-            m.isHeir = false; 
-            m.heirOrder = null;
-            m.reignStart = new Date().getFullYear() + 543; 
-            m.reignEnd = ''; // Clear end date
-            m.useReignName = true;
-            m.reignNameBase = reignNameBase;
-            
-            // Recalculate global reign number based on all historical monarchs
-            const monarchs = state.members.filter(x => x.isMonarch);
-            const maxGlobal = Math.max(0, ...monarchs.map(x => parseInt(x.globalReignNumber||0)));
-            if (!m.globalReignNumber) m.globalReignNumber = maxGlobal + 1;
-            
-            // RULE: If established as King, clear Krom rank (ล้างกรมออก)
-            m.kromRank = '';
-            m.kromTitle = '';
-
-            // NEW: Clear monarchSpouseContext for the new King's current spouses (they are current consorts, not former's)
-            (m.spouseIds || []).forEach(sid => {
-                const spouse = state.members.find(s => s.id === sid);
-                if (spouse) {
-                    spouse.monarchSpouseContext = null;
-                }
-            });
-            
-            // 3. Process Spouses (Promotion) - This is where the user's rule is implemented
-            const monarch = state.members.find(x => x.id === newMonarchId);
-            (monarch.spouseIds || []).forEach(sid => {
-                const spouse = state.members.find(s => s.id === sid);
-                if (spouse && spouse.isAlive) {
-
-                    const isFormerPrinceConsort = spouse.relationship && 
-                                                 !spouse.relationship.includes('พระมหากษัตริย์') && 
-                                                 !spouse.relationship.includes('พระราชินี') &&
-                                                 spouse.relationship !== 'พระภรรยาเจ้า' &&
-                                                 !spouse.relationship.includes('บาทบริจาริกา');
-                    
-                    if (isFormerPrinceConsort) {
-                        const hasChildren = state.members.some(c => c.fatherId === monarch.id && c.motherId === spouse.id);
-                        
-                        if (spouse.relationship === 'พระชายา') {
-                            spouse.relationship = 'พระภรรยาเจ้า'; 
-                            spouse.titlePrefix = 'พระราชชายา';
-                            
-                            if (!spouse.royalRank || spouse.royalRank === 'สามัญชน' || spouse.royalRank === 'หม่อมเจ้า' || spouse.royalRank === 'หม่อมราชวงศ์' || spouse.royalRank === 'หม่อมหลวง') {
-                                 spouse.royalRank = 'พระองค์เจ้า (ชั้นเอก)';
-                                 showToast(`เลื่อนสถานะคู่สมรส: ${spouse.name} จาก พระชายา เป็น พระราชชายา (พระภรรยาเจ้า) และได้รับยศ ${spouse.royalRank.split(' ')[0]}`);
-                            } else {
-                                showToast(`เลื่อนสถานะคู่สมรส: ${spouse.name} จาก พระชายา เป็น พระราชชายา (พระภรรยาเจ้า)`);
-                            }
-                        } 
-                        else if (spouse.relationship === 'หม่อม' || (spouse.royalRank || '').includes('สามัญชน')) {
-                            spouse.relationship = 'บาทบริจาริกา';
-                            
-                            if (hasChildren) {
-                                spouse.titlePrefix = 'เจ้าจอมมารดา'; 
-                                showToast(`เลื่อนสถานะคู่สมรส: ${spouse.name} จาก หม่อม เป็น เจ้าจอมมารดา (บาทบริจาริกา)`);
-                            } else {
-                                spouse.titlePrefix = 'เจ้าจอม'; 
-                                showToast(`เลื่อนสถานะคู่สมรส: ${spouse.name} จาก หม่อม เป็น เจ้าจอม (บาทบริจาริกา)`);
-                            }
-                        }
-                        
-                        spouse.isQueenConsort = false; 
-                    }
-                }
-            });
-
-            // 4. CLASSIFICATION: Process all other members based on the new Monarch
-            const newMonarch = m; 
-            const newMonarchFatherId = newMonarch.fatherId;
-            const newMonarchMotherId = newMonarch.motherId;
-            const monarchBirthYear = parseInt(newMonarch.birthYear) || Infinity; 
-
-            state.members.forEach(p => {
-                if (p.id === newMonarchId || p.isMonarch || p.isExMonarch || newMonarch.spouseIds.includes(p.id)) return;
-
-                const isFormerConsortOfMonarch = (p.relationship === 'พระภรรยาเจ้า' || p.relationship.includes('บาทบริจาริกา'));
-                if (isFormerConsortOfMonarch) {
-                    return; 
-                }
-
-                const rank = p.royalRank || 'สามัญชน';
-                const isRoyalRank = rank.includes('เจ้าฟ้า') || rank.includes('พระองค์เจ้า') || rank.includes('หม่อมเจ้า') || rank.includes('เจ้าประเทศราช');
-                if (!isRoyalRank) return;
-
-                let newRelationship = null;
-                let newPrefix = null;
-
-                // --- 4.A. Direct Children of the Monarch (Highest Rank, already handled implicitly by calculateChildRank) ---
-                const { isChild, isGrandchild } = isDirectDescendant(newMonarchId, p.id);
-                if (isChild) {
-                    const otherParentId = (p.fatherId === newMonarchId) ? p.motherId : p.fatherId;
-                    const calculated = calculateChildRank(newMonarchId, otherParentId, p.gender);
-                    p.royalRank = calculated.royalRank;
-                    p.titlePrefix = calculated.titlePrefix;
-                    p.relationship = calculated.relationship;
-                    p.royalSurname = calculated.royalSurname; // Update surname
-                    p.surname = calculated.surname;
-                    return; 
-                }
-                
-                // --- 4.B. Full Siblings (พระเจ้าพี่น้องร่วมพระมารดา) ---
-                const isFullSibling = (p.fatherId === newMonarchFatherId && p.motherId === newMonarchMotherId && p.fatherId && p.motherId);
-                
-                if (isFullSibling) {
-                    
-                    let isOlder = false;
-                    const personBirthYear = parseInt(p.birthYear) || Infinity;
-
-                    if (personBirthYear !== Infinity && monarchBirthYear !== Infinity) {
-                        isOlder = personBirthYear < monarchBirthYear;
-                    } else {
-                        isOlder = p.id.localeCompare(newMonarchId) < 0; 
-                    }
-
-                    newRelationship = "พระเจ้าพี่น้องร่วมพระมารดา"; 
-
-                    if (p.gender === 'M') {
-                        const prefixBase = rank.includes('เจ้าฟ้า') ? `สมเด็จพระเจ้า` : `พระเจ้า`;
-                        const brotherSuffix = isOlder ? 'พี่ยาเธอ' : 'น้องยาเธอ';
-                        newPrefix = `${prefixBase}${brotherSuffix}`;
-                    } else { // Female
-                        const prefixBase = rank.includes('เจ้าฟ้า') ? `สมเด็จพระเจ้า` : `พระเจ้า`;
-                        const sisterSuffix = isOlder ? 'พี่นางเธอ' : 'น้องนางเธอ';
-                        newPrefix = `${prefixBase}${sisterSuffix}`;
-                    }
-                } 
-                
-                // --- 4.C. Direct Grandchildren (ลูกของลูก) (พระเจ้าหลานเธอ) ---
-                else if (isGrandchild) {
-                    newRelationship = "พระเจ้าหลานเธอ";
-                    if (rank.includes('เจ้าฟ้า')) {
-                        newPrefix = 'สมเด็จพระเจ้าหลานเธอ';
-                    } else if (rank.includes('พระองค์เจ้า')) {
-                        newPrefix = 'พระเจ้าหลานเธอ';
-                    }
-                } 
-                
-                // --- 4.D. Close Relatives (Half Siblings / Old Monarch's Children) (พระบรมวงศ์) ---
-                else {
-                    const isHalfSibling = (p.fatherId === newMonarchFatherId && p.fatherId) || 
-                                          (p.motherId === newMonarchMotherId && p.motherId);
-                                        
-                    const isChildOfFormerMonarch = (p.fatherId && state.members.find(x => x.id === p.fatherId)?.isMonarch) ||
-                                                    (p.motherId && state.members.find(x => x.id === p.motherId)?.isMonarch);
-
-                    if (isHalfSibling || isChildOfFormerMonarch) {
-                        newRelationship = "พระบรมวงศ์";
-                        if (rank.includes('เจ้าฟ้า')) {
-                            newPrefix = 'สมเด็จพระเจ้าบรมวงศ์เธอ';
-                        } else if (rank.includes('พระองค์เจ้า')) {
-                            newPrefix = 'พระเจ้าบรมวงศ์เธอ';
-                        }
-                    } 
-                    
-                    // --- 4.E. Distant Relatives (พระอนุวงศ์) ---
-                    else {
-                         newRelationship = "พระอนุวงศ์";
-                         if (rank.includes('เจ้าฟ้า')) {
-                             newPrefix = 'สมเด็จพระเจ้าวรวงศ์เธอ';
-                         } else if (rank.includes('พระองค์เจ้า')) {
-                             newPrefix = 'พระเจ้าวรวงศ์เธอ';
-                         }
-                    }
-                }
-
-                // --- 4.F. Apply Changes ---
-                if (newRelationship) {
-                     const oldRelationship = p.relationship;
-                     p.relationship = newRelationship;
-                     p.titlePrefix = newPrefix || '';
-                     if (newRelationship !== oldRelationship) {
-                          showToast(`อัปเดตสถานะ: ${p.name} เป็น ${newRelationship.replace('พระเจ้าพี่น้องร่วมพระมารดา', newPrefix)} ${getDisplayRank(p.royalRank)}`);
-                     }
-                }
-            });
-
-
-        // --- ค้นหาบรรทัดที่ 1442 ในไฟล์ index.html ---
-            
-            // สั่งให้บันทึกประวัติใหม่สำหรับทุกคนที่ยศเปลี่ยนจากรัชกาลใหม่
-            state.members.forEach(member => {
-                recordTitleHistory(member);
-            });
-            // ---------------------------------------
-
-            saveState(); 
-            updateApp(); 
-            showFantasyPopup(m);    
-            saveState(); updateApp(); showFantasyPopup(m); 
+        } else if (p.id === newMonarchId) {
+            p.isHeir = false;
+            p.heirOrder = null;
         }
-    }
 
-    function handleMonarchDeath(monarch) {
-        if(monarch.spouseIds && monarch.spouseIds.length > 0) {
-            const reignNum = getGlobalReignLabel(monarch); 
-            monarch.spouseIds.forEach(sid => {
-                const sp = state.members.find(x => x.id === sid);
-                if(sp && sp.isAlive) {
-                    const rel = sp.relationship || '';
-                    if (rel === 'พระภรรยาเจ้า' || rel.includes('บาทบริจาริกา') || sp.isQueenConsort) {
-                        sp.isQueenConsort = false;
-                        sp.monarchSpouseContext = `ใน${reignNum}`;
-                        showToast(`ตั้งพระนาม/สร้อยท้าย: ${sp.name} ด้วย ${sp.monarchSpouseContext}`);
-                    } else {
-                         sp.monarchSpouseContext = null;
-                    }
+        if (p.id !== newMonarchId && p.isMonarch && !p.isExMonarch) {
+            if (!p.reignEnd) p.reignEnd = new Date().getFullYear() + 543;
+            p.isExMonarch = p.isAlive;
+        }
+    });
+
+    // 2. สถาปนากษัตริย์องค์ใหม่
+    newMonarch.relationship = "พระมหากษัตริย์";
+    newMonarch.isMonarch = true;
+    newMonarch.isExMonarch = false;
+    newMonarch.titlePrefix = "สมเด็จพระ";
+    newMonarch.royalRank = "เจ้าฟ้า (ชั้นเอก)";
+    newMonarch.titleSuffix = "เจ้าอยู่หัว";
+    newMonarch.reignStart = new Date().getFullYear() + 543;
+    newMonarch.reignNameBase = reignNameBase;
+    newMonarch.useReignName = true;
+
+    const monarchs = state.members.filter(x => x.isMonarch);
+    const maxGlobal = Math.max(0, ...monarchs.map(x => parseInt(x.globalReignNumber || 0)));
+    if (!newMonarch.globalReignNumber) newMonarch.globalReignNumber = maxGlobal + 1;
+    recordTitleHistory(newMonarch);
+
+    // ============================================================
+    // ส่วนที่ 3: ระบบสถาปนาอัตโนมัติ (Triple-Pass Engine)
+    // ============================================================
+
+    // --- PASS 0: สถาปนาคู่สมรส (บาทบริจาริกา) ---
+    (newMonarch.spouseIds || []).forEach(sid => {
+        const spouse = state.members.find(s => s.id === sid);
+        if (spouse && spouse.isAlive) {
+            if (spouse.royalRank === 'สามัญชน' || spouse.relationship === 'หม่อม' || spouse.relationship === 'สามัญชน') {
+                const hasChildrenWithMonarch = state.members.some(child =>
+                    (child.fatherId === newMonarchId && child.motherId === spouse.id) ||
+                    (child.motherId === newMonarchId && child.fatherId === spouse.id)
+                );
+                spouse.relationship = "บาทบริจาริกา";
+                spouse.titlePrefix = hasChildrenWithMonarch ? "เจ้าจอมมารดา" : "เจ้าจอม";
+                spouse.surname = ""; 
+                spouse.hideRoyalRank = false;
+                recordTitleHistory(spouse);
+            }
+        }
+    });
+
+    // --- PASS 1: สถาปนา "ลูกหลวงปัจจุบัน" (สายตรงตามกฎเดิม) ---
+    state.members.forEach(p => {
+        if (p.id === newMonarchId || !p.isAlive) return;
+
+        if (p.fatherId === newMonarchId || p.motherId === newMonarchId) {
+            const isMale = p.gender === 'M';
+            const father = state.members.find(f => f.id === p.fatherId);
+            const mother = state.members.find(mo => mo.id === p.motherId);
+            const otherParent = (p.fatherId === newMonarchId) ? mother : father;
+            const isOtherParentHighRoyal = otherParent && (otherParent.royalRank.includes('เจ้าฟ้า') || otherParent.isQueenConsort);
+
+            p.relationship = isMale ? "พระราชโอรส" : "พระราชธิดา";
+            if (isOtherParentHighRoyal) {
+                p.royalRank = "เจ้าฟ้า (ชั้นเอก)";
+                p.titlePrefix = isMale ? "สมเด็จพระเจ้าลูกยาเธอ" : "สมเด็จพระเจ้าลูกเธอ";
+            } else {
+                p.royalRank = "พระองค์เจ้า (ชั้นเอก)";
+                p.titlePrefix = isMale ? "พระเจ้าลูกยาเธอ" : "พระเจ้าลูกเธอ";
+            }
+            p.surname = ""; // ล้างนามสกุลกรณีดีดจากสามัญชน
+            p.hideRoyalRank = false;
+            recordTitleHistory(p);
+        }
+    });
+
+    // --- PASS 2: สถาปนา "บรมวงศ์ (บรมเธอ)" / "หลานเธอ" / "พี่น้อง" ---
+    state.members.forEach(p => {
+        // ข้ามกษัตริย์ใหม่ และลูกหลวงปัจจุบัน (ทำใน Pass 1 แล้ว)
+        if (p.id === newMonarchId || !p.isAlive || p.fatherId === newMonarchId || p.motherId === newMonarchId) return;
+
+        const isMale = p.gender === 'M';
+        const father = state.members.find(f => f.id === p.fatherId);
+        const mother = state.members.find(mo => mo.id === p.motherId);
+        const mBirthYear = parseInt(newMonarch.birthYear) || Infinity;
+        const pBirthYear = parseInt(p.birthYear) || Infinity;
+
+        const isSameFather = (p.fatherId === newMonarch.fatherId && p.fatherId);
+        const isSameMother = (p.motherId === newMonarch.motherId && p.motherId);
+        const isSibling = isSameFather || isSameMother;
+
+        // เช็คความเป็น "ลูกกษัตริย์" (ไม่ว่ารัชกาลใด) เพื่อสถาปนาเป็น "บรมเธอ"
+        const isChildOfAnyMonarch = (father && father.isMonarch) || (mother && mother.isMonarch);
+
+        // เช็คความเป็น "หลานสายตรง" (ลูกของลูกกษัตริย์ปัจจุบัน)
+        const isDirectGrandchild = (father && (father.fatherId === newMonarchId || father.motherId === newMonarchId)) ||
+                                   (mother && (mother.fatherId === newMonarchId || mother.motherId === newMonarchId));
+
+        // --- ลำดับการสถาปนาตามศักดิ์ ---
+
+        // A. พระเจ้าพี่น้องเธอ
+        if (isSibling) {
+            const isFullSibling = isSameFather && isSameMother;
+            const ageSuffix = pBirthYear < mBirthYear ? (isMale ? 'พี่ยาเธอ' : 'พี่นางเธอ') : (isMale ? 'น้องยาเธอ' : 'น้องนางเธอ');
+            if (p.royalRank.includes('เจ้าฟ้า')) {
+                p.titlePrefix = isFullSibling ? `สมเด็จพระเจ้า${ageSuffix}` : `สมเด็จพระ${ageSuffix}`;
+            } else {
+                p.titlePrefix = isFullSibling ? `พระเจ้า${ageSuffix}` : `พระ${ageSuffix}`;
+            }
+            p.relationship = isFullSibling ? "พระเจ้าพี่น้องร่วมพระมารดา" : "พระเจ้าพี่น้องต่างพระมารดา";
+        } 
+        // B. พระเจ้าบรมวงศ์เธอ (บรมเธอ) - สำหรับลูกกษัตริย์รัชกาลก่อน
+        // กฎของคุณวิทยา: ลูกกษัตริย์ต้องเป็นบรมวงศ์เสมอ แม้จะมีศักดิ์เป็นหลานในรัชกาลนี้
+        else if (isChildOfAnyMonarch) {
+            p.relationship = "พระบรมวงศ์";
+            p.titlePrefix = p.royalRank.includes('เจ้าฟ้า') ? "สมเด็จพระเจ้าบรมวงศ์เธอ" : "พระเจ้าบรมวงศ์เธอ";
+            p.surname = ""; 
+            p.hideRoyalRank = false;
+        }
+        // C. พระเจ้าหลานเธอ - สำหรับหลานสายตรง (ลูกของลูก) ที่ไม่ได้เป็นลูกกษัตริย์เดิม
+        else if (isDirectGrandchild) {
+            const royalParent = (father && (father.fatherId === newMonarchId || father.motherId === newMonarchId)) ? father : mother;
+            p.relationship = "พระเจ้าหลานเธอ";
+            if (royalParent && royalParent.royalRank.includes('เจ้าฟ้า')) {
+                p.royalRank = "เจ้าฟ้า (ชั้นตรี)";
+                p.titlePrefix = "สมเด็จพระเจ้าหลานเธอ";
+            } else {
+                p.royalRank = "พระองค์เจ้า (ชั้นโท)";
+                p.titlePrefix = "พระเจ้าหลานเธอ";
+            }
+            p.surname = "";
+            p.hideRoyalRank = false;
+        }
+        // D. พระอนุวงศ์ (วรวงศ์เธอ) - สำหรับหลานหลวงรัชกาลก่อน
+        else if (p.relationship === "พระเจ้าหลานเธอ" || p.relationship === "พระอนุวงศ์") {
+            p.relationship = "พระอนุวงศ์";
+            p.titlePrefix = p.royalRank.includes('เจ้าฟ้า') ? "สมเด็จพระเจ้าวรวงศ์เธอ" : "พระเจ้าวรวงศ์เธอ";
+        }
+
+        recordTitleHistory(p);
+    });
+
+    saveState();
+    updateApp();
+    closeModal('reignSelectionModal');
+    showFantasyPopup(newMonarch);
+}
+
+function handleMonarchDeath(monarch) {
+    if(monarch.spouseIds && monarch.spouseIds.length > 0) {
+        const reignNum = getGlobalReignLabel(monarch); 
+        monarch.spouseIds.forEach(sid => {
+            const sp = state.members.find(x => x.id === sid);
+            if(sp && sp.isAlive) {
+                const rel = sp.relationship || '';
+                if (rel === 'พระภรรยาเจ้า' || rel.includes('บาทบริจาริกา') || sp.isQueenConsort) {
+                    sp.isQueenConsort = false;
+                    sp.monarchSpouseContext = `ใน${reignNum}`;
+                    showToast(`ตั้งพระนาม/สร้อยท้าย: ${sp.name} ด้วย ${sp.monarchSpouseContext}`);
+                } else {
+                     sp.monarchSpouseContext = null;
                 }
-            });
-        }
-        
-        // OLD: monarch.isMonarch = false; // REMOVED per user request
-        monarch.isExMonarch = false; // Deceased monarch is not a *living* ex-monarch
-        monarch.reignEnd = new Date().getFullYear() + 543;
-        
-        const heirs = state.members.filter(m => m.isHeir && m.isAlive).sort((a,b) => (a.heirOrder||99) - (b.heirOrder||99));
-        if(heirs.length > 0 && parseInt(heirs[0].heirOrder) === 1) { // Only Heir Apparent Order 1 succeeds automatically
-            const successor = heirs[0];
-            showToast(`กำลังสถาปนา ${successor.name} ขึ้นครองราชย์...`);
-            setTimeout(() => {
-                openReignNameSelectionModal(successor.id);
-                // Demote other heirs
-                state.members.filter(m => m.isHeir && m.isAlive && m.id !== successor.id).forEach(h => { 
-                    if(h.heirOrder > 1) h.heirOrder--; 
-                });
-                saveState();
-            }, 2000);
-        } else {
-             showToast(`บัลลังก์ว่างลง! ไม่พบรัชทายาทลำดับที่ ๑`);
-             saveState();
-        }
-    }
-
-    function handleHeirDeath(p) {
-        if (!p.heirOrder) return;
-        const deadOrder = parseInt(p.heirOrder);
-        p.isHeir = false; // Must explicitly mark as not heir
-        p.heirOrder = null; 
-        state.members.forEach(m => {
-            if (m.isAlive && m.isHeir && m.heirOrder && parseInt(m.heirOrder) > deadOrder) {
-                m.heirOrder = parseInt(m.heirOrder) - 1;
             }
         });
     }
+    
+    monarch.isExMonarch = false; 
+    monarch.reignEnd = new Date().getFullYear() + 543;
+    
+    const heirs = state.members.filter(m => m.isHeir && m.isAlive).sort((a,b) => (a.heirOrder||99) - (b.heirOrder||99));
+    if(heirs.length > 0 && parseInt(heirs[0].heirOrder) === 1) { 
+        const successor = heirs[0];
+        showToast(`กำลังสถาปนา ${successor.name} ขึ้นครองราชย์...`);
+        setTimeout(() => {
+            openReignNameSelectionModal(successor.id);
+            state.members.filter(m => m.isHeir && m.isAlive && m.id !== successor.id).forEach(h => { 
+                if(h.heirOrder > 1) h.heirOrder--; 
+            });
+            saveState();
+        }, 2000);
+    } else {
+         showToast(`บัลลังก์ว่างลง! ไม่พบรัชทายาทลำดับที่ ๑`);
+         saveState();
+    }
+}
 
-    function showFantasyPopup(monarch) {
-        const modal = document.getElementById('fantasyModal');
-        document.getElementById('fan_name').innerText = getFullDisplayTitle(monarch);
-        document.getElementById('fan_rama').innerText = getGlobalReignLabel(monarch);
-        document.getElementById('fan_img').src = monarch.image || (monarch.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE);
-        document.getElementById('fan_dynasty').innerText = state.dynastyName || '-';
-        document.getElementById('fan_kingdom').innerText = state.kingdomName || '-';
-        const pc = document.getElementById('fantasyParticles'); pc.innerHTML = '';
-        for(let i=0; i<30; i++) {
-            const p = document.createElement('div'); p.className = 'particle';
-            p.style.left = Math.random()*100 + '%'; p.style.width = Math.random()*6 + 2 + 'px'; p.style.height = p.style.width; p.style.animationDelay = Math.random()*2 + 's';
-            p.style.background = Math.random() > 0.5 ? '#ffd700' : '#fff'; pc.appendChild(p);
+function handleHeirDeath(p) {
+    if (!p.heirOrder) return;
+    const deadOrder = parseInt(p.heirOrder);
+    
+    p.isHeir = false;
+    p.heirOrder = null;
+
+    state.members.forEach(m => {
+        if (m.isAlive && m.isHeir && m.heirOrder) {
+            if (parseInt(m.heirOrder) > deadOrder) {
+                m.heirOrder = parseInt(m.heirOrder) - 1;
+                recordTitleHistory(m); 
+            }
         }
-        modal.classList.add('active');
+    });
+}
+
+function showFantasyPopup(monarch) {
+    const modal = document.getElementById('fantasyModal');
+    if(!modal) return; // กัน Error กรณีไม่มี Modal ใน HTML
+    document.getElementById('fan_name').innerText = getFullDisplayTitle(monarch);
+    document.getElementById('fan_rama').innerText = getGlobalReignLabel(monarch);
+    document.getElementById('fan_img').src = monarch.image || (monarch.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE);
+    document.getElementById('fan_dynasty').innerText = state.dynastyName || '-';
+    document.getElementById('fan_kingdom').innerText = state.kingdomName || '-';
+    const pc = document.getElementById('fantasyParticles'); pc.innerHTML = '';
+    for(let i=0; i<30; i++) {
+        const p = document.createElement('div'); p.className = 'particle';
+        p.style.left = Math.random()*100 + '%'; p.style.width = Math.random()*6 + 2 + 'px'; p.style.height = p.style.width; p.style.animationDelay = Math.random()*2 + 's';
+        p.style.background = Math.random() > 0.5 ? '#ffd700' : '#fff'; pc.appendChild(p);
+    }
+    modal.classList.add('active');
+}
+
+function abdicateCurrent() {
+    if(!confirm('ยืนยันการสละราชสมบัติ? การดำเนินการนี้จะส่งผลให้มีการสถาปนากษัตริย์องค์ใหม่ทันที (หากมีรัชทายาทลำดับที่ ๑)')) return;
+    
+    const monarch = state.members.find(m => m.id === window.curPID); 
+    if (!monarch || !monarch.isMonarch || monarch.isExMonarch) {
+        showToast("บุคคลนี้ไม่ใช่พระมหากษัตริย์ที่กำลังครองราชย์");
+        return;
     }
     
-    // ================= NEW: ABDICATION LOGIC =================
-
-    function abdicateCurrent() {
-        if(!confirm('ยืนยันการสละราชสมบัติ? การดำเนินการนี้จะส่งผลให้มีการสถาปนากษัตริย์องค์ใหม่ทันที (หากมีรัชทายาทลำดับที่ ๑)')) return;
-        
-        const monarch = state.members.find(m=>m.id===window.curPID); 
-        if (!monarch || !monarch.isMonarch || monarch.isExMonarch) {
-            showToast("บุคคลนี้ไม่ใช่พระมหากษัตริย์ที่กำลังครองราชย์");
-            return;
-        }
-        
-        const currentReignNum = monarch.globalReignNumber;
-        
-        // 1. Demote current Monarch
-        monarch.isExMonarch = true;
-        // OLD: monarch.isMonarch = false; // REMOVED per user request
-        monarch.reignEnd = new Date().getFullYear() + 543;
-        
-        // 2. Process current Monarch's spouse context (like death)
-        if(monarch.spouseIds && monarch.spouseIds.length > 0) {
-            const reignLabel = `รัชกาลที่ ${toThaiNumerals(currentReignNum)}`; 
-            monarch.spouseIds.forEach(sid => {
-                const sp = state.members.find(x => x.id === sid);
-                if(sp && sp.isAlive) {
-                    const rel = sp.relationship || '';
-                    if (rel === 'พระภรรยาเจ้า' || rel.includes('บาทบริจาริกา') || sp.isQueenConsort) {
-                        // The Queen Consort loses the title (isQueenConsort=false) but gains the context suffix
-                        sp.isQueenConsort = false;
-                        sp.monarchSpouseContext = `ใน${reignLabel}`;
-                        showToast(`ตั้งสร้อยท้าย: ${sp.name} ด้วย ${sp.monarchSpouseContext}`);
-                    }
+    const currentReignNum = monarch.globalReignNumber;
+    monarch.isExMonarch = true;
+    monarch.reignEnd = new Date().getFullYear() + 543;
+    
+    if(monarch.spouseIds && monarch.spouseIds.length > 0) {
+        const reignLabel = `รัชกาลที่ ${toThaiNumerals(currentReignNum)}`; 
+        monarch.spouseIds.forEach(sid => {
+            const sp = state.members.find(x => x.id === sid);
+            if(sp && sp.isAlive) {
+                const rel = sp.relationship || '';
+                if (rel === 'พระภรรยาเจ้า' || rel.includes('บาทบริจาริกา') || sp.isQueenConsort) {
+                    sp.isQueenConsort = false;
+                    sp.monarchSpouseContext = `ใน${reignLabel}`;
                 }
-            });
-        }
-        
-        // 3. Find and appoint Heir Apparent (Order 1)
-        const heirs = state.members.filter(m => m.isHeir && m.isAlive)
-                                   .sort((a,b) => (a.heirOrder||99) - (b.heirOrder||99));
-        
-        // Set former monarch's flags for persistence
-        // monarch.isMonarch remains true
-        monarch.isHeir = false;
-        monarch.heirOrder = null;
-        
-        saveState(); // Save current monarch's new state before succession is triggered
-
-        closeModal('detailModal'); 
-        
-        if(heirs.length > 0 && parseInt(heirs[0].heirOrder) === 1) {
-            const successor = heirs[0];
-            showToast(`กำลังสถาปนา ${successor.name} ขึ้นครองราชย์ (สืบราชสันตติวงศ์อัตโนมัติ)...`);
-            setTimeout(() => {
-                // Demote other heirs after the new one is chosen
-                state.members.filter(m => m.isHeir && m.isAlive && m.id !== successor.id).forEach(h => { 
-                    if(h.heirOrder > 1) h.heirOrder--; 
-                });
-                openReignNameSelectionModal(successor.id);
-            }, 500);
-        } else {
-            showToast(`บัลลังก์ว่างลง! ไม่พบรัชทายาทลำดับที่ ๑`);
-            // If no successor, we just save and update to show the vacant throne
-            saveState();
-            refreshAllDisplays(); 
-        }
+            }
+        });
     }
-
+    
+    const heirs = state.members.filter(m => m.isHeir && m.isAlive)
+                               .sort((a,b) => (a.heirOrder||99) - (b.heirOrder||99));
+    
+    saveState(); 
+    closeModal('detailModal'); 
+    
+    if(heirs.length > 0 && parseInt(heirs[0].heirOrder) === 1) {
+        const successor = heirs[0];
+        showToast(`สละราชสมบัติเรียบร้อย... กำลังสถาปนา ${successor.name} ขึ้นครองราชย์`);
+        setTimeout(() => {
+            openReignNameSelectionModal(successor.id);
+        }, 800);
+    } else {
+        showToast(`บัลลังก์ว่างลง! ไม่พบรัชทายาทลำดับที่ ๑`);
+        if(typeof refreshAllDisplays === 'function') refreshAllDisplays(); 
+    }
+}
     // ================= END ABDICATION LOGIC =================
     
     // ================= NEW SPOUSE SELECTION MODAL LOGIC =================
@@ -3588,6 +3664,15 @@ function reorderState(type, parentEl) {
         const m = state.members.find(x => x.id === id);
         if(!m) return;
         
+   // --- ส่วนที่แก้ไข: แสดงปุ่มสถาปนาถ้าเป็นหม่อมเจ้า (ไม่เช็คสถานะการมีชีวิต) ---
+    const btnPromoteMC = document.getElementById('btnPromoteMC');
+    if (m.royalRank === 'หม่อมเจ้า') {
+        btnPromoteMC.classList.remove('hidden');
+    } else {
+        btnPromoteMC.classList.add('hidden');
+    }
+    // ------------------------------------------------------------------
+        
         // Find and replace the onclick handler for the "เพิ่มคู่สมรส" button
         const addSpouseButton = document.querySelector('#detailModal button[onclick^="openSpouseSelectionModal"]');
         if (addSpouseButton) {
@@ -3681,6 +3766,35 @@ function reorderState(type, parentEl) {
     }
 
     // ================= END NEW SPOUSE SELECTION MODAL LOGIC =================
+   // วางต่อจากฟังก์ชันอื่นๆ ในส่วน <script>
+/**
+ * ฟังก์ชันสถาปนาหม่อมเจ้า ขึ้นเป็นพระวรวงศ์เธอ พระองค์เจ้า
+ * รองรับทั้งกรณีสถาปนาขณะมีชีวิต และการสถาปนาอัฐิหลังสิ้นชีพ
+ */
+function promoteMomChao() {
+    const p = state.members.find(m => m.id === window.curPID);
+    if (!p) return;
+
+    const currentTitle = getFullDisplayTitle(p);
+    const statusText = p.isAlive ? "" : " (สถาปนาอัฐิ)";
+    
+    if (!confirm(`ยืนยันการสถาปนา ${currentTitle} ขึ้นเป็นพระวรวงศ์เธอ พระองค์เจ้า${statusText}?`)) return;
+
+    // 1. อัปเดตข้อมูลยศและคำนำหน้า
+    p.royalRank = "พระองค์เจ้า (ชั้นตรี)"; 
+    p.titlePrefix = "พระวรวงศ์เธอ"; // ใช้เฉพาะเมื่อสถาปนาขึ้นเป็นพระองค์เจ้าแล้วเท่านั้น
+    p.relationship = "พระอนุวงศ์";
+
+    // 2. บันทึกประวัติลงในทำเนียบพระยศ (Title History)
+    recordTitleHistory(p);
+
+    // 3. บันทึกสถานะและอัปเดตการแสดงผล
+    saveState();
+    showDetail(p.id); // อัปเดตข้อมูลใน Pop-up ทันที
+    updateApp();      // รีเฟรชผัง (Node จะเปลี่ยนสี/สไตล์ตามยศใหม่)
+    
+    showToast(`สถาปนา ${p.name} เป็นพระวรวงศ์เธอ พระองค์เจ้า เรียบร้อยแล้ว ✨`);
+} 
     
 function recordTitleHistory(p) {
     if (!p.titleHistory) p.titleHistory = [];
@@ -3715,6 +3829,78 @@ function recordTitleHistory(p) {
             signature: currentDataSignature 
         });
     }
+}
+
+/// ฟังก์ชันเลื่อนยศอัตโนมัติ: แม่เลื่อนลูก และ พ่อเลื่อนหลาน
+function triggerHierarchyPromotion(personId, newRank, fullTitle) {
+    // ค้นหาลูกทุกคน (ทั้งที่คนนี้เป็นพ่อ หรือ เป็นแม่)
+    const children = state.members.filter(m => m.motherId === personId || m.fatherId === personId);
+    
+    children.forEach(child => {
+        const isMale = child.gender === 'M';
+        let updated = false;
+        let oldRank = child.royalRank;
+
+        // --- กรณีที่ 1: แม่เลื่อน (ตามเงื่อนไขคู่สมรสกษัตริย์เดิมของคุณวิทยา) ---
+        const activeMonarch = state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
+        const isSpouseOfCurrentKing = activeMonarch && (activeMonarch.spouseIds || []).includes(personId);
+
+        if (isSpouseOfCurrentKing) {
+            const rankEkKeywords = ["พระบรมราชินีนาถ", "พระบรมราชราชินี", "พระบรมราชินี", "พระบรมอัครราชเทวี", "พระบรมราชเทวี"];
+            const rankThoKeywords = ["พระอัครเทวี", "พระวรราชเทวี", "พระราชเทวี", "พระนางนาฏ", "พระนางเจ้า", "พระนางเธอ", "พระอรรคชายา", "พระวรราชชายา", "พระราชชายา"];
+
+            if (rankEkKeywords.some(key => fullTitle.includes(key))) {
+                child.royalRank = "เจ้าฟ้า (ชั้นเอก)";
+                child.titlePrefix = isMale ? "สมเด็จพระเจ้าลูกยาเธอ" : "สมเด็จพระเจ้าลูกเธอ";
+                updated = true;
+            } else if (rankThoKeywords.some(key => fullTitle.includes(key))) {
+                child.royalRank = "เจ้าฟ้า (ชั้นโท)";
+                child.titlePrefix = isMale ? "สมเด็จพระเจ้าลูกยาเธอ" : "สมเด็จพระเจ้าลูกเธอ";
+                updated = true;
+            }
+        }
+
+       // --- กรณีที่ 2: พ่อเลื่อน (หลานสายตรงเลื่อนตามพ่อที่เป็นเจ้าฟ้า) ---
+        if (newRank.includes("เจ้าฟ้า")) {
+            // ตรวจสอบก่อนว่าคนนี้ไม่ใช่ลูกกษัตริย์ (ชั้นเอก/โท)
+            if (child.royalRank !== "เจ้าฟ้า (ชั้นเอก)" && child.royalRank !== "เจ้าฟ้า (ชั้นโท)") {
+                
+                // 1. ค้นหาข้อมูลแม่ของเด็กคนนี้มาตรวจสอบ
+                const mother = state.members.find(m => m.id === child.motherId);
+                // 2. เช็คว่าแม่เป็น "เจ้าฟ้า" หรือไม่
+                const isMotherChaoFa = mother && (mother.royalRank && mother.royalRank.includes("เจ้าฟ้า"));
+
+                if (isMotherChaoFa) {
+                    // กฎ: พ่อเจ้าฟ้า + แม่เจ้าฟ้า -> ลูกเป็น "สมเด็จพระเจ้าหลานเธอ เจ้าฟ้า" (ชั้นตรี)
+                    child.royalRank = "เจ้าฟ้า (ชั้นตรี)";
+                    child.titlePrefix = "สมเด็จพระเจ้าหลานเธอ เจ้าฟ้า";
+                } else {
+                    // กฎ: พ่อเจ้าฟ้า + แม่ยศต่ำกว่า (สามัญชน/พระองค์เจ้า) -> ลูกเป็น "พระเจ้าหลานเธอ พระองค์เจ้า"
+                    child.royalRank = "พระองค์เจ้า";
+                    child.titlePrefix = "พระเจ้าหลานเธอ พระองค์เจ้า";
+                }
+                
+                // --- ส่วนสำคัญที่คุณวิทยาเน้นย้ำ: ระบุความสัมพันธ์เป็นหลานสายตรง ---
+                child.relationship = "พระเจ้าหลานเธอ"; 
+                
+                updated = true;
+            }
+        }
+        // ถ้าพ่อ/แม่ เลื่อนเป็น "พระองค์เจ้า" -> ลูกจะเลื่อนเป็น "หม่อมเจ้า"
+        else if (newRank === "พระองค์เจ้า" && (child.royalRank === "สามัญชน" || !child.royalRank)) {
+            child.royalRank = "หม่อมเจ้า";
+            child.titlePrefix = "หม่อมเจ้า";
+            updated = true;
+        }
+
+        // ถ้ามีการเปลี่ยนแปลง ให้บันทึกและรันต่อไปยังรุ่นหลาน (Recursive)
+        if (updated && oldRank !== child.royalRank) {
+            recordTitleHistory(child);
+            showToast(`เลื่อนยศสายโลหิต: ${child.name} เป็น ${child.royalRank}`);
+            // สั่งรันฟังก์ชันนี้ซ้ำเพื่อเลื่อนยศให้ "รุ่นหลาน" ต่อไป
+            triggerHierarchyPromotion(child.id, child.royalRank, child.titlePrefix);
+        }
+    });
 }
 
     function handleSavePerson(e) {
@@ -3824,6 +4010,9 @@ function recordTitleHistory(p) {
             }
             
             p = checkConsortMotherhood(p);
+            // --- เพิ่มบรรทัดนี้เพื่อให้ระบบเช็คและบันทึกประวัติทุกครั้งที่กด Save ---
+        recordTitleHistory(p); 
+        // -----------------------------------------------------------
 
             if(isEdit) {
                 const idx = state.members.findIndex(m => m.id === id);
@@ -3869,16 +4058,20 @@ if (!isEdit && (p.fatherId || p.motherId)) {
         }
     });
 }
+// ตรวจสอบการเลื่อนยศทั้งสาย (ทั้งลูกและหลาน)
+            const currentFullTitle = getFullDisplayTitle(p);
+            triggerHierarchyPromotion(p.id, p.royalRank, currentFullTitle);
 saveState();
-recordTitleHistory(p); // บันทึกยศใหม่เข้าทำเนียบ (ถ้ามีการเปลี่ยนแปลง)
-saveState(); // บันทึกข้อมูลลงฐานข้อมูล
-            saveState();
             closeModal('personModal');
             if(p.isMonarch && !isEdit && p.isAlive) showFantasyPopup(p);
-            refreshAllDisplays(); 
+            
+            // ตรงนี้จะถูกเปลี่ยนจาก refreshAllDisplays(); เป็น updateApp(); แล้ว
+            updateApp(); 
+            
             showToast('บันทึกข้อมูลเรียบร้อย');
         } catch (err) {
             console.error(err);
+            // เมื่อ updateApp ทำงานได้ถูกต้อง มันจะไม่กระโดดมาโชว์ alert บรรทัดนี้อีกครับ
             alert('เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
         }
     }
@@ -3990,34 +4183,30 @@ saveState(); // บันทึกข้อมูลลงฐานข้อม�
     function editCurrent() { closeModal('detailModal'); openModal(state.members.find(m=>m.id===window.curPID), true); }
     
     function toggleDeath() { 
-        const p = state.members.find(m=>m.id===window.curPID); 
-        const wasActiveMonarch = p.isMonarch && p.isAlive && !p.isExMonarch; // Check before flipping isAlive
-        
-        p.isAlive = !p.isAlive;
-        
-        if(!p.isAlive) { 
-            
-            // If they were the active monarch (and not ex-monarch), handle succession
-            if (wasActiveMonarch) {
-                handleMonarchDeath(p); 
-            } else {
-                 // Context is cleared because it was set on abdication/death (and they are now deceased)
-                 p.monarchSpouseContext = null; 
-                 // If a former monarch who abdicated (ExMonarch=true) dies, remove ExMonarch flag
-                 if (p.isMonarch) p.isExMonarch = false;
-            }
-            if (p.isHeir) handleHeirDeath(p); 
+    const p = state.members.find(m => m.id === window.curPID); 
+    const wasActiveMonarch = p.isMonarch && p.isAlive && !p.isExMonarch;
+    
+    p.isAlive = !p.isAlive; // สลับสถานะ เป็น/ตาย
 
-        } else {
-            p.monarchSpouseContext = null; 
+    if (!p.isAlive) { 
+        // ถ้าเป็นรัชทายาทแล้วตาย ให้เรียกฟังก์ชันขยับลำดับทันที
+        if (p.isHeir) {
+            handleHeirDeath(p);
         }
-        
+        if (wasActiveMonarch) {
+            handleMonarchDeath(p); 
+        }
+    } else {
+        p.monarchSpouseContext = null; 
+    }
         if (p.gender === 'F' && (p.relationship||'').includes('บาทบริจาริกา')) {
             const updatedP = checkConsortMotherhood(p);
             p.titlePrefix = updatedP.titlePrefix; 
         }
-        saveState(); showDetail(p.id); refreshAllDisplays(); 
-    }
+       saveState(); 
+    showDetail(p.id); 
+    updateApp(); // สั่งให้วาดผังและตารางใหม่ทันที (Real-time)
+}
     
     function deleteCurrent() {
         if(!confirm('ยืนยันการลบ?')) return;
@@ -4439,7 +4628,320 @@ function deleteHistoryEntry(personId, index) {
         showToast("ลบข้อมูลเรียบร้อย");
     }
 }
+// ============================================================
+// THE SUPREME ROYAL ENGINE 2025 - FINAL INTEGRATED (V27)
+// รวมทุกกฎ: กษัตริย์ | บรมวงศ์ | วังหน้า-หลัง | พี่น้องร่วม/ต่างแม่ | หลานเธอ | วรวงศ์
+// ระบบแก้ไข: HYBRID COMMAND MODE (แก้ไขความสัมพันธ์เองได้จริง ไม่โดนเขียนทับ)
+// ระบบพิเศษ: SMART SPOUSE SELECTION + AUTO-TRANSITION (เลื่อนยศอัตโนมัติ)
+// กฎเหล็ก: ห้ามลบโค้ดเดิม | ยศล็อกถาวร (Sticky Rank) | แม่สูงกว่าพ่อ | Dropdown Guard
+// ============================================================
 
+/**
+ * 1. ฟังก์ชันค้นหากษัตริย์รัชกาลปัจจุบัน
+ */
+function getCurrentMonarch() {
+    return state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
+}
+
+/**
+ * 2. ฟังก์ชันหลักสำหรับคำนวณยศ (Rank), คำนำหน้า (Prefix) และความสัมพันธ์
+ */
+function calculateChildRank(fatherId, motherId, gender, birthYearInput) {
+    const father = state.members.find(m => m.id === fatherId);
+    const mother = state.members.find(m => m.id === motherId);
+    const currentMonarch = getCurrentMonarch();
+    const isMale = gender === 'M';
+    
+    // แปลงปีประสูติเป็นตัวเลขเพื่อการเปรียบเทียบ (แก้ปัญหาพี่ยา-น้องยาไม่ขึ้น)
+    const bYear = birthYearInput ? parseInt(birthYearInput) : null;
+    
+    const currentPersonId = document.getElementById('p_id')?.value;
+    const monarchId = currentMonarch?.id;
+    const monarchFatherId = currentMonarch?.fatherId;
+    const monarchMotherId = currentMonarch?.motherId;
+    const monarchBirthYear = currentMonarch?.birthYear ? parseInt(currentMonarch.birthYear) : 0;
+
+    let result = {
+        royalRank: 'สามัญชน',
+        titlePrefix: isMale ? 'นาย' : 'นางสาว',
+        relationship: 'สามัญชน',
+        royalSurname: father?.royalSurname || ''
+    };
+
+    // --- ส่วนที่ 0: ระบบน้ำหนักยศ (Rank Weighting) ---
+    const rankWeight = {
+        "เจ้าฟ้า (ชั้นเอก)": 10, "เจ้าฟ้า (ชั้นโท)": 9, "เจ้าฟ้า (ชั้นตรี)": 8,
+        "พระองค์เจ้า (ชั้นเอก)": 7, "พระองค์เจ้า (ชั้นโท)": 6, "พระองค์เจ้า (ชั้นตรี)": 5,
+        "หม่อมเจ้า": 4, "หม่อมราชวงศ์": 3, "หม่อมหลวง": 2, "สามัญชน": 1
+    };
+    const fW = father ? (rankWeight[father.royalRank] || 1) : 1;
+    const mW = mother ? (rankWeight[mother.royalRank] || 1) : 1;
+
+    // --- ส่วนที่ 1: Sticky Rank Logic (ยศสถาปนาแล้วไม่ลดกลับ) ---
+    const currentPerson = state.members.find(m => m.id === currentPersonId);
+    let isAlreadyPromoted = false;
+    if (currentPerson && (currentPerson.royalRank.includes("พระองค์เจ้า") || currentPerson.royalRank.includes("เจ้าฟ้า") || currentPerson.royalRank.includes("วรวงศ์"))) {
+        isAlreadyPromoted = true;
+        result.royalRank = currentPerson.royalRank;
+        result.titlePrefix = currentPerson.titlePrefix;
+        result.relationship = currentPerson.relationship;
+    }
+
+    // --- ส่วนที่ 1.1: กฎแม่เป็นเจ้าแต่พ่อเป็นสามัญชน ---
+    const isFatherCommoner = !father || (father.royalRank === 'สามัญชน' || father.titlePrefix === 'นาย');
+    const isMotherRoyal = mother && (mW > 1);
+
+    if (isFatherCommoner && isMotherRoyal && !isAlreadyPromoted) {
+        result.relationship = 'บุตรสามัญชน (มารดาทรงลาออกจากฐานันดรศักดิ์)';
+        return result; 
+    }
+
+    if (!father && !mother) return result;
+
+    // ============================================================
+    // ส่วนที่ 3: ระบบ AUTO-TRANSITION (สถาปนาตามรัชกาลปัจจุบัน)
+    // ============================================================
+
+    // A: หากบิดาเป็นกษัตริย์ปัจจุบัน (จากหลานเธอ -> กลายเป็นลูกเธอ)
+    if (father && father.id === monarchId) {
+        result.relationship = isMale ? 'พระราชโอรส' : 'พระราชธิดา';
+        if (mother && (mW >= 8 || (mother.titleSuffix && mother.titleSuffix.includes("พระบรมราช")))) {
+            result.royalRank = "เจ้าฟ้า (ชั้นเอก)";
+            result.titlePrefix = "สมเด็จ" + (isMale ? "พระเจ้าลูกยาเธอ" : "พระเจ้าลูกเธอ");
+        } else {
+            result.royalRank = "พระองค์เจ้า (ชั้นเอก)";
+            result.titlePrefix = (isMale ? "พระเจ้าลูกยาเธอ" : "พระเจ้าลูกเธอ");
+        }
+        return result;
+    }
+
+    // B: พี่น้องกษัตริย์ปัจจุบัน (ร่วมพ่อเดียวกัน) - ทั้งร่วมแม่และต่างแม่
+    const isSiblingOfMonarch = father && monarchFatherId && String(father.id) === String(monarchFatherId);
+    if (isSiblingOfMonarch && monarchId && currentPersonId !== monarchId) {
+        const isSameMother = mother && mother.id === monarchMotherId;
+        const isMotherHighRoyal = mother && (mW >= 8);
+        
+        result.relationship = isSameMother ? "พระเจ้าพี่น้องร่วมพระมารดา" : "พระเจ้าพี่น้องต่างพระมารดา";
+        
+        let ageLabel = "";
+        if (bYear && monarchBirthYear > 0) {
+            const isOlder = bYear < monarchBirthYear;
+            if (isMale) ageLabel = isOlder ? "พี่ยาเธอ" : "น้องยาเธอ";
+            else ageLabel = isOlder ? "พี่นางเธอ" : "น้องนางเธอ";
+        } else {
+            ageLabel = isMale ? "พี่น้องยาเธอ" : "พี่น้องนางเธอ";
+        }
+
+        if (isMotherHighRoyal || isSameMother) {
+            result.royalRank = "เจ้าฟ้า (ชั้นเอก)";
+            result.titlePrefix = "สมเด็จพระ" + ageLabel;
+        } else {
+            result.royalRank = "พระองค์เจ้า (ชั้นเอก)";
+            result.titlePrefix = "พระ" + ageLabel; 
+        }
+        return result;
+    }
+
+    // --- ส่วนที่ 2: Logic สายวังหน้า และ วังหลัง ---
+    const fKrom = father?.kromTitle || "";
+    if (fKrom.includes("บวรสถานมงคล") || fKrom.includes("บวรสถานพิมุข")) {
+        const isWangNa = fKrom.includes("บวรสถานมงคล");
+        const prefix = isWangNa ? "พระเจ้าราวรวงศ์เธอ" : "พระประพันธวงศ์เธอ";
+        result.relationship = prefix;
+        if (mother && (mW >= 5 || mother.relationship === "พระชายา")) {
+            result.royalRank = "เจ้าฟ้า (ชั้นตรี)";
+            result.titlePrefix = prefix + " เจ้าฟ้า";
+        } else {
+            result.royalRank = "พระองค์เจ้า (ชั้นตรี)";
+            result.titlePrefix = prefix;
+        }
+        return result;
+    }
+
+    // --- ส่วนที่ 4: Logic ลูกพระมหากษัตริย์ในอดีต (พระบรมวงศ์) ---
+    const isPastMonarch = father && father.isMonarch && (father.id !== monarchId);
+    if (isPastMonarch) {
+        result.relationship = "พระบรมวงศ์";
+        const isMotherHighRoyal = mother && (mW >= 8 || (mother.titleSuffix && mother.titleSuffix.includes("พระบรมราช")));
+        if (isMotherHighRoyal) {
+            result.royalRank = "เจ้าฟ้า (ชั้นเอก)";
+            result.titlePrefix = "สมเด็จพระเจ้าบรมวงศ์เธอ"; 
+        } else {
+            result.royalRank = "พระองค์เจ้า (ชั้นเอก)";
+            result.titlePrefix = "พระเจ้าบรมวงศ์เธอ";
+        }
+        return result;
+    }
+
+    // --- ส่วนเพิ่ม: พระเจ้าหลานเธอ (หลานสายตรงกษัตริย์ปัจจุบัน) ---
+    const isFatherChildOfMonarch = father && (father.fatherId === monarchId || father.motherId === monarchId);
+    if (isFatherChildOfMonarch) {
+        result.relationship = "พระเจ้าหลานเธอ";
+        if (mW >= 8) {
+            result.royalRank = "เจ้าฟ้า (ชั้นตรี)"; result.titlePrefix = "สมเด็จพระเจ้าหลานเธอ";
+        } else {
+            result.royalRank = "พระองค์เจ้า (ชั้นโท)"; result.titlePrefix = "พระเจ้าหลานเธอ";
+        }
+        return result;
+    }
+
+    // --- ส่วนเพิ่ม: กฎกรณีมารดาศักดิ์สูงกว่าบิดา (ยศลดตามพ่อ) ---
+    if (mW > fW && fW > 1 && !isAlreadyPromoted) {
+        if (fW >= 5 && fW <= 7) { 
+            result.royalRank = "หม่อมเจ้า"; result.titlePrefix = "หม่อมเจ้า";
+        } else if (fW === 4) { 
+            result.royalRank = "สามัญชน"; result.titlePrefix = "หม่อมราชวงศ์";
+        }
+        return result;
+    }
+
+    // --- ส่วนที่ 6: Logic วรวงศ์เธอ (กรณีบิดาไม่ใช่กษัตริย์สายตรง) ---
+    if (fW >= 5) { // บิดาเป็น พระองค์เจ้า หรือ หม่อมเจ้า
+        result.relationship = "พระอนุวงศ์";
+        if (fW >= 8 && mW >= 8) {
+            result.royalRank = "เจ้าฟ้า (ชั้นตรี)"; result.titlePrefix = "สมเด็จพระเจ้าวรวงศ์เธอ";
+        } 
+        else if ((fW >= 5 && fW <= 7) && (mW >= 5 && mW <= 7)) {
+            result.royalRank = "พระองค์เจ้า (ชั้นตรี)"; result.titlePrefix = "พระเจ้าวรวงศ์เธอ";
+        }
+        else if (fW >= 8 && mW >= 4) {
+            result.royalRank = "พระองค์เจ้า (ชั้นโท)"; result.titlePrefix = "พระเจ้าวรวงศ์เธอ";
+        }
+        else if (fW === 10 && mW === 1) { // พ่อเจ้าฟ้าเอก + แม่สามัญชน
+            result.royalRank = "พระองค์เจ้า (ชั้นโท)"; result.titlePrefix = "พระเจ้าวรวงศ์เธอ";
+        }
+       else {
+            // กฎเหล็ก: หม่อมเจ้า คำนำหน้าคือหม่อมเจ้าเท่านั้น
+            if (isAlreadyPromoted) return result;
+            result.royalRank = "หม่อมเจ้า"; 
+            result.titlePrefix = "หม่อมเจ้า"; // แก้ไขจุดนี้ให้ล็อกคำนำหน้าเป็นหม่อมเจ้า
+        }
+        return result;
+    }
+
+    // --- ส่วนที่ 7: Default ขั้นต้นสืบตระกูล ---
+    if (father && !isAlreadyPromoted) {
+        if (fW === 4) result.titlePrefix = 'หม่อมราชวงศ์';
+        else if (father.titlePrefix === 'หม่อมราชวงศ์') result.titlePrefix = 'หม่อมหลวง';
+    }
+
+    return result;
+}
+
+/**
+ * 3. SMART PARENT SELECTION
+ */
+function handleParentSelection(type) {
+    validateParent(type); 
+    const targetId = document.getElementById(type === 'father' ? 'p_fatherId' : 'p_motherId').value;
+    const otherType = type === 'father' ? 'mother' : 'father';
+    const otherSearchInput = document.getElementById(otherType === 'father' ? 'p_fatherSearch' : 'p_motherSearch');
+    const otherIdInput = document.getElementById(otherType === 'father' ? 'p_fatherId' : 'p_motherId');
+    const otherDatalist = document.getElementById(otherType === 'father' ? 'fatherOptions' : 'motherOptions');
+
+    if (targetId) {
+        const person = state.members.find(m => m.id === targetId);
+        const spouses = person.spouseIds || [];
+        if (spouses.length === 1) {
+            const spouse = state.members.find(m => m.id === spouses[0]);
+            if (spouse) {
+                otherIdInput.value = spouse.id;
+                otherSearchInput.value = spouse.name;
+            }
+        } 
+        else if (spouses.length > 1) {
+            otherDatalist.innerHTML = ''; 
+            spouses.forEach(sid => {
+                const s = state.members.find(m => m.id === sid);
+                if (s) {
+                    const op = document.createElement('option');
+                    op.value = s.id; op.innerText = s.name + " (คู่สมรส)";
+                    otherDatalist.appendChild(op);
+                }
+            });
+            if (!otherIdInput.value) {
+                otherSearchInput.focus();
+                otherSearchInput.value = ''; 
+            }
+        }
+    }
+    autoFillRank(); 
+}
+
+/**
+ * 5. HYBRID UI LOGIC - AUTO FILL
+ * เรียกใช้เมื่อเปลี่ยนปัจจัยต้นทางเท่านั้น
+ */
+function autoFillRank() {
+    const fId = document.getElementById('p_fatherId').value;
+    const mId = document.getElementById('p_motherId').value;
+    const gender = document.querySelector('input[name="gender"]:checked')?.value || 'M';
+    const bYear = document.getElementById('p_birthYear').value;
+    const isMonarchCheckbox = document.getElementById('p_isMonarch').checked;
+
+    const auto = calculateChildRank(fId, mId, gender, bYear);
+
+    if (isMonarchCheckbox) {
+        auto.relationship = "พระมหากษัตริย์";
+        auto.titlePrefix = "สมเด็จพระ";
+        auto.royalRank = "เจ้าฟ้า (ชั้นเอก)";
+    }
+
+    document.getElementById('p_relationship').value = auto.relationship;
+    
+    updatePrefixOptions();
+    
+    const prefixDropdown = document.getElementById('p_titlePrefix');
+    const optionExists = Array.from(prefixDropdown.options).some(opt => opt.value === auto.titlePrefix);
+    
+    if (!optionExists && auto.titlePrefix) {
+        const newOpt = document.createElement('option');
+        newOpt.value = auto.titlePrefix; newOpt.text = auto.titlePrefix;
+        prefixDropdown.add(newOpt);
+    }
+
+    prefixDropdown.value = auto.titlePrefix;
+    document.getElementById('p_royalRank').value = auto.royalRank;
+    document.getElementById('p_royalSurnameInput').value = auto.royalSurname || '';
+    updateSuffixOptions();
+}
+
+/**
+ * 6. MANUAL COMMAND MODE (ห้ามลบ - แก้ปัญหาเปลี่ยนความสัมพันธ์ไม่ได้)
+ * ดักจับเมื่อคุณวิทยาเปลี่ยนความสัมพันธ์ด้วยมือ
+ */
+document.getElementById('p_relationship').addEventListener('change', function() {
+    const selectedRel = this.value;
+    if (!selectedRel) return;
+
+    // สั่งให้หน้าจอโหลดตัวเลือกคำนำหน้าของหมวดนั้นมาให้เลือก โดยไม่คำนวณใหม่
+    updatePrefixOptions(); 
+    
+    const rankSelect = document.getElementById('p_royalRank');
+    if (selectedRel.includes('บาทบริจาริกา') || selectedRel === 'หม่อม' || selectedRel.includes('บุตรสามัญชน') || selectedRel === 'สามัญชน') {
+        rankSelect.value = 'สามัญชน';
+    } else if (selectedRel === 'พระมหากษัตริย์') {
+        rankSelect.value = 'เจ้าฟ้า (ชั้นเอก)';
+    }
+
+    const prefixSelect = document.getElementById('p_titlePrefix');
+    if (prefixSelect.options.length > 1) {
+        prefixSelect.selectedIndex = 1; 
+        updateSuffixOptions();
+    }
+});
+
+// ผูกเหตุการณ์ (แยก Auto และ Manual ชัดเจน)
+document.getElementById('p_isMonarch').addEventListener('change', autoFillRank);
+document.getElementById('p_fatherSearch').addEventListener('change', () => handleParentSelection('father'));
+document.getElementById('p_motherSearch').addEventListener('change', () => handleParentSelection('mother'));
+document.querySelectorAll('input[name="gender"]').forEach(el => el.addEventListener('change', autoFillRank));
+document.getElementById('p_birthYear').addEventListener('input', autoFillRank);
+
+function calculateChildRankGeneric(fatherId, motherId, gender) {
+    const bYear = document.getElementById('p_birthYear')?.value || null;
+    return calculateChildRank(fatherId, motherId, gender, bYear);
+}
 </script>
 </body>
 </html>
