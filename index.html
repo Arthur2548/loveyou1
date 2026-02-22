@@ -7105,6 +7105,25 @@ function renderTable() {
     // 2. โหมดทำเนียบพระมหากษัตริย์ (Kings)
     // ==========================================
     if (filterStatus === 'kings') {
+        // --- [ส่วนที่เพิ่ม] จัดการหัวตารางและข้อความหัวข้อ ---
+        if (tableHead) {
+            tableHead.innerHTML = `
+                <th class="text-center w-12">ลำดับ</th>
+                <th class="text-center w-20">รูป</th>
+                <th class="text-center">รัชกาลที่</th>
+                <th>พระนามแผ่นดิน / พระนาม</th>
+                <th>ระยะเวลาครองราชย์</th>
+                <th class="text-center">จัดการ</th>
+            `;
+        }
+
+        if (royalHeader) {
+            // แสดงชื่อราชวงศ์และชื่ออาณาจักรตามที่ต้องการ
+            royalHeader.innerText = `ทำเนียบพระมหากษัตริย์ในราชวงศ์${state.dynastyName} แห่งพระราชอาณาจักร${state.kingdomName}`;
+            royalHeader.classList.remove('hidden');
+        }
+        // -----------------------------------------------------
+
         const reignNameFilter = document.getElementById('kingsReignNameSelect').value;
         let monarchs = state.members.filter(m => m.isMonarch);
         
@@ -7160,7 +7179,6 @@ function renderTable() {
         });
         return; 
     }
-
 
 
 // ==========================================
@@ -7807,6 +7825,26 @@ if (filterStatus === 'royal_spouses') {
     const typeFilter = document.getElementById('spouseTypeSelect')?.value || 'all';
     let spouses = [];
 
+
+// --- [ส่วนที่เพิ่ม] จัดการข้อความหัวข้อ (Royal Header) ---
+        if (royalHeader) {
+            if (kingId !== 'all') {
+                const king = state.members.find(k => k.id === kingId);
+                if (king) {
+                    const kingName = typeof getFullDisplayTitle === 'function' ? getFullDisplayTitle(king) : king.name;
+                    royalHeader.innerText = `ทำเนียบคู่สมรสใน ${kingName}`;
+                    royalHeader.classList.remove('hidden');
+                }
+            } else {
+                royalHeader.innerText = `ทำเนียบคู่สมรสในทุกพระมหากษัตริย์`;
+                royalHeader.classList.remove('hidden');
+            }
+        }
+        // -----------------------------------------------------------
+
+
+
+
     // --- 1. ดึงข้อมูลและกรองรายชื่อ ---
     if (kingId === 'all') {
         const allSpouseIds = new Set();
@@ -8008,6 +8046,22 @@ if (filterStatus === 'royal_spouses') {
 if (filterStatus === 'royal_surnames') {
     const selectedMode = document.getElementById('surnameFilterSelect')?.value || 'overview';
     const lineageFilter = document.getElementById('surnameLineageFilterSelect')?.value || 'all';
+
+
+    // --- [ส่วนที่เพิ่ม] จัดการข้อความหัวข้อ (Royal Header) ---
+        if (royalHeader) {
+            if (selectedMode === 'overview') {
+                // กรณีดูภาพรวม
+                royalHeader.innerText = `ทำเนียบราชสกุลในราชวงศ์${state.dynastyName}`;
+            } else {
+                // กรณีเลือกราชสกุลเจาะจง -> แสดง "ราชสกุล{ชื่อ}"
+                const founder = state.members.find(m => m.id === selectedMode);
+                const surnameText = founder ? founder.royalSurname : "";
+                royalHeader.innerText = `ราชสกุล${surnameText}`;
+            }
+            royalHeader.classList.remove('hidden');
+        }
+        // --------------------------------------------------------
     
     // ปรับ Header หลัก
     const tableHeadSelect = document.querySelector('#tableView table thead');
