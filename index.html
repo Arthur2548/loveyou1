@@ -5343,10 +5343,12 @@ function calculatePojiamScore(person) {
 
     const applySpecialKromRule = (currentScore) => {
         if (person.kromRank === "กรมสมเด็จพระ") {
+            // อัปเดตเพิ่ม รัชทายาทอันดับ1, วังหน้า, วังหลัง ให้อยู่ในกลุ่ม High Tier เพื่อไม่ให้โดนกดคะแนน
             const isHighTier = person.isHighKrom || 
-                ["พระชนก", "พระชนนี", "พระอัยกา", "พระอัยยิกา", "พระปิตุลา", "พระปิตุฉา", "พระบรมสหยาธิบดี", "สมเด็จพระมเหสรา"].includes(person.relationship) || 
+                ["พระชนก", "พระชนนี", "พระอัยกา", "พระอัยยิกา", "พระปิตุลา", "พระปิตุฉา", "พระบรมสหยาธิบดี", "สมเด็จพระมเหสรา", "วังหน้า", "วังหลัง"].includes(person.relationship) || 
                 (person.titlePrefix || "").includes("ราชเจ้า") || 
-                (person.titlePrefix || "").includes("ภคินี");
+                (person.titlePrefix || "").includes("ภคินี") ||
+                (person.isHeir && parseInt(person.heirOrder) === 1);
             
             if (isHighTier) {
                 return Math.max(currentScore, 958000000); 
@@ -5401,21 +5403,20 @@ function calculatePojiamScore(person) {
         return applySpecialKromRule(parentScore + (kromScoreMap[person.kromRank] || 0));
     }
 
+    // --- กลุ่มติดกัน: รัชทายาทลำดับ 1 > วังหน้า > วังหลัง (ห่างกัน Base ละแสน เพื่อไม่ให้กรมตีกลับ) ---
     const heirOrder = parseInt(person.heirOrder) || 999;
-    if (person.isHeir && heirOrder === 1) return 958999999 + (kromScoreMap[person.kromRank] || 0); 
+    if (person.isHeir && heirOrder === 1) return applySpecialKromRule(958900000 + (kromScoreMap[person.kromRank] || 0)); 
 
-    // --- วังหน้า (ต่ำกว่ารัชทายาทลำดับที่ 1) และ วังหลัง (ต่ำกว่าวังหน้า) ---
-    if ((person.name || "").includes("กรมพระราชวังบวรสถานมงคล") || person.relationship === "วังหน้า") return applySpecialKromRule(958999998 + (kromScoreMap[person.kromRank] || 0)); 
-    if ((person.name || "").includes("กรมพระราชวังบวรสถานพิมุข") || person.relationship === "วังหลัง") return applySpecialKromRule(958999997 + (kromScoreMap[person.kromRank] || 0)); 
+    if ((person.name || "").includes("กรมพระราชวังบวรสถานมงคล") || person.relationship === "วังหน้า") return applySpecialKromRule(958800000 + (kromScoreMap[person.kromRank] || 0)); 
+    
+    if ((person.name || "").includes("กรมพระราชวังบวรสถานพิมุข") || person.relationship === "วังหลัง") return applySpecialKromRule(958700000 + (kromScoreMap[person.kromRank] || 0)); 
 
-    // --- [Logic Update] พระปิตุลา และ พระปิตุฉา อยู่ระดับเดียวกัน เรียงตาม กรม > อายุ ---
+    // --- พระปิตุลา และ พระปิตุฉา (อยู่ต่ำกว่าวังหลังเสมอ) ---
     if ((person.relationship === "พระปิตุลา" || person.relationship === "พระปิตุฉา") && person.isAlive) {
-        let pituScore = 958000000;
-        if ((person.titlePrefix || "").includes("สมเด็จพระราช")) pituScore += 1000000; 
+        let pituScore = 957000000; // เริ่ม Base ที่ 957M
+        if ((person.titlePrefix || "").includes("สมเด็จพระราช")) pituScore += 1000000; // จะสุดที่ 958M ไม่ล้ำวังหลังที่เริ่ม 958.7M
         
-        // ให้คะแนนกรมหลักหมื่น (10k-60k) ส่วนอายุคูณ 10 (ไม่ให้เกินหลักพัน) เพื่อเรียงตามกรมก่อนเสมอ
         let ageScore = (parseInt(person.age) || 0) * 10;
-        
         return applySpecialKromRule(pituScore + (kromScoreMap[person.kromRank] || 0) + ageScore + (pPrecedence / 100));
     }
 
@@ -5588,21 +5589,18 @@ function calculatePojiamScore(person) {
     }
 
     // --- [ส่วนที่ 3] กลุ่มเจ้าฟ้าพิเศษ (วรวงศ์/สุพันธวงศ์/วรวงศ์) ---
-    // 1. พระเจ้าวรวงศ์เธอ เจ้าฟ้า (สูงสุด)
     if (person.titlePrefix?.includes("พระเจ้าวรวงศ์เธอ") && isChaoFa) {
         if (person.titlePrefix.includes("สมเด็จ")) {
             return applySpecialKromRule(800300000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0));
         }
     }
      
-    // 2. พระเจ้าสุพันธวงศ์เธอ เจ้าฟ้า (กลาง)
     if (person.titlePrefix?.includes("พระเจ้าสุพันธวงศ์เธอ") && isChaoFa) {
         if (person.titlePrefix.includes("สมเด็จ")) {
             return applySpecialKromRule(800250000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0));
         }
     }
 
-    // 3. พระวรวงศ์เธอ เจ้าฟ้า (ล่างสุดในกลุ่มเจ้าฟ้าหลานเธอ)
     if (person.titlePrefix?.includes("พระวรวงศ์เธอ") && isChaoFa) {
         if (person.titlePrefix.includes("สมเด็จ")) {
             return applySpecialKromRule(800200000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0));
