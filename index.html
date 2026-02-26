@@ -5376,7 +5376,7 @@ function calculatePojiamScore(person) {
 
     if (person.isExMonarch && person.isAlive) return 997000000;
 
-    // --- [Logic Update: แก้ไขตามโจทย์] แยกกลุ่มอดีตคู่ครอง ---
+    // --- แยกกลุ่มอดีตคู่ครอง ---
     const isExSpouseCandidate = !isCurrentSpouse && person.isAlive && (
         person.isQueenConsort ||
         (person.relationship || "").includes("พระราชสวามี") ||
@@ -5404,15 +5404,19 @@ function calculatePojiamScore(person) {
     const heirOrder = parseInt(person.heirOrder) || 999;
     if (person.isHeir && heirOrder === 1) return 958999999 + (kromScoreMap[person.kromRank] || 0); 
 
-    if (person.relationship === "พระปิตุลา" && person.isAlive) {
-        let pitulaScore = 958000000 + (parseInt(person.age) || 0) * 1000;
-        if ((person.titlePrefix || "").includes("สมเด็จพระราช")) pitulaScore += 1000000; 
-        return applySpecialKromRule(pitulaScore + (kromScoreMap[person.kromRank] || 0) + (pPrecedence / 100));
-    }
+    // --- วังหน้า (ต่ำกว่ารัชทายาทลำดับที่ 1) และ วังหลัง (ต่ำกว่าวังหน้า) ---
+    if ((person.name || "").includes("กรมพระราชวังบวรสถานมงคล") || person.relationship === "วังหน้า") return applySpecialKromRule(958999998 + (kromScoreMap[person.kromRank] || 0)); 
+    if ((person.name || "").includes("กรมพระราชวังบวรสถานพิมุข") || person.relationship === "วังหลัง") return applySpecialKromRule(958999997 + (kromScoreMap[person.kromRank] || 0)); 
 
-    if (person.relationship === "พระปิตุฉา" && person.isAlive) {
-        let pituchaScore = 957000000 + (parseInt(person.age) || 0) * 1000;
-        return applySpecialKromRule(pituchaScore + (kromScoreMap[person.kromRank] || 0) + (pPrecedence / 100));
+    // --- [Logic Update] พระปิตุลา และ พระปิตุฉา อยู่ระดับเดียวกัน เรียงตาม กรม > อายุ ---
+    if ((person.relationship === "พระปิตุลา" || person.relationship === "พระปิตุฉา") && person.isAlive) {
+        let pituScore = 958000000;
+        if ((person.titlePrefix || "").includes("สมเด็จพระราช")) pituScore += 1000000; 
+        
+        // ให้คะแนนกรมหลักหมื่น (10k-60k) ส่วนอายุคูณ 10 (ไม่ให้เกินหลักพัน) เพื่อเรียงตามกรมก่อนเสมอ
+        let ageScore = (parseInt(person.age) || 0) * 10;
+        
+        return applySpecialKromRule(pituScore + (kromScoreMap[person.kromRank] || 0) + ageScore + (pPrecedence / 100));
     }
 
     const highSiblingPrefixes = ["สมเด็จพระเชษฐภคินีเธอ", "สมเด็จพระกนิษฐาเธอ", "สมเด็จพระกนิษฐาธิราชเจ้า", "สมเด็จพระเชษฐาธิราชเจ้า", "สมเด็จพระอนุชาธิราชเจ้า", "สมเด็จพระราชกนิษฐา"];
@@ -5425,9 +5429,6 @@ function calculatePojiamScore(person) {
     const isSiblingOfRama1 = monarch1 && person.fatherId === monarch1.fatherId && person.id !== monarch1.id;
     if (isSiblingOfRama1) return applySpecialKromRule(954000000 + (parseInt(person.age) || 0) * 1000 + (kromScoreMap[person.kromRank] || 0));
 
-    if ((person.name || "").includes("กรมพระราชวังบวรสถานมงคล") || person.relationship === "วังหน้า") return 949999900; 
-    if ((person.name || "").includes("กรมพระราชวังบวรสถานพิมุข") || person.relationship === "วังหลัง") return 949999800; 
-
     const highPrefixes = ["สมเด็จพระนางเจ้า", "สมเด็จพระนางนาฏ"];
     if (highPrefixes.includes(person.titlePrefix)) {
         let somdejScore = 949700000; 
@@ -5437,7 +5438,7 @@ function calculatePojiamScore(person) {
         return applySpecialKromRule(somdejScore + addOn);
     }
      
-    // --- [Logic Update] สมเด็จพระเจ้าบรมวงศ์เธอ และ สมเด็จพระเจ้าปฐมวงศ์เธอ ---
+    // --- สมเด็จพระเจ้าบรมวงศ์เธอ และ สมเด็จพระเจ้าปฐมวงศ์เธอ ---
     const isBawromGroup = person.relationship === "พระบรมวงศ์" || 
                                 person.titlePrefix?.includes("บรมวงศ์เธอ") || 
                                 person.titlePrefix?.includes("ปฐมวงศ์เธอ");
@@ -5465,7 +5466,7 @@ function calculatePojiamScore(person) {
         return applySpecialKromRule(bwScore + (pPrecedence / 100)); 
     }
 
-    // --- [ปรับปรุง] ส่วนนี้ปรับ Base Score และค่า Offset เพื่อให้แทรกกลางระหว่าง กรมพระ และ กรมพระยา ---
+    // --- ส่วนนี้ปรับ Base Score และค่า Offset เพื่อให้แทรกกลางระหว่าง กรมพระ และ กรมพระยา ---
     const secondaryQueens = { 
         "พระนางเจ้า": 7000000, 
         "พระนางนาฏ": 6500000, 
@@ -5507,7 +5508,7 @@ function calculatePojiamScore(person) {
         }
     }
 
-    // --- [Logic Update] สมเด็จพระเจ้าลูกเธอ/ลูกยาเธอ ---
+    // --- สมเด็จพระเจ้าลูกเธอ/ลูกยาเธอ ---
     const isCurrentChild = activeMonarch && (person.fatherId === activeMonarch.id || person.relationship?.includes("พระราชโอรส") || person.relationship?.includes("พระราชธิดา"));
     if (isCurrentChild) {
         let childScore = 900000000;
@@ -5594,7 +5595,7 @@ function calculatePojiamScore(person) {
         }
     }
      
-    // 2. [New] พระเจ้าสุพันธวงศ์เธอ เจ้าฟ้า (กลาง)
+    // 2. พระเจ้าสุพันธวงศ์เธอ เจ้าฟ้า (กลาง)
     if (person.titlePrefix?.includes("พระเจ้าสุพันธวงศ์เธอ") && isChaoFa) {
         if (person.titlePrefix.includes("สมเด็จ")) {
             return applySpecialKromRule(800250000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0));
@@ -5616,11 +5617,10 @@ function calculatePojiamScore(person) {
         "พระองค์เจ้า (ชั้นเอก)": 40000, "พระองค์เจ้า (ชั้นโท)": 30000, "พระองค์เจ้า (ชั้นตรี)": 20000, "หม่อมเจ้า": 10000
     };
 
-    // --- [UPDATED Logic] การจัดลำดับหม่อมเจ้าตามสายราชสกุลและชั้น ---
+    // --- การจัดลำดับหม่อมเจ้าตามสายราชสกุลและชั้น ---
     if (person.royalRank === "หม่อมเจ้า") {
-        let mcScore = 1000000; // คะแนนพื้นฐานหม่อมเจ้า
+        let mcScore = 1000000; 
         
-        // --- 1. [New Rule] ตรวจสอบกรณีพิเศษ: หลานกษัตริย์ปัจจุบัน และ ราชสกุลเดียวกัน ---
         const isGrandchildOfActive = father && activeMonarch && father.fatherId === activeMonarch.id;
         const isSameRajsakul = activeMonarch && (
             (person.rajsakul && person.rajsakul === activeMonarch.rajsakul) || 
@@ -5628,24 +5628,18 @@ function calculatePojiamScore(person) {
         );
 
         if (isGrandchildOfActive) {
-            // [Tier สูงสุด] หลานในไส้ของกษัตริย์ปัจจุบัน (สูงกว่า MC ทั้งปวง)
-            // ให้คะแนนเกือบแตะพระองค์เจ้า (ซึ่งเริ่มที่ 4,000,000)
             mcScore = 3900000;
             if (person.age) mcScore += (parseInt(person.age) * 1000);
 
         } else if (isSameRajsakul) {
-            // [Tier รองลงมา] ราชสกุลเดียวกับกษัตริย์ (สูงกว่า MC สายอื่น)
             mcScore = 3500000;
             if (person.age) mcScore += (parseInt(person.age) * 1000);
 
         } else {
-            // --- [Original Logic] ถ้าไม่เข้าเงื่อนไขพิเศษ ให้ใช้ Logic การนับยศพ่อตามปกติ ---
-            // เช็คข้อมูลพ่อเพื่อแบ่ง Tier (ชั้นลูก vs หลาน vs เหลน)
             if (father) {
                 const fPrefix = father.titlePrefix || "";
                 const fRank = father.royalRank || "";
 
-                // --- Tier 1: หม่อมเจ้าชั้นลูก (สูงที่สุดในกลุ่มปกติ) ลูกของ ---
                 const isClassChild = [
                     "ลูกเธอ", "ลูกยาเธอ", "พี่นางเธอ", "น้องนางเธอ", "พี่ยาเธอ", "น้องยาเธอ", 
                     "บรมวงศ์เธอ", "ราชวรวงศ์เธอ", "ปรพันธวงศ์เธอ", "สัมพันธวงศ์เธอ", "ปฐมวงศ์เธอ",
@@ -5654,7 +5648,6 @@ function calculatePojiamScore(person) {
                     "พระเจ้าลูก", "พระเจ้าพี่", "พระเจ้าน้อง" 
                 ].some(kw => fPrefix.includes(kw));
 
-                // --- Tier 2: หม่อมเจ้าชั้นหลาน (รองลงมา) ลูกของ ---
                 const isClassGrandchild = [
                     "พระเจ้าวรวงศ์เธอ", "พระวรวงศ์เธอ", 
                     "พระเจ้าสุพันธวงศ์เธอ", "พระสุพันธวงศ์เธอ", "สุพันธวงศ์เธอ",
@@ -5663,29 +5656,25 @@ function calculatePojiamScore(person) {
                 ].some(kw => fPrefix.includes(kw));
 
                 if (isClassChild) {
-                    mcScore += 500000; // Bonus ชั้นลูก
+                    mcScore += 500000; 
                 } else if (isClassGrandchild) {
-                    mcScore += 300000; // Bonus ชั้นหลาน
+                    mcScore += 300000; 
                 } else {
-                    mcScore += 100000; // Bonus ชั้นเหลน/ทั่วไป
+                    mcScore += 100000; 
                 }
 
-                // การเรียงลำดับภายใน Tier: เรียงตามศักดิ์พ่อ
                 mcScore += (getFatherBaseScore(father) * 100); 
 
             } else {
-                // ไม่พบข้อมูลพ่อ -> ให้คะแนนต่ำสุดในกลุ่มหม่อมเจ้า
                 mcScore += 50000;
             }
 
-            // เรียงตามอายุเล็กน้อยในขั้นตอนสุดท้าย
             if (person.age) mcScore += (parseInt(person.age) * 0.1);
         }
 
         score += mcScore;
 
     } else {
-        // กรณีไม่ใช่หม่อมเจ้า (พระองค์เจ้าขึ้นไปใน Zone C)
         score += (rankScoreMapAnu[person.royalRank] || 0) + rankElevator; 
     }
 
@@ -5699,7 +5688,6 @@ function calculatePojiamScore(person) {
     }
 
     // --- ตรวจสอบลำดับศักดิ์กลุ่ม วรวงศ์ / สุพันธวงศ์ / พันธวงศ์ / วงศ์ ---
-    // 1. พระเจ้าวรวงศ์เธอ (30M)
     if (person.titlePrefix?.includes("พระเจ้าวรวงศ์เธอ")) {
         const isSomdejChaoFaWora = person.titlePrefix.includes("สมเด็จ") && isChaoFa;
         if (isSomdejChaoFaWora) {
@@ -5712,27 +5700,21 @@ function calculatePojiamScore(person) {
             if (isSpecialWora) score += 650000000;
         }
     } 
-    // 2. [New] พระเจ้าสุพันธวงศ์เธอ (28M) - ต่ำกว่าพระเจ้าวรวงศ์เธอ
     else if (person.titlePrefix?.includes("พระเจ้าสุพันธวงศ์เธอ")) {
         score += 28000000 + (kromScoreMap[person.kromRank] || 0);
     }
-    // 3. [New] พระสุพันธวงศ์เธอ / พระสุพันธ์วงศ์เธอ (25M)
     else if (person.titlePrefix?.includes("พระสุพันธวงศ์เธอ") || person.titlePrefix?.includes("พระสุพันธ์วงศ์เธอ")) {
         score += 25000000 + (kromScoreMap[person.kromRank] || 0);
     }
-    // 4. พระวรวงศ์เธอ (20M)
     else if (person.titlePrefix?.includes("พระวรวงศ์เธอ")) {
         score += 20000000 + (kromScoreMap[person.kromRank] || 0); 
     } 
-    // 5. [New] พระเจ้าพันธวงศ์เธอ (17M) - ต่ำกว่าพระวรวงศ์เธอ
     else if (person.titlePrefix?.includes("พระเจ้าพันธวงศ์เธอ")) {
         score += 17000000 + (kromScoreMap[person.kromRank] || 0);
     }
-    // 6. [New] พระพันธวงศ์เธอ (14M) - ต่ำกว่าพระเจ้าพันธวงศ์เธอ
     else if (person.titlePrefix?.includes("พระพันธวงศ์เธอ")) {
         score += 14000000 + (kromScoreMap[person.kromRank] || 0);
     }
-    // 7. พระวงศ์เธอ (10M) - ต่ำที่สุด
     else if (person.titlePrefix?.includes("พระวงศ์เธอ")) {
         score += 10000000 + (kromScoreMap[person.kromRank] || 0); 
     }
