@@ -11587,10 +11587,11 @@ if (isFather) {
         }
     }
 }
-        // ============================================================
+       // ============================================================
         // ส่วนบันทึกและ Recursive Call (ห้ามลบ)
         // ============================================================
         if (updated && oldRank !== child.royalRank) {
+            delete child.customPrecedence; // <-- เพิ่มบรรทัดนี้เพื่อปลดล็อคโปรเจียม
             recordTitleHistory(child); // บันทึกประวัติพระยศ
             showToast(`ระบบอัปเกรดอัตโนมัติ: ${child.name} เป็น ${child.royalRank}`);
             const childFullTitle = getFullDisplayTitle(child);
@@ -11929,6 +11930,16 @@ function propagateRoyalSurname(parentId, surname) {
                 const idx = state.members.findIndex(m => m.id === id);
                 if(idx !== -1) {
                     const old = state.members[idx];
+
+
+
+// === ส่วนที่เพิ่มใหม่: ปลดล็อคโปรเจียมถ้าเปลี่ยนยศหลัก หรือ ยศกรม ===
+                if (old.royalRank !== p.royalRank || old.kromRank !== p.kromRank) {
+                    delete p.customPrecedence;
+                }
+                // ========================================================
+
+
                     old.spouseIds.forEach(sid => { if(!spouseIds.includes(sid)) { const s = state.members.find(x => x.id === sid); if(s) s.spouseIds = s.spouseIds.filter(x => x !== id); } });
                     state.members[idx] = p;
                 }
@@ -15952,7 +15963,23 @@ function getAffiliationTitle(p) {
     </div>
 </div>
 
-
+<div id="resignationModal" class="modal">
+    <div class="modal-content w-full max-w-sm p-6 text-center relative">
+        <button onclick="closeModal('resignationModal')" class="absolute top-3 right-3 text-slate-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
+        <i id="resignationModalIcon" class="fa-solid fa-user-slash text-4xl text-red-400 mb-3"></i>
+        <h3 id="resignationModalTitle" class="font-bold text-xl mb-4 text-red-600">ถอด / ลาออกจากพระราชวงศ์</h3>
+        <p class="text-xs text-slate-500 mb-6">กรุณาเลือกรูปแบบที่ต้องการดำเนินการ</p>
+        
+        <div class="flex flex-col gap-3">
+            <button id="btnResignSingle" onclick="confirmResignation('single')" class="w-full py-3 rounded-xl text-white font-bold bg-orange-500 hover:bg-orange-600 transition shadow-sm">
+                1. ลาออก/ถอดเฉพาะตน
+            </button>
+            <button id="btnResignLineage" onclick="confirmResignation('lineage')" class="w-full py-3 rounded-xl text-white font-bold bg-red-600 hover:bg-red-700 transition shadow-sm">
+                2. ลาออก/ถอดทั้งสาย (รวมลูกหลาน)
+            </button>
+        </div>
+    </div>
+</div>
 
 
 </body>
