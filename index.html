@@ -15057,6 +15057,7 @@ function restoreRoyalRankAction() {
         if (m.originalRoyalRank) m.royalRank = m.originalRoyalRank;
         if (m.originalRelationship) m.relationship = m.originalRelationship;
         if (m.originalTitlePrefix) m.titlePrefix = m.originalTitlePrefix;
+        if (m.originalTitleSuffix) m.titleSuffix = m.originalTitleSuffix; // [เพิ่มส่วนนี้] คืนค่าคำลงท้าย
         if (m.originalRoyalSurname) m.royalSurname = m.originalRoyalSurname;
 
         // --- 3. คืนค่าชั้นยศในกรม และล้างนามสกุลสามัญชนออก ---
@@ -15068,12 +15069,13 @@ function restoreRoyalRankAction() {
         m.originalRoyalRank = null;
         m.originalRelationship = null;
         m.originalTitlePrefix = null;
+        m.originalTitleSuffix = null; // [เพิ่มส่วนนี้] ล้างค่าสำรองคำลงท้าย
         m.originalRoyalSurname = null;
         m.originalKromRank = null;
         m.originalKromTitle = null;
 
         // --- 5. บันทึกข้อมูลและอัปเดตการแสดงผลในโปรแกรม ---
-        // [เพิ่มส่วนนี้] บันทึกลงทำเนียบพระยศก่อนทำการ saveState
+        // บันทึกลงทำเนียบพระยศก่อนทำการ saveState
         if (typeof recordTitleHistory === 'function') {
             recordTitleHistory(m);
         }
@@ -15084,7 +15086,6 @@ function restoreRoyalRankAction() {
         showToast(`สถาปนาคืนพระยศแก่ ${m.name} เรียบร้อยแล้ว ✨`);
     }
 }
-
 
 
 // วางไว้ท้ายไฟล์ ก่อนปิด 
