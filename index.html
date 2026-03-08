@@ -5435,17 +5435,9 @@ function calculatePojiamScore(person) {
     if ((person.name || "").includes("กรมพระราชวังบวรสถานมงคล") || person.relationship === "วังหน้า") return applySpecialKromRule(958800000 + (kromScoreMap[person.kromRank] || 0)); 
     if ((person.name || "").includes("กรมพระราชวังบวรสถานพิมุข") || person.relationship === "วังหลัง") return applySpecialKromRule(958700000 + (kromScoreMap[person.kromRank] || 0)); 
 
-   if ((person.relationship === "พระปิตุลา" || person.relationship === "พระปิตุฉา") && person.isAlive) {
+    if ((person.relationship === "พระปิตุลา" || person.relationship === "พระปิตุฉา") && person.isAlive) {
         let pituScore = 957000000; 
-        const prefix = person.titlePrefix || "";
-        
-        // ให้ สมเด็จพระเจ้าราช ได้คะแนนบวกมากกว่า สมเด็จพระราช
-        if (prefix.includes("สมเด็จพระเจ้าราช")) {
-            pituScore += 2000000; 
-        } else if (prefix.includes("สมเด็จพระราช")) {
-            pituScore += 1000000; 
-        }
-        
+        if ((person.titlePrefix || "").includes("สมเด็จพระเจ้าราช")) pituScore += 1000000; 
         let ageScore = (parseInt(person.age) || 0) * 10;
         return applySpecialKromRule(pituScore + (kromScoreMap[person.kromRank] || 0) + ageScore + (pPrecedence / 100));
     }
