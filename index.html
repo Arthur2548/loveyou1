@@ -2107,19 +2107,42 @@ function initTableSortable() {
         handle: '.drag-handle',
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
-        dragClass: 'sortable-drag', // เพิ่มเพื่อให้เห็นเอฟเฟกต์ตอนลาก
+        dragClass: 'sortable-drag',
         forceFallback: false,
-        onEnd: function() {
+        onEnd: function(evt) {
+            const itemEl = evt.item;
+            const newIndex = evt.newIndex;
             const rows = Array.from(tbody.children);
-            let startScore = 2000000000;
             
-            rows.forEach((row, idx) => {
-                const id = row.getAttribute('data-id');
-                const member = state.members.find(m => m.id === id);
-                if (member) {
-                    member.customPrecedence = startScore - idx;
-                }
-            });
+            const movedId = itemEl.getAttribute('data-id');
+            const movedMember = state.members.find(m => m.id === movedId);
+            
+            if (!movedMember) return;
+
+            // ดึงคะแนนของคนด้านบนและด้านล่าง ณ ตำแหน่งที่เพิ่งไปวาง
+            let scoreAbove = null;
+            let scoreBelow = null;
+
+            if (newIndex > 0) {
+                const idAbove = rows[newIndex - 1].getAttribute('data-id');
+                const memberAbove = state.members.find(m => m.id === idAbove);
+                scoreAbove = memberAbove.customPrecedence !== undefined ? memberAbove.customPrecedence : (memberAbove.pojiamScore || 0);
+            }
+
+            if (newIndex < rows.length - 1) {
+                const idBelow = rows[newIndex + 1].getAttribute('data-id');
+                const memberBelow = state.members.find(m => m.id === idBelow);
+                scoreBelow = memberBelow.customPrecedence !== undefined ? memberBelow.customPrecedence : (memberBelow.pojiamScore || 0);
+            }
+
+            // คำนวณคะแนนใหม่ให้อยู่ "กึ่งกลาง" ระหว่างคนบนและล่าง (ให้ค่าคงที่เฉพาะคนที่ถูกลากเท่านั้น)
+            if (scoreAbove !== null && scoreBelow !== null) {
+                movedMember.customPrecedence = (scoreAbove + scoreBelow) / 2;
+            } else if (scoreAbove !== null) { // ลากไปล่างสุด
+                movedMember.customPrecedence = scoreAbove - 1000;
+            } else if (scoreBelow !== null) { // ลากไปบนสุด
+                movedMember.customPrecedence = scoreBelow + 1000;
+            }
 
             saveState();
             showToast("✨ จัดลำดับโปรเจียมใหม่เรียบร้อย");
@@ -3061,7 +3084,7 @@ function applyRoyalMarriageRules(female, male) {
             recordTitleHistory(female);
         }
     }
-    
+
     // --- ส่วนที่ 3: กรณีฝ่ายหญิงแต่งกับเจ้านายชาย ---
     else if (isMaleRoyal) {
         const husbandSurname = male.royalSurname || male.surname || "";
@@ -5794,22 +5817,20 @@ function calculatePojiamScore(person) {
 
 // ฟังก์ชันสำหรับเลื่อนลำดับโปรเจียมขึ้น-ลง
 function movePrecedence(id, direction) {
-
-// เพิ่มบรรทัดนี้ที่หัวฟังก์ชันเพื่อดึงค่าสถานะตัวกรอง
     const filterStatus = document.getElementById('tableFilterStatus').value;
 
     // 1. ดึงรายชื่อเฉพาะคนที่มีสิทธิ์ในโปเจียมและยังมีชีวิต
     let list = state.members.filter(m => m.isAlive && calculatePojiamScore(m) > 0);
     
     // 2. เรียงลำดับตามค่าปัจจุบัน (Manual + Auto)
-   list.sort((a, b) => {
-    if (filterStatus === 'precedence') {
-        const valA = a.customPrecedence !== undefined ? a.customPrecedence : calculatePojiamScore(a);
-        const valB = b.customPrecedence !== undefined ? b.customPrecedence : calculatePojiamScore(b);
-        return valB - valA;
-    }
-    return (parseInt(a.birthYear) || Infinity) - (parseInt(b.birthYear) || Infinity);
-});
+    list.sort((a, b) => {
+        if (filterStatus === 'precedence') {
+            const scoreA = a.customPrecedence !== undefined ? a.customPrecedence : (a.pojiamScore || 0);
+            const scoreB = b.customPrecedence !== undefined ? b.customPrecedence : (b.pojiamScore || 0);
+            return scoreB - scoreA;
+        }
+        return (parseInt(a.birthYear) || Infinity) - (parseInt(b.birthYear) || Infinity);
+    });
 
     const index = list.findIndex(m => m.id === id);
     if (index === -1) return;
@@ -5818,21 +5839,31 @@ function movePrecedence(id, direction) {
     if (targetIndex < 0 || targetIndex >= list.length) return;
 
     const currentPerson = list[index];
-    const targetPerson = list[targetIndex];
+    
+    // 3. จำลองการย้ายตำแหน่ง Array ในความจำ
+    list.splice(index, 1);
+    list.splice(targetIndex, 0, currentPerson);
 
-    // 3. กำหนดค่าพื้นฐานให้ customPrecedence หากยังไม่มี
-    if (currentPerson.customPrecedence === undefined) currentPerson.customPrecedence = calculatePojiamScore(currentPerson);
-    if (targetPerson.customPrecedence === undefined) targetPerson.customPrecedence = calculatePojiamScore(targetPerson);
+    // 4. ดึงคะแนนใหม่ของตำแหน่งคนบนและคนล่าง (ใน Array ที่สลับแล้ว)
+    let scoreAbove = null;
+    let scoreBelow = null;
 
-    // 4. ทำการสลับ (Swap) ค่า customPrecedence
-    // เพื่อให้การเรียงลำดับเปลี่ยนไป เราต้องสลับค่าคะแนนกัน
-    const temp = currentPerson.customPrecedence;
-    currentPerson.customPrecedence = targetPerson.customPrecedence;
-    targetPerson.customPrecedence = temp;
+    if (targetIndex > 0) {
+        const memberAbove = list[targetIndex - 1];
+        scoreAbove = memberAbove.customPrecedence !== undefined ? memberAbove.customPrecedence : (memberAbove.pojiamScore || 0);
+    }
+    if (targetIndex < list.length - 1) {
+        const memberBelow = list[targetIndex + 1];
+        scoreBelow = memberBelow.customPrecedence !== undefined ? memberBelow.customPrecedence : (memberBelow.pojiamScore || 0);
+    }
 
-    // กรณีที่คะแนนเท่ากันเป๊ะ (เช่น สลับครั้งแรก) ให้ปรับแต่งเล็กน้อยเพื่อไม่ให้ตำแหน่งซ้อนกัน
-    if (currentPerson.customPrecedence === targetPerson.customPrecedence) {
-        currentPerson.customPrecedence += (direction * -0.01);
+    // 5. กำหนดคะแนนให้อยู่ระหว่างกลางให้คนที่กำลังกดเลื่อน
+    if (scoreAbove !== null && scoreBelow !== null) {
+        currentPerson.customPrecedence = (scoreAbove + scoreBelow) / 2;
+    } else if (scoreAbove !== null) {
+        currentPerson.customPrecedence = scoreAbove - 1000;
+    } else if (scoreBelow !== null) {
+        currentPerson.customPrecedence = scoreBelow + 1000;
     }
 
     saveState();
@@ -8728,47 +8759,60 @@ if (filterStatus === 'royal_surnames') {
 
 
 function movePrecedence(id, direction) {
-
- // เพิ่มบรรทัดนี้ที่หัวฟังก์ชันเพื่อดึงค่าสถานะตัวกรอง
     const filterStatus = document.getElementById('tableFilterStatus').value;
-       
-    // 1. ดึงรายชื่อเฉพาะคนที่มีสิทธิ์ในโปเจียมและยังมีชีวิตที่กำลังแสดงอยู่ในตาราง
+
+    // 1. ดึงรายชื่อเฉพาะคนที่มีสิทธิ์ในโปเจียมและยังมีชีวิต
     let list = state.members.filter(m => m.isAlive && calculatePojiamScore(m) > 0);
     
-    // 2. เรียงลำดับตามคะแนนปัจจุบัน (เพื่อให้ได้ index ที่ถูกต้องเหมือนหน้าจอ)
+    // 2. เรียงลำดับตามค่าปัจจุบัน (Manual + Auto)
     list.sort((a, b) => {
-        const scoreA = a.customPrecedence !== undefined ? a.customPrecedence : calculatePojiamScore(a);
-        const scoreB = b.customPrecedence !== undefined ? b.customPrecedence : calculatePojiamScore(b);
-        return scoreB - scoreA;
+        if (filterStatus === 'precedence') {
+            const scoreA = a.customPrecedence !== undefined ? a.customPrecedence : (a.pojiamScore || 0);
+            const scoreB = b.customPrecedence !== undefined ? b.customPrecedence : (b.pojiamScore || 0);
+            return scoreB - scoreA;
+        }
+        return (parseInt(a.birthYear) || Infinity) - (parseInt(b.birthYear) || Infinity);
     });
 
     const index = list.findIndex(m => m.id === id);
     if (index === -1) return;
 
-    const targetIndex = index + direction; 
+    const targetIndex = index + direction; // direction: -1 คือขึ้น, 1 คือลง
     if (targetIndex < 0 || targetIndex >= list.length) return;
 
     const currentPerson = list[index];
-    const targetPerson = list[targetIndex];
+    
+    // 3. จำลองการย้ายตำแหน่ง Array ในความจำ
+    list.splice(index, 1);
+    list.splice(targetIndex, 0, currentPerson);
 
-    // 3. กำหนดค่าพื้นฐานให้ customPrecedence หากยังไม่มี (เพื่อเริ่มการจัดลำดับด้วยมือ)
-    if (currentPerson.customPrecedence === undefined) currentPerson.customPrecedence = calculatePojiamScore(currentPerson);
-    if (targetPerson.customPrecedence === undefined) targetPerson.customPrecedence = calculatePojiamScore(targetPerson);
+    // 4. ดึงคะแนนใหม่ของตำแหน่งคนบนและคนล่าง (ใน Array ที่สลับแล้ว)
+    let scoreAbove = null;
+    let scoreBelow = null;
 
-    // 4. สลับค่าคะแนนกันเพื่อให้ตำแหน่งเปลี่ยน
-    const temp = currentPerson.customPrecedence;
-    currentPerson.customPrecedence = targetPerson.customPrecedence;
-    targetPerson.customPrecedence = temp;
+    if (targetIndex > 0) {
+        const memberAbove = list[targetIndex - 1];
+        scoreAbove = memberAbove.customPrecedence !== undefined ? memberAbove.customPrecedence : (memberAbove.pojiamScore || 0);
+    }
+    if (targetIndex < list.length - 1) {
+        const memberBelow = list[targetIndex + 1];
+        scoreBelow = memberBelow.customPrecedence !== undefined ? memberBelow.customPrecedence : (memberBelow.pojiamScore || 0);
+    }
 
-    // กรณีถ้าคะแนนเท่ากันเป๊ะหลังสลับ ให้มีการปรับทศนิยมเพื่อกันตำแหน่งซ้อน
-    if (currentPerson.customPrecedence === targetPerson.customPrecedence) {
-        currentPerson.customPrecedence += (direction * -0.01);
+    // 5. กำหนดคะแนนให้อยู่ระหว่างกลางให้คนที่กำลังกดเลื่อน
+    if (scoreAbove !== null && scoreBelow !== null) {
+        currentPerson.customPrecedence = (scoreAbove + scoreBelow) / 2;
+    } else if (scoreAbove !== null) {
+        currentPerson.customPrecedence = scoreAbove - 1000;
+    } else if (scoreBelow !== null) {
+        currentPerson.customPrecedence = scoreBelow + 1000;
     }
 
     saveState();
     renderTable();
-    showToast(`ปรับลำดับของ ${currentPerson.name} เรียบร้อย`);
+    showToast(`สลับลำดับของ ${currentPerson.name} เรียบร้อย`);
 }
+
 
 function renderRoyalRow(tbody, m, displayIdx, mother, showMotherTag) {
     let fullName = getFullDisplayTitle(m);
@@ -11905,31 +11949,30 @@ function propagateRoyalSurname(parentId, surname) {
 
               state.members.push(p);
 
-                // --- ส่วนที่เพิ่มใหม่: แทรกบุคคลใหม่ลงในลำดับมือเดิม ---
-                const hasManualSort = state.members.some(m => m.customPrecedence !== undefined);
-                
-                if (hasManualSort) {
-                    // 1. คำนวณคะแนน Pojiam ให้ทุกคนก่อนเพื่อให้คนใหม่มีค่าเปรียบเทียบ
-                    state.members.forEach(m => {
-                        m.pojiamScore = calculatePojiamScore(m);
-                    });
+               // --- ส่วนที่เพิ่มใหม่: แทรกบุคคลใหม่ลงในลำดับมือเดิม ---
+        const hasManualSort = state.members.some(m => m.customPrecedence !== undefined);
+        if (hasManualSort) {
+            // 1. คำนวณคะแนน Pojiam ให้ทุกคนก่อนเพื่อให้คนใหม่มีค่าเปรียบเทียบ
+            state.members.forEach(m => {
+                m.pojiamScore = calculatePojiamScore(m);
+            });
 
-                    // 2. เรียงลำดับแบบผสม (Hybrid Sort)
-                    state.members.sort((a, b) => {
-                        // ถ้าคนไหนมีลำดับมือ (customPrecedence) ให้ใช้ค่านั้น ถ้าไม่มี (คนใหม่) ให้ใช้คะแนน Pojiam
-                        const valA = a.customPrecedence !== undefined ? a.customPrecedence : a.pojiamScore;
-                        const valB = b.customPrecedence !== undefined ? b.customPrecedence : b.pojiamScore;
-                        return valB - valA; // เรียงจากมากไปน้อย
-                    });
+            // 2. เรียงลำดับแบบผสม (Hybrid Sort)
+            state.members.sort((a, b) => {
+                // ถ้าคนไหนมีลำดับมือ (customPrecedence) ให้ใช้ค่านั้น ถ้าไม่มี (คนใหม่) ให้ใช้คะแนน Pojiam
+                const valA = a.customPrecedence !== undefined ? a.customPrecedence : a.pojiamScore;
+                const valB = b.customPrecedence !== undefined ? b.customPrecedence : b.pojiamScore;
+                return valB - valA; // เรียงจากมากไปน้อย
+            });
 
-                    // 3. อัปเดตค่าลำดับมือ (customPrecedence) ให้ทุกคนใหม่เพื่อ "ล็อค" ตำแหน่งที่แทรกแล้ว
-                    // ใช้ค่าเริ่มต้นที่สูง (2,000 ล้าน) เพื่อไม่ให้ค่า Pojiam ปกติมาแทรกได้ในภายหลัง
-                    let baseScore = 2000000000; 
-                    state.members.forEach((m, idx) => {
-                        m.customPrecedence = baseScore - idx;
-                    });
-                }
-                // --------------------------------------------------
+            // 3. อัปเดตค่าลำดับมือ (customPrecedence) ให้ทุกคนใหม่เพื่อ "ล็อค" ตำแหน่งที่แทรกแล้ว
+            // ใช้ค่าเริ่มต้นที่สูง (2,000 ล้าน) เพื่อไม่ให้ค่า Pojiam ปกติมาแทรกได้ในภายหลัง
+            let baseScore = 2000000000;
+            state.members.forEach((m, idx) => {
+                m.customPrecedence = baseScore - idx;
+            });
+        }
+        // --------------------------------------------------
 
                 // แสดง Pop-up นิมิตแห่งโชคชะตา
                 if (!window.parentStepFlow || window.parentStepFlow.step === 0) {
