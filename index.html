@@ -3029,10 +3029,11 @@ function applyRoyalMarriageRules(female, male) {
     const isFemaleMRML = ['หม่อมราชวงศ์', 'หม่อมหลวง'].includes(female.royalRank);
     const isMaleRoyal = (male.royalRank && !['สามัญชน', 'หม่อมราชวงศ์', 'หม่อมหลวง'].includes(male.royalRank));
 
-    // --- ส่วนที่ 2: กรณีเจ้านายหญิงแต่งกับสามัญชน (ลาออก) ---
+   // --- ส่วนที่ 2: กรณีเจ้านายหญิงแต่งกับสามัญชน (ลาออก) ---
     if (isFemaleRoyal && !isMaleRoyal) {
         // [แก้ไข] บันทึกข้อมูลเดิมให้ครบทุกช่อง (คำนำหน้า, สร้อย, กรม, และราชสกุลเดิม)
         female.originalRoyalRank = female.royalRank;
+        female.originalRelationship = female.relationship; // <<<<<< [เพิ่มบรรทัดนี้] สำรองความสัมพันธ์เดิม
         female.originalTitlePrefix = female.titlePrefix;
         female.originalTitleSuffix = female.titleSuffix; // บันทึกสร้อยชื่อเดิม
         female.originalKromRank = female.kromRank;       // บันทึกยศกรมเดิม
@@ -3060,7 +3061,7 @@ function applyRoyalMarriageRules(female, male) {
             recordTitleHistory(female);
         }
     }
-
+    
     // --- ส่วนที่ 3: กรณีฝ่ายหญิงแต่งกับเจ้านายชาย ---
     else if (isMaleRoyal) {
         const husbandSurname = male.royalSurname || male.surname || "";
