@@ -5374,16 +5374,23 @@ function calculatePojiamScore(person) {
     // ====================================================================
     const applySpecialKromRule = (currentScore) => {
         if (person.kromRank === "กรมสมเด็จพระ") {
-            // ฐานคะแนนวังหลังคือ 958,700,000 
-            // ให้ฐาน กรมสมเด็จพระ เป็น 958,000,000 (เพื่อให้อยู่ใต้หลังวังทันที)
-            // ย่อสเกล rankWall ลง / 100 เพื่อไม่ให้คะแนนทะลุขึ้นไปทับวังหลัง
+            const wangLangBaseScore = 958700000; // ฐานคะแนนวังหลัง
+            
+            // 1. ถ้ายศเดิมสูงกว่าหรือเท่ากับวังหลังอยู่แล้ว (เช่น วังหน้า, รัชทายาท, พระราชชนนี)
+            // ให้ข้ามกระบวนการดีดคะแนน และใช้คะแนนเดิมได้เลย
+            if (currentScore >= wangLangBaseScore) {
+                return currentScore;
+            }
+
+            // 2. ถ้าคะแนนเดิมต่ำกว่าวังหลัง ถึงจะทำการเลื่อนชั้น (Promote)
             const scaledRankScore = (rankWall[person.royalRank] || 0) / 100; 
             const ageScore = (parseInt(person.age) || 0) * 10;
             
-            const promotedScore = 958000000 + scaledRankScore + ageScore;
+            let promotedScore = 958000000 + scaledRankScore + ageScore;
             
-            // หากเจ้านายมีคะแนนเดิม "สูงกว่า" ฐานที่โปรโมต (เช่น รัชทายาท, วังหน้า, พระอัยกา ฯลฯ)
-            // Math.max จะดึงคะแนนเดิมมาใช้ ทำให้ลำดับคงเดิมไม่ถูกดึงลงมา
+            // 3. ล็อกเพดานสูงสุด (Hard Cap) ให้ไม่มีทางเกินคะแนนของวังหลัง (สูงสุดที่ 958,699,999)
+            promotedScore = Math.min(promotedScore, wangLangBaseScore - 1);
+            
             return Math.max(currentScore, promotedScore);
         }
         return currentScore;
