@@ -5394,25 +5394,26 @@ function calculatePojiamScore(person) {
     const kromScoreMap = { "กรมสมเด็จพระ": 60000, "กรมพระยา": 50000, "กรมพระ": 40000, "กรมหลวง": 30000, "กรมขุน": 20000, "กรมหมื่น": 10000 };
 
     // ====================================================================
-    // --- [อัปเดต] กฎการจัดลำดับ "กรมสมเด็จพระ" ---
+    // --- [แก้ไข] กฎการจัดลำดับ "กรมสมเด็จพระ" ---
     // ====================================================================
     const applySpecialKromRule = (currentScore) => {
         if (person.kromRank === "กรมสมเด็จพระ") {
             const wangLangBaseScore = 958700000; // ฐานคะแนนวังหลัง
             
-            // 1. ถ้ายศเดิมสูงกว่าหรือเท่ากับวังหลังอยู่แล้ว (เช่น วังหน้า, รัชทายาท, พระราชชนนี)
-            // ให้ข้ามกระบวนการดีดคะแนน และใช้คะแนนเดิมได้เลย
+            // [แก้ไข] 1. ถ้าบุคคลที่ตั้งเป็นกรมสมเด็จพระ มีโปรเจียมสูงกว่าหรือเท่ากับวังหลังอยู่แล้ว (เช่น พระชนก/ชนนี, รัชทายาท)
+            // ให้ข้ามกระบวนการดีดคะแนน และใช้คะแนนเดิมได้เลย เพื่อคงสถานะเดิมไว้
             if (currentScore >= wangLangBaseScore) {
                 return currentScore;
             }
 
-            // 2. ถ้าคะแนนเดิมต่ำกว่าวังหลัง ถึงจะทำการเลื่อนชั้น (Promote)
+            // [แก้ไข] 2. ถ้าคะแนนเดิมต่ำกว่าวังหลัง ถึงจะทำการเลื่อนชั้น (Promote) ขึ้นมาอยู่ใต้วังหลัง
             const scaledRankScore = (rankWall[person.royalRank] || 0) / 100; 
             const ageScore = (parseInt(person.age) || 0) * 10;
             
             let promotedScore = 958000000 + scaledRankScore + ageScore;
             
             // 3. ล็อกเพดานสูงสุด (Hard Cap) ให้ไม่มีทางเกินคะแนนของวังหลัง (สูงสุดที่ 958,699,999)
+            // ต่อให้ไม่มีวังหลังอยู่ในระบบ คะแนนก็จะไม่ทะลุเพดานนี้
             promotedScore = Math.min(promotedScore, wangLangBaseScore - 1);
             
             return Math.max(currentScore, promotedScore);
@@ -5564,28 +5565,20 @@ function calculatePojiamScore(person) {
         return applySpecialKromRule(phakhiniScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
     }
 
-    // ====================================================================
-    // --- [อัปเดต] เงื่อนไขพระเจ้าพี่น้องต่างพระมารดา (พระองค์เจ้า) ---
-    // ====================================================================
     if (isMonarchSibling || isPhakhini) {
         if (isChaoFa || isPhakhini) {
             let sibScore = 850000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
             return applySpecialKromRule(sibScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
         } else if ((person.royalRank || "").includes("พระองค์เจ้า")) {
             if (isFullSibling) {
-                // ร่วมพระมารดา (พระองค์เจ้า)
                 let sibScore = 840000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0); 
                 return applySpecialKromRule(sibScore + (parseInt(person.age) || 0) * 10 + (pPrecedence / 1000));
             } else {
-                // ต่างพระมารดา (พระองค์เจ้า) 
-                // ปรับให้เป็น 835,000,000 เพื่อให้อยู่ระหว่าง ลูก (900M) กับ พระนางเจ้า (812M) 
-                // และยังคงต่ำกว่า เจ้าฟ้า (850M) เหมือนเดิม
                 let sibScore = 835000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
                 return applySpecialKromRule(sibScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
             }
         }
     }
-    // ====================================================================
 
     const isCurrentChild = activeMonarch && (person.fatherId === activeMonarch.id || person.relationship?.includes("พระราชโอรส") || person.relationship?.includes("พระราชธิดา"));
     if (isCurrentChild) {
@@ -5605,7 +5598,6 @@ function calculatePojiamScore(person) {
         return applySpecialKromRule(childScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
     }
 
-    // กรณีที่เป็นพี่น้องต่างมารดา ที่ตกหล่นมาจากด้านบน (เช่น ยศหม่อมเจ้า) จะถูกจัดการตรงนี้
     if (isMonarchSibling && person.motherId !== activeMonarch.motherId) {
         let sibScore = 790000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
         return applySpecialKromRule(sibScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
@@ -5680,7 +5672,8 @@ function calculatePojiamScore(person) {
         }
     }
      
-    let score = applySpecialKromRule(0);
+    // [แก้ไข] เริ่มต้นคะแนนฐานล่างสุดที่ 0 เพื่อรวบรวมคะแนนเจ้านายสายอนุวงศ์ทั้งหมดก่อน
+    let score = 0; 
      
     const rankScoreMapAnu = {
         "เจ้าฟ้า (ชั้นพิเศษ)": 70000, "เจ้าฟ้า (ชั้นเอก)": 70000, "เจ้าฟ้า (ชั้นโท)": 60000, "เจ้าฟ้า (ชั้นตรี)": 50000,
@@ -5812,7 +5805,8 @@ function calculatePojiamScore(person) {
     const idSuffix = person.id.length >= 6 ? person.id.substring(person.id.length - 6) : person.id;
     score -= (parseInt(idSuffix.replace(/\D/g, '')) || 0) / 1000000;
 
-    return score;
+    // [แก้ไข] นำคะแนนฐานรากทั้งหมดที่บวกเสร็จแล้ว มาเข้ากฎการจัดลำดับกรมสมเด็จพระเป็นด่านสุดท้ายก่อนรีเทิร์นกลับ
+    return applySpecialKromRule(score);
 }
 
 // ฟังก์ชันสำหรับเลื่อนลำดับโปรเจียมขึ้น-ลง
