@@ -5394,18 +5394,28 @@ function calculatePojiamScore(person) {
     const kromScoreMap = { "กรมสมเด็จพระ": 60000, "กรมพระยา": 50000, "กรมพระ": 40000, "กรมหลวง": 30000, "กรมขุน": 20000, "กรมหมื่น": 10000 };
 
     // ====================================================================
-    // --- กฎการจัดลำดับ "กรมสมเด็จพระ" ---
+    // --- [แก้ไข] กฎการจัดลำดับ "กรมสมเด็จพระ" ---
     // ====================================================================
     const applySpecialKromRule = (currentScore) => {
         if (person.kromRank === "กรมสมเด็จพระ") {
-            const wangLangBaseScore = 958700000; 
+            const wangLangBaseScore = 958700000; // ฐานคะแนนวังหลัง
+            
+            // 1. ถ้าบุคคลที่ตั้งเป็นกรมสมเด็จพระ มีโปรเจียมสูงกว่าหรือเท่ากับวังหลังอยู่แล้ว (เช่น พระชนก/ชนนี, รัชทายาท)
+            // ให้ข้ามกระบวนการดีดคะแนน และใช้คะแนนเดิมได้เลย เพื่อคงสถานะเดิมไว้
             if (currentScore >= wangLangBaseScore) {
                 return currentScore;
             }
+
+            // 2. ถ้าคะแนนเดิมต่ำกว่าวังหลัง ถึงจะทำการเลื่อนชั้น (Promote) ขึ้นมาอยู่ใต้วังหลัง
             const scaledRankScore = (rankWall[person.royalRank] || 0) / 100; 
             const ageScore = (parseInt(person.age) || 0) * 10;
+            
             let promotedScore = 958000000 + scaledRankScore + ageScore;
+            
+            // 3. ล็อกเพดานสูงสุด (Hard Cap) ให้ไม่มีทางเกินคะแนนของวังหลัง (สูงสุดที่ 958,699,999)
+            // ต่อให้ไม่มีวังหลังอยู่ในระบบ คะแนนก็จะไม่ทะลุเพดานนี้
             promotedScore = Math.min(promotedScore, wangLangBaseScore - 1);
+            
             return Math.max(currentScore, promotedScore);
         }
         return currentScore;
@@ -5476,7 +5486,6 @@ function calculatePojiamScore(person) {
 
     const isMonarchSibling = activeMonarch && person.fatherId === activeMonarch.fatherId && person.id !== activeMonarch.id;
     const isFullSibling = isMonarchSibling && activeMonarch && person.motherId === activeMonarch.motherId;
-    const isHalfSibling = isMonarchSibling && !isFullSibling; // เช็กต่างพระมารดา
     const isPhakhini = person.titlePrefix?.includes("สมเด็จพระเจ้าภคนี") || person.titlePrefix?.includes("สมเด็จพระเจ้าภคินี");
 
     if (isFullSibling && isChaoFa) {
@@ -5530,9 +5539,14 @@ function calculatePojiamScore(person) {
     }
 
     const secondaryQueens = { 
-        "พระนางเจ้า": 7000000, "พระนางนาฏ": 6500000, "พระนางเธอ": 6000000, 
-        "พระอรรคชายาเธอ": 3000000, "พระวรราชชายาเธอ": 2500000, "พระวรราชชายา": 2000000, 
-        "พระราชชายาเธอ": 1500000, "พระราชชายา": 1000000 
+        "พระนางเจ้า": 7000000, 
+        "พระนางนาฏ": 6500000, 
+        "พระนางเธอ": 6000000, 
+        "พระอรรคชายาเธอ": 3000000, 
+        "พระวรราชชายาเธอ": 2500000, 
+        "พระวรราชชายา": 2000000, 
+        "พระราชชายาเธอ": 1500000, 
+        "พระราชชายา": 1000000 
     };
 
     if (secondaryQueens[person.titlePrefix]) {
@@ -5551,37 +5565,32 @@ function calculatePojiamScore(person) {
         return applySpecialKromRule(phakhiniScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
     }
 
-    // ====================================================================
-    // --- [แก้ไข] ลำดับพี่น้อง จัดเรียงตามกฎความสัมพันธ์ ---
-    // ====================================================================
     if (isMonarchSibling || isPhakhini) {
-        // 1. พระเจ้าพี่น้องต่างพระมารดา (เจ้าฟ้า) ต่ำกว่าร่วมพระมารดา (952M) แต่สูงกว่าพระราชโอรส/ธิดา (900M)
-        if (isHalfSibling && isChaoFa) {
-            let sibScore = 910000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
-            return applySpecialKromRule(sibScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
-        } 
-        // 2. พระเจ้าพี่น้องร่วมพระมารดา (พระองค์เจ้า) สูงกว่าพระราชโอรส/ธิดา (900M)
-        else if (isFullSibling && (person.royalRank || "").includes("พระองค์เจ้า")) {
-            let sibScore = 915000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0); 
-            return applySpecialKromRule(sibScore + (parseInt(person.age) || 0) * 10 + (pPrecedence / 1000));
-        }
-        // 3. ฐานคะแนนเก่าสำหรับภคินี หรือกรณีกันตกหล่นของเจ้าฟ้าอื่นๆ
-        else if (isPhakhini || isChaoFa) {
+        if (isChaoFa || isPhakhini) {
             let sibScore = 850000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
             return applySpecialKromRule(sibScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
-        } 
-        // 4. พระเจ้าพี่น้องต่างพระมารดา (พระองค์เจ้า) ต่ำกว่าพระราชโอรส/ธิดา (900M)
-        else if (isHalfSibling && (person.royalRank || "").includes("พระองค์เจ้า")) {
-            let sibScore = 835000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
-            return applySpecialKromRule(sibScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
+        } else if ((person.royalRank || "").includes("พระองค์เจ้า")) {
+            if (isFullSibling) {
+                let sibScore = 840000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0); 
+                return applySpecialKromRule(sibScore + (parseInt(person.age) || 0) * 10 + (pPrecedence / 1000));
+            } else {
+                let sibScore = 835000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
+                return applySpecialKromRule(sibScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
+            }
         }
     }
 
+    // ====================================================================
+    // --- [แก้ไข] ปรับตัวคูณคะแนนกรมในหมวดพระราชโอรส/ธิดา ---
+    // ====================================================================
     const isCurrentChild = activeMonarch && (person.fatherId === activeMonarch.id || person.relationship?.includes("พระราชโอรส") || person.relationship?.includes("พระราชธิดา"));
     if (isCurrentChild) {
         let childScore = 900000000;
+        
+        // ลดตัวคูณเป็น * 15 เพื่อไม่ให้คะแนนของพระองค์เจ้าทรงกรม (สูงสุด +900,000)
+        // พุ่งทะลุกำแพงไปแซงเจ้าฟ้าชั้นเอก/โท/ตรี (ที่ไม่ได้ทรงกรม)
         if (person.kromRank) {
-            childScore += ((kromScoreMap[person.kromRank] || 0) * 200) + (rankWall[person.royalRank] || 0);
+            childScore += ((kromScoreMap[person.kromRank] || 0) * 15) + (rankWall[person.royalRank] || 0);
         } else {
             childScore += (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
         }
@@ -5594,6 +5603,7 @@ function calculatePojiamScore(person) {
         }
         return applySpecialKromRule(childScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
     }
+    // ====================================================================
 
     if (isMonarchSibling && person.motherId !== activeMonarch.motherId) {
         let sibScore = 790000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
@@ -5602,9 +5612,12 @@ function calculatePojiamScore(person) {
 
     if ((person.titlePrefix || "").includes("ภาติกาเธอ")) {
         let phatikaScore = 835000000; 
+        
         if (person.titlePrefix.includes("สมเด็จ")) phatikaScore += 10000000; 
         if (person.titlePrefix.includes("พระเจ้า")) phatikaScore += 2000000;  
+        
         phatikaScore += (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
+        
         return applySpecialKromRule(phatikaScore + (pPrecedence / 100) + (100 - (parseInt(person.age) || 0)));
     }
 
@@ -5625,6 +5638,7 @@ function calculatePojiamScore(person) {
             const mPrecedence = (getFatherBaseScore(mother) * 1000) / 100;
             if (mPrecedence > parentPrecedence) parentPrecedence = mPrecedence;
         }
+
         let ageScore = (parseInt(person.age) || 0) * 10;
         return applySpecialKromRule(nieceNephewScore + parentPrecedence + ageScore);
     }
@@ -5640,17 +5654,21 @@ function calculatePojiamScore(person) {
         
         if (person.titlePrefix?.includes("สมเด็จ") && isChaoFa) {
             let specialSubScore = 800000000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
+            
             if (person.titlePrefix?.includes("พระเจ้าราชวรวงศ์")) specialSubScore += 500000;
             else if (person.titlePrefix?.includes("พระราชวรวงศ์")) specialSubScore += 480000;
             else if (person.titlePrefix?.includes("พระปรพันธวงศ์")) specialSubScore += 450000; 
             else if (person.titlePrefix?.includes("สัมพันธวงศ์")) specialSubScore += 400000;
+            
             return applySpecialKromRule(specialSubScore + (pPrecedence / 100));
         }
 
         let subScore = subBase + (rankWall[person.royalRank] || 0) + rankElevator + (kromScoreMap[person.kromRank] || 0);
+        
         if (person.titlePrefix?.includes("พระราชวรวงศ์")) subScore += 500000;
         else if (person.titlePrefix?.includes("พระปรพันธวงศ์")) subScore += 300000; 
         else if (person.titlePrefix?.includes("สัมพันธวงศ์")) subScore += 100000;
+
         if (person.titlePrefix?.includes("สมเด็จ")) subScore += 500000;
         return applySpecialKromRule(subScore + (pPrecedence / 100));
     }
@@ -5680,13 +5698,16 @@ function calculatePojiamScore(person) {
         if (isGrandchildOfActive) {
             mcScore = 3900000;
             if (person.age) mcScore += (parseInt(person.age) * 1000);
+
         } else if (isSameRajsakul) {
             mcScore = 3500000;
             if (person.age) mcScore += (parseInt(person.age) * 1000);
+
         } else {
             if (father) {
                 const fPrefix = father.titlePrefix || "";
                 const fRank = father.royalRank || "";
+
                 const isClassChild = [
                     "ลูกเธอ", "ลูกยาเธอ", "พี่นางเธอ", "น้องนางเธอ", "พี่ยาเธอ", "น้องยาเธอ", 
                     "บรมวงศ์เธอ", "ราชวรวงศ์เธอ", "ปรพันธวงศ์เธอ", "สัมพันธวงศ์เธอ", "ปฐมวงศ์เธอ",
@@ -5702,22 +5723,32 @@ function calculatePojiamScore(person) {
                     "พระวงศ์เธอ", "วงศ์เธอ"
                 ].some(kw => fPrefix.includes(kw));
 
-                if (isClassChild) mcScore += 500000; 
-                else if (isClassGrandchild) mcScore += 300000; 
-                else mcScore += 100000; 
+                if (isClassChild) {
+                    mcScore += 500000; 
+                } else if (isClassGrandchild) {
+                    mcScore += 300000; 
+                } else {
+                    mcScore += 100000; 
+                }
 
                 mcScore += (getFatherBaseScore(father) * 100); 
+
             } else {
                 mcScore += 50000;
             }
+
             if (person.age) mcScore += (parseInt(person.age) * 0.1);
         }
+
         score += mcScore;
+
     } else {
         score += (rankScoreMapAnu[person.royalRank] || 0) + rankElevator; 
     }
 
-    const kromScoreMapAnu = { "กรมสมเด็จพระ": 50000, "กรมพระยา": 40000, "กรมพระ": 30000, "กรมหลวง": 20000, "กรมขุน": 10000, "กรมหมื่น": 5000 };
+    const kromScoreMapAnu = { 
+        "กรมสมเด็จพระ": 50000, "กรมพระยา": 40000, "กรมพระ": 30000, "กรมหลวง": 20000, "กรมขุน": 10000, "กรมหมื่น": 5000 
+    };
 
     if (person.kromRank && kromScoreMapAnu[person.kromRank]) {
         score += 100000; 
@@ -5731,7 +5762,8 @@ function calculatePojiamScore(person) {
         } else {
             score += 30000000 + (kromScoreMap[person.kromRank] || 0); 
             const isSpecialWora = (person.relationship === "พระอนุวงศ์" && 
-                              ((person.titleSuffix || "").includes("พระวรชายา") || (person.titleSuffix || "").includes("พระวรสามี")));
+                              ((person.titleSuffix || "").includes("พระวรชายา") || 
+                               (person.titleSuffix || "").includes("พระวรสามี")));
             if (isSpecialWora) score += 650000000;
         }
     } 
@@ -5742,16 +5774,36 @@ function calculatePojiamScore(person) {
         else if (person.titlePrefix.includes("สุณิสา")) inLawBase += 20000;
         else if (person.titlePrefix.includes("มูลวงศ์")) inLawBase += 10000;
 
-        const partner = state.members.find(m => (person.spouseIds && person.spouseIds.includes(m.id)) || (m.spouseIds && m.spouseIds.includes(person.id)));
-        if (partner) inLawBase += ((rankWall[partner.royalRank] || 0) / 100);
+        const partner = state.members.find(m => 
+            (person.spouseIds && person.spouseIds.includes(m.id)) || 
+            (m.spouseIds && m.spouseIds.includes(person.id))
+        );
+
+        if (partner) {
+            const partnerRankScore = (rankWall[partner.royalRank] || 0) / 100;
+            inLawBase += partnerRankScore;
+        }
+
         score += inLawBase + (kromScoreMap[person.kromRank] || 0);
     }
-    else if (person.titlePrefix?.includes("พระเจ้าสุพันธวงศ์เธอ")) score += 28000000 + (kromScoreMap[person.kromRank] || 0);
-    else if (person.titlePrefix?.includes("พระสุพันธวงศ์เธอ") || person.titlePrefix?.includes("พระสุพันธ์วงศ์เธอ")) score += 25000000 + (kromScoreMap[person.kromRank] || 0);
-    else if (person.titlePrefix?.includes("พระวรวงศ์เธอ")) score += 20000000 + (kromScoreMap[person.kromRank] || 0); 
-    else if (person.titlePrefix?.includes("พระเจ้าพันธวงศ์เธอ")) score += 17000000 + (kromScoreMap[person.kromRank] || 0);
-    else if (person.titlePrefix?.includes("พระพันธวงศ์เธอ")) score += 14000000 + (kromScoreMap[person.kromRank] || 0);
-    else if (person.titlePrefix?.includes("พระวงศ์เธอ")) score += 10000000 + (kromScoreMap[person.kromRank] || 0); 
+    else if (person.titlePrefix?.includes("พระเจ้าสุพันธวงศ์เธอ")) {
+        score += 28000000 + (kromScoreMap[person.kromRank] || 0);
+    }
+    else if (person.titlePrefix?.includes("พระสุพันธวงศ์เธอ") || person.titlePrefix?.includes("พระสุพันธ์วงศ์เธอ")) {
+        score += 25000000 + (kromScoreMap[person.kromRank] || 0);
+    }
+    else if (person.titlePrefix?.includes("พระวรวงศ์เธอ")) {
+        score += 20000000 + (kromScoreMap[person.kromRank] || 0); 
+    } 
+    else if (person.titlePrefix?.includes("พระเจ้าพันธวงศ์เธอ")) {
+        score += 17000000 + (kromScoreMap[person.kromRank] || 0);
+    }
+    else if (person.titlePrefix?.includes("พระพันธวงศ์เธอ")) {
+        score += 14000000 + (kromScoreMap[person.kromRank] || 0);
+    }
+    else if (person.titlePrefix?.includes("พระวงศ์เธอ")) {
+        score += 10000000 + (kromScoreMap[person.kromRank] || 0); 
+    }
 
     if (person.royalRank === "พระองค์เจ้า (ชั้นโท)" && isConsortOfHeir1 && isWoraConsort) score += 5000; 
     score += (pPrecedence / 1000000) + (100 - genNum);
