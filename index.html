@@ -1075,10 +1075,15 @@ tr.rank-card-3 {
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <h2 class="font-cute text-2xl" style="color: var(--primary);">รายชื่อสมาชิก</h2>
             
-            <div class="flex gap-2 items-center flex-wrap justify-center">
-                <button id="btnResetPrecedence" onclick="resetPrecedence()" class="hidden bg-red-50 hover:bg-red-100 text-red-500 px-3 py-1.5 rounded-full text-xs font-bold transition border border-red-100" title="คืนค่าลำดับตามกฎปกติ">
-                    <i class="fa-solid fa-rotate-left mr-1"></i> รีเซ็ตลำดับ
-                </button>
+<div class="flex gap-2 items-center flex-wrap justify-center">
+    <button id="btnResetPrecedence" onclick="resetPrecedence()" class="hidden bg-red-50 hover:bg-red-100 text-red-500 px-3 py-1.5 rounded-full text-xs font-bold transition border border-red-100" title="คืนค่าลำดับตามกฎปกติ">
+        <i class="fa-solid fa-rotate-left mr-1"></i> รีเซ็ตลำดับ
+    </button>  
+    
+    <button id="btnShowPrecedenceModal" onclick="openPrecedenceModal()" class="hidden bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold transition border border-blue-100 shadow-sm" title="ดูลำดับชั้นยศ">
+        <i class="fa-solid fa-list-ol mr-1"></i> ลำดับชั้นยศโปรเจียม
+    </button>
+
             
         <div id="monarchFilterContainer" class="hidden flex gap-2">
     <select id="monarchFilterSelect" class="bg-amber-50 px-4 py-1.5 rounded-full border border-amber-200 text-sm font-bold text-amber-700 outline-none shadow-sm" onchange="renderTable()">
@@ -1963,6 +1968,90 @@ tr.rank-card-3 {
         <div id="historyList" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar"></div>
     </div>
 </div>
+
+
+
+<div id="precedenceModal" class="modal">
+    <div class="modal-content w-full max-w-4xl max-h-[85vh] p-0 flex flex-col relative overflow-hidden bg-white border-4 border-slate-100">
+        
+        <div class="p-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center z-10 shadow-sm">
+            <h3 class="font-bold text-xl text-slate-800 flex items-center gap-2 font-cute">
+                <i class="fa-solid fa-ranking-star text-amber-500"></i> ลำดับชั้นยศโปรเจียม
+            </h3>
+            <button onclick="closeModal('precedenceModal')" class="text-slate-400 hover:text-red-500 transition-colors text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+
+      <div class="p-6 overflow-y-auto bg-white font-['Sarabun'] text-sm custom-scrollbar flex-1">
+  <ul id="precedenceList" class="space-y-3 list-none font-medium">
+    <li class="precedence-item transition-colors" data-keyword="พระบาทสมเด็จพระ พระบาทสมเด็จพระราชินีนาถ">๑. พระบาทสมเด็จพระเจ้าอยู่หัว / พระบาทสมเด็จพระราชินีนาถ</li>
+    <li class="precedence-item transition-colors" data-keyword="พระราชินีคู่บัลลังก์">๒. พระราชินีคู่บัลลังก์ (เอกอัครมเหสี) / พระราชสวามี</li>
+    <li class="precedence-item transition-colors" data-keyword="พระบรมสหยาธิบดี">๓. พระบรมสหยาธิบดี</li>
+    <li class="precedence-item transition-colors" data-keyword="อดีตพระมหากษัตริย์สละราชสมบัติ">๔. อดีตพระมหากษัตริย์สละราชสมบัติ</li>
+    <li class="precedence-item transition-colors" data-keyword="อดีตพระราชินีคู่บัลลังก์">๕. อดีตพระราชินีคู่บัลลังก์ / พระราชสวามี (เรียงลำดับตามรัชกาลกษัตริย์)</li>
+    <li class="precedence-item transition-colors" data-keyword="อดีตพระบรมสหยาธิบดี">๖. อดีตพระบรมสหยาธิบดี</li>
+    <li class="precedence-item transition-colors" data-keyword="พระปัยกา พระปัยกี">๗. พระปัยกา พระปัยกี</li>
+    <li class="precedence-item transition-colors" data-keyword="พระอัยกา พระอัยกี">๘. พระอัยกา พระอัยกี</li>
+    <li class="precedence-item transition-colors" data-keyword="พระชนก พระชนนี">๙. พระชนก พระชนนี</li>
+    <li class="precedence-item transition-colors" data-keyword="มกุฎราชกุมาร">๑๐. มกุฎราชกุมาร / มกุฏราชกุมารี</li>
+    <li class="precedence-item transition-colors" data-keyword="กรมพระราชวังบวรสถานมงคล">๑๑. กรมพระราชวังบวรสถานมงคล (วังหน้า)</li>
+    <li class="precedence-item transition-colors" data-keyword="กรมพระราชวังบวรสถานพิมุข">๑๒. กรมพระราชวังบวรสถานพิมุข (วังหลัง)</li>
+    <li class="precedence-item transition-colors" data-keyword="พระปิตุลา พระปิตุฉา">๑๓. พระปิตุลา พระปิตุฉา พระมาตุลา พระมาตุฉา</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระเจ้าพี่ยาเธอ">๑๔. สมเด็จพระเจ้าพี่ยาเธอ/นางเธอ เจ้าฟ้า &nbsp;&nbsp;สมเด็จพระเจ้าน้องยาเธอ/นางเธอ เจ้าฟ้า &nbsp;(ร่วมพระชนก/ชนนี)</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระพี่ยาเธอ">๑๕. สมเด็จพระพี่ยาเธอ/นางเธอ เจ้าฟ้า &nbsp;&nbsp;สมเด็จพระน้องยาเธอ/นางเธอ เจ้าฟ้า &nbsp;(ต่างพระชนนี)</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระเจ้าภคนีเธอ">๑๖. สมเด็จพระเจ้าภคนีเธอ เจ้าฟ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระภรรยาเจ้าชั้นอัครมเหสี">๑๗. พระภรรยาเจ้าชั้นอัครมเหสี (ที่ไม่ได้เป็นราชินีคู่บัลลังก์) (สมเด็จพระนางเจ้า สมเด็จพระนางนาฏ) &nbsp;(เรียงตามชั้นยศ)</li>
+    <li class="precedence-item transition-colors" data-keyword="อดีตพระภรรยาเจ้าชั้นอัครมเหสี">๑๘. อดีตพระภรรยาเจ้าชั้นอัครมเหสี (ที่ไม่ได้เป็นราชินีคู่บัลลังก์) (สมเด็จพระนางเจ้า สมเด็จพระนางนาฏ) &nbsp;(เรียงตามรัชกาลและชั้นยศ)</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระเจ้าลูกยาเธอ เจ้าฟ้า">๑๙. สมเด็จพระเจ้าลูกยาเธอ เจ้าฟ้า &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;สมเด็จพระเจ้าลูกเธอ เจ้าฟ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าลูกยาเธอ พระองค์เจ้า">๒๐. พระเจ้าลูกยาเธอ พระองค์เจ้า &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;พระเจ้าลูกเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระเจ้าภาติกาเธอ เจ้าฟ้า">๒๑. สมเด็จพระเจ้าภาติกาเธอ เจ้าฟ้า &nbsp;(ลูกของกษัตริย์องค์ก่อน เป็นหลานลุง/อา ของกษัตริย์ปัจจุบัน)</li>
+    <li class="precedence-item transition-colors" data-keyword="พระนางเจ้า พระวรราชเทวี">๒๒. พระนางเจ้า พระวรราชเทวี, พระราชเทวี, ราชเทวี, เทวี</li>
+    <li class="precedence-item transition-colors" data-keyword="พระนางเจ้า">๒๓. พระนางเจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระนางเธอ พระวรราชเทวี">๒๔. พระนางเธอ พระวรราชเทวี, พระราชเทวี, ราชเทวี, เทวี</li>
+    <li class="precedence-item transition-colors" data-keyword="พระนางเธอ">๒๕. พระนางเธอ</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระเจ้าบรมวงศ์เธอ เจ้าฟ้า สมเด็จพระเจ้าปฐมวงศ์เธอ เจ้าฟ้า">๒๖. สมเด็จพระเจ้าบรมวงศ์เธอ เจ้าฟ้า &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;สมเด็จพระเจ้าปฐมวงศ์เธอ เจ้าฟ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระเจ้าบรมวงศ์เธอ พระองค์เจ้า สมเด็จพระเจ้าปฐมวงศ์เธอ พระองค์เจ้า">๒๗. สมเด็จพระเจ้าบรมวงศ์เธอ พระองค์เจ้า (กรมพระ กรมพระยา) &nbsp;&nbsp;&nbsp; สมเด็จพระเจ้าปฐมวงศ์เธอ พระองค์เจ้า (กรมพระ กรมพระยา)</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระเจ้าเทวันเธอ เจ้าฟ้า">๒๘. สมเด็จพระเจ้าเทวันเธอ เจ้าฟ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระเจ้าหลานเธอ เจ้าฟ้า">๒๙. สมเด็จพระเจ้าหลานเธอ เจ้าฟ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระเจ้าราชวรวงศ์เธอ เจ้าฟ้า">๓๐. สมเด็จพระเจ้าราชวรวงศ์เธอ เจ้าฟ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระเจ้าวรวงศ์เธอ เจ้าฟ้า">๓๑. สมเด็จพระเจ้าวรวงศ์เธอ เจ้าฟ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="สมเด็จพระวรวงศ์เธอ เจ้าฟ้า">๓๒. สมเด็จพระวรวงศ์เธอ เจ้าฟ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าบรมวงศ์เธอ พระองค์เจ้า พระเจ้าปฐมวงศ์เธอ พระองค์เจ้า">๓๓. พระเจ้าบรมวงศ์เธอ พระองค์เจ้า &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;พระเจ้าปฐมวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าภคนีเธอ พระองค์เจ้า">๓๔. พระเจ้าภคนีเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าภาติกาเธอ พระองค์เจ้า">๓๕. พระเจ้าภาติกาเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระอรรคชายาเธอ พระองค์เจ้า">๓๖. พระอรรคชายาเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระราชชายาเธอ">๓๗. พระราชชายาเธอ</li>
+    <li class="precedence-item transition-colors" data-keyword="พระราชชายา">๓๘. พระราชชายา</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าหลานเธอ พระองค์เจ้า">๓๙. พระเจ้าหลานเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระหลานเธอ พระองค์เจ้า">๔๐. พระหลานเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าวรวงศ์เธอ พระองค์เจ้า พระวรชายา">๔๑. พระเจ้าวรวงศ์เธอ พระองค์เจ้า พระวรชายา/พระวรสามี</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าปรพันธวงศ์เธอ พระองค์เจ้า">๔๒. พระเจ้าปรพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระปรพันธวงศ์เธอ พระองค์เจ้า">๔๓. พระปรพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าราชวรวงศ์เธอ พระองค์เจ้า">๔๔. พระเจ้าราชวรวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระราชวรวงศ์เธอ พระองค์เจ้า">๔๕. พระราชวรวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าสัมพันธวงศ์เธอ พระองค์เจ้า">๔๖. พระเจ้าสัมพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระสัมพันธวงศ์เธอ พระองค์เจ้า">๔๗. พระสัมพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าภาคิไนยเธอ พระองค์เจ้า">๔๘. พระเจ้าภาคิไนยเธอ พระองค์เจ้า (ลูกของพี่สาว/น้องสาว)</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าภาติยาเธอ พระองค์เจ้า">๔๙. พระเจ้าภาติยาเธอ พระองค์เจ้า (ลูกของพี่ชาย/น้องชาย)</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าวรวงศ์เธอ พระองค์เจ้า">๕๐. พระเจ้าวรวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าชามาดาเธอ พระองค์เจ้า">๕๑. พระเจ้าชามาดาเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าสุณิสาเธอ พระองค์เจ้า">๕๒. พระเจ้าสุณิสาเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้ามูลวงศ์เธอ พระองค์เจ้า">๕๓. พระเจ้ามูลวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระชามาดาเธอ พระองค์เจ้า">๕๔. พระชามาดาเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระสุณิสาเธอ พระองค์เจ้า">๕๕. พระสุณิสาเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระมูลวงศ์เธอ พระองค์เจ้า">๕๖. พระมูลวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าสุพันธวงศ์เธอ พระองค์เจ้า">๕๗. พระเจ้าสุพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระสุพันธวงศ์เธอ พระองค์เจ้า">๕๘. พระสุพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระวรวงศ์เธอ พระองค์เจ้า">๕๙. พระวรวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าพันธวงศ์เธอ พระองค์เจ้า">๖๐. พระเจ้าพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระพันธวงศ์เธอ พระองค์เจ้า">๖๑. พระพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระวงศ์เธอ พระองค์เจ้า">๖๒. พระวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="หม่อมเจ้า">๖๓. หม่อมเจ้า</li>
+  </ul>
+</div>
+
+
     <!-- Toast Container -->
     <div id="toast-container"></div>
     
@@ -2758,7 +2847,7 @@ let state = {
         "พระเจ้าพี่น้องร่วมพระมารดา": { prefixes: ["สมเด็จพระเจ้าพี่ยาเธอ", "สมเด็จพระเชษฐาธิราชเจ้า","สมเด็จพระเจ้าน้องยาเธอ", "สมเด็จพระอนุชาธิราชเจ้า", "พระเจ้าพี่ยาเธอ", "พระเจ้าน้องยาเธอ", "สมเด็จพระเจ้าพี่นางเธอ", "สมเด็จพระเจ้าน้องนางเธอ","สมเด็จพระกนิษฐาธิราชเจ้า", "พระเจ้าพี่นางเธอ", "พระเจ้าน้องนางเธอ"], suffixes: {} },
         "พระเจ้าพี่น้องต่างพระมารดา": { prefixes: ["สมเด็จพระพี่ยาเธอ", "สมเด็จพระน้องยาเธอ", "พระพี่ยาเธอ", "พระน้องยาเธอ", "สมเด็จพระพี่นางเธอ", "สมเด็จพระน้องนางเธอ", "พระพี่นางเธอ", "พระน้องนางเธอ"], suffixes: {} },
         "พระเจ้าพี่น้องรัชกาลที่ ๑": { prefixes: ["สมเด็จพระปฐมบรมเชษฐา", "สมเด็จพระปฐมบรมเชษฐภคนี", "สมเด็จพระปฐมบรมอนุชา", "สมเด็จพระปฐมบรมภคนี"], suffixes: {} },
-        "พระบรมวงศ์": { prefixes: ["สมเด็จพระเจ้าบรมวงศ์เธอ", "พระเจ้าบรมวงศ์เธอ", "สมเด็จพระเจ้าราชวรวงศ์เธอ", "สมเด็จพระราชวรวงศ์เธอ","พระเจ้าราชวรวงศ์เธอ","พระราชวรวงศ์เธอ","สมเด็จพระเจ้าปรพันธวงศ์เธอ", "พระเจ้าปรพันธวงศ์เธอ","พระปรพันธวงศ์เธอ", "สมเด็จสัมพันธวงศ์เธอ","พระสัมพันธวงศ์เธอ","สมเด็จพระเจ้าภคนีเธอ","สมเด็จพระเจ้าภคนีปติเธอ"], suffixes: {} },
+        "พระบรมวงศ์": { prefixes: ["สมเด็จพระเจ้าบรมวงศ์เธอ", "พระเจ้าบรมวงศ์เธอ", "สมเด็จพระเจ้าราชวรวงศ์เธอ", "สมเด็จพระราชวรวงศ์เธอ","พระเจ้าราชวรวงศ์เธอ","พระราชวรวงศ์เธอ","สมเด็จพระเจ้าปรพันธวงศ์เธอ", "พระเจ้าปรพันธวงศ์เธอ","พระปรพันธวงศ์เธอ", "สมเด็จสัมพันธวงศ์เธอ","พระสัมพันธวงศ์เธอ","สมเด็จพระเจ้าภคนีเธอ","สมเด็จพระเจ้าเทวันเธอ","พระเจ้าเทวันเธอ"], suffixes: {} },
         "พระอนุวงศ์": { prefixes: ["สมเด็จพระเจ้าวรวงศ์เธอ", "สมเด็จพระวรวงศ์เธอ","สมเด็จพระวงศ์เธอ",  "พระเจ้าวรวงศ์เธอ", "พระวรวงศ์เธอ","พระวงศ์เธอ", "หม่อมเจ้า"], suffixes: { "พระเจ้าวรวงศ์เธอ": ["พระวรชายา"], "พระเจ้าวรวงศ์เธอ": ["พระวรสามี"] } }, 
         "พระเจ้าหลานเธอ": { prefixes: ["สมเด็จพระเจ้าหลานเธอ", "พระเจ้าหลานเธอ", "สมเด็จพระเจ้าภาติกาเธอ","พระเจ้าภาติกาเธอ","สมเด็จพระเจ้าภาคิไนยเธอ" , "พระเจ้าภาคิไนยเธอ","สมเด็จพระเจ้าภาติยเธอ" , "พระเจ้าภาติยเธอ" ], suffixes: {} },
         "รัชทายาท": { prefixes: ["สมเด็จพระบรมโอรสาธิราช"], suffixes: { "สมเด็จพระบรมโอรสาธิราช": ["สยามมกุฎราชกุมาร"] } },
@@ -5526,7 +5615,7 @@ function calculatePojiamScore(person) {
         }
 
         if (person.titlePrefix?.includes("สมเด็จ")) {
-            if (person.titlePrefix?.includes("สมเด็จพระเจ้าภคนีปติเธอ")) {
+            if (person.titlePrefix?.includes("สมเด็จพระเจ้าเทวันเธอ")) {
                 bwScore += 450000; 
             } else {
                 bwScore += 500000; 
@@ -6148,9 +6237,12 @@ function onTableFilterChange() {
         tableSortableInstance = null;
     }
 
-    // แสดงปุ่ม Reset Precedence (คงเดิม)
+    // แสดงปุ่ม Reset Precedence (คงเดิม) และปุ่มแสดง Modal ลำดับชั้นยศโปรเจียม (เพิ่มใหม่)
     const btnReset = document.getElementById('btnResetPrecedence');
+    const btnPrecedence = document.getElementById('btnShowPrecedenceModal'); // เพิ่มตัวแปรปุ่มนี้
+    
     if (btnReset) btnReset.classList.toggle('hidden', filterStatus !== 'precedence');
+    if (btnPrecedence) btnPrecedence.classList.toggle('hidden', filterStatus !== 'precedence'); // สั่งซ่อน/แสดงปุ่ม
 
     // --- ส่วน Logic การแสดงผล ---
     if (filterStatus === 'royal_children') {
@@ -6299,6 +6391,7 @@ function onTableFilterChange() {
     
     renderTable();
 }
+
 
 // ฟังก์ชันสำหรับโหลดรายชื่อพระนามแผ่นดินลงในช่องเลือก (Dropdown)
 // 1. ฟังก์ชันเดิม (คงไว้ตามปกติ)
@@ -9262,7 +9355,7 @@ function performSuccession(newMonarchId, reignNameBase) {
 
         // กฎยกเว้น: ห้ามเลื่อนยศอัตโนมัติให้กลุ่มคู่สมรส [ห้ามลบ]
         const excludedRoles = ["พระภรรยาเจ้า", "พระราชสวามี", "พระบรมสหยาธิบดี", "ราชสวามี", "บาทบริจาริกา", "หม่อม"];
-        if (excludedRoles.includes(p.relationship) || p.titlePrefix?.includes("ภคนีปติเธอ")) return;
+        if (excludedRoles.includes(p.relationship) || p.titlePrefix?.includes("เทวันเธอ")) return;
 
         if (isChild) {
             const isMale = p.gender === 'M';
@@ -9322,9 +9415,12 @@ function performSuccession(newMonarchId, reignNameBase) {
         const isMomChao = (p.royalRank === 'หม่อมเจ้า');
 
         // --- ส่วนที่แก้ไข: ระบบ Bypass Lock สำหรับพี่น้อง และหลานที่ไม่ใช่หม่อมเจ้า ---
-        // ถ้าล็อคยศไว้ และ (ไม่ใช่พี่น้อง และ ไม่ใช่หลานที่รันอัตโนมัติ) ให้ข้ามไป
-        // หมายเหตุ: ถ้าเป็นหลานที่เป็นหม่อมเจ้า และถูกล็อคยศ จะเข้าเงื่อนไข return นี้ (ไม่เปลี่ยนอะไรเลย)
-        const canBypassInPass2 = isSibling || (isDirectGrandchildVar && !isMomChao);
+        // เช็คว่าเดิมเคยเป็นพี่น้องกับกษัตริย์องค์ก่อนหรือไม่
+        const isFormerSiblingRel = p.relationship === "พระเจ้าพี่น้องร่วมพระมารดา" || p.relationship === "พระเจ้าพี่น้องต่างพระมารดา";
+        
+        // อนุญาตให้ Bypass (ทะลุการล็อกยศ) ได้ถ้าเป็นพี่น้องกษัตริย์ใหม่, หรือหลานที่ไม่ได้เป็นหม่อมเจ้า, หรือคนที่เคยเป็นพี่น้อง(รัชกาลก่อน)แต่รัชกาลนี้ไม่ได้เป็นพี่น้อง
+        const canBypassInPass2 = isSibling || (isDirectGrandchildVar && !isMomChao) || (isFormerSiblingRel && !isSibling);
+        
         if (p.isRankLocked && !canBypassInPass2) return;
 
         // 2. [กฎเดิม] เช็คว่าเป็นบรรพบุรุษของกษัตริย์ใหม่หรือไม่ [ห้ามลบ]
@@ -9336,7 +9432,7 @@ function performSuccession(newMonarchId, reignNameBase) {
 
         // กฎยกเว้น: กลุ่มที่ไม่เลื่อนยศอัตโนมัติ [ห้ามลบ]
         const excludedRoles = ["พระภรรยาเจ้า", "พระราชสวามี", "พระบรมสหยาธิบดี", "บาทบริจาริกา", "หม่อม"];
-        if (excludedRoles.includes(p.relationship) || p.titlePrefix?.includes("ภคนีปติเธอ")) {
+        if (excludedRoles.includes(p.relationship) || p.titlePrefix?.includes("เทวันเธอ")) {
             recordTitleHistory(p);
             return;
         }
@@ -9363,8 +9459,8 @@ function performSuccession(newMonarchId, reignNameBase) {
             p.relationship = isFullSibling ? "พระเจ้าพี่น้องร่วมพระมารดา" : "พระเจ้าพี่น้องต่างพระมารดา";
         } 
         
-        // B. พระเจ้าบรมวงศ์เธอ [ห้ามลบ]
-        else if (isChildOfAnyMonarch || isSiblingOfExMonarch) {
+        // B. พระเจ้าบรมวงศ์เธอ [ห้ามลบ] - เพิ่มเงื่อนไขให้พี่น้องรัชกาลก่อนที่ถูก Bypass เข้ามาได้รับยศนี้
+        else if (isChildOfAnyMonarch || isSiblingOfExMonarch || (isFormerSiblingRel && !isSibling)) {
             p.relationship = "พระบรมวงศ์"; 
             if (p.royalRank.includes('เจ้าฟ้า')) {
                 p.titlePrefix = "สมเด็จพระเจ้าบรมวงศ์เธอ";
@@ -9391,7 +9487,7 @@ function performSuccession(newMonarchId, reignNameBase) {
             }
         }
 
-        // D. พระอนุวงศ์ [ห้ามลบเด็ดขาด]
+       // D. พระอนุวงศ์ [ห้ามลบเด็ดขาด]
         else {
             const wasLanThoe = p.titlePrefix && p.titlePrefix.includes("หลานเธอ");
             const grandfather = father ? state.members.find(g => g.id === father.fatherId) : null;
@@ -9406,6 +9502,12 @@ function performSuccession(newMonarchId, reignNameBase) {
                 else if (p.titlePrefix && p.titlePrefix.includes("พระเจ้าหลานเธอ")) {
                     p.titlePrefix = "พระเจ้าวรวงศ์เธอ";
                 }
+                // --- ส่วนที่เพิ่มใหม่: สำหรับ พระหลานเธอ ---
+                else if (p.titlePrefix && p.titlePrefix.includes("พระหลานเธอ")) {
+                    p.titlePrefix = "พระวรวงศ์เธอ";
+                    p.royalRank = "พระองค์เจ้า (ชั้นตรี)";
+                }
+                // ------------------------------------
                 else if (isMomChao) {
                     p.titlePrefix = "หม่อมเจ้า";
                 }
@@ -10459,7 +10561,7 @@ if (m && activeMonarch) {
         promoteBtn.id = 'btnPromoteLanTher';
         promoteBtn.onclick = promoteToPhraOngChaoLanTher;
         promoteBtn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-blue-600 border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all";
-        promoteBtn.title = "สถาปนาเป็นพระเจ้าหลานเธอ พระองค์เจ้า";
+        promoteBtn.title = "สถาปนาเป็นพระหลานเธอ พระองค์เจ้า";
         promoteBtn.innerHTML = '<i class="fa-solid fa-award"></i>';
         
         // วางปุ่มไว้ข้างๆ ปุ่มสถาปนาหม่อมเจ้าเดิม หรือหน้าปุ่มแจ้งตาย
@@ -10527,7 +10629,7 @@ if (isRoyalSisterSpouse) {
     btn.id = 'btnPromotePhakkhani';
     btn.onclick = () => { promoteToPhakkhaniPati(m.id); };
     btn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-indigo-600 border-2 border-indigo-200 bg-indigo-50 rounded-full hover:bg-indigo-100 transition-colors";
-    btn.title = "สถาปนาเป็นสมเด็จพระเจ้าภคนีปติเธอ";
+    btn.title = "สถาปนาเป็นสมเด็จพระเจ้าเทวันเธอ";
     btn.innerHTML = '<i class="fa-solid fa-user-tie"></i>';
     actionsContainer.append(btn);
 }
@@ -11324,7 +11426,7 @@ function promoteToPhraOngChaoLanTher() {
     const checkRel = isDirectDescendant(activeMonarch?.id, p.id);
     const isDirectGrandchild = checkRel.isGrandchild;
 
-    if (!confirm(`ยืนยันการประกอบพิธีสถาปนาพระยศแก่ ${p.name} หรือไม่?`)) return;
+    if (!confirm(`ยืนยันการประกอบพิธีสถาปนาพระยศแก่ ${p.name} เป็น "พระหลานเธอ พระองค์เจ้า" หรือไม่`)) return;
 
     if (isDirectGrandchild) {
         // --- กรณีเป็นหลานสายตรงกษัตริย์ (พระเจ้าหลานเธอ) ---
@@ -11338,19 +11440,19 @@ function promoteToPhraOngChaoLanTher() {
             p.relationship = "พระเจ้าหลานเธอ";
             showToast(`สถาปนาเป็น สมเด็จพระเจ้าหลานเธอ เจ้าฟ้า (ชั้นตรี)`);
         } 
-        // 2. พ่อเจ้าฟ้า/พระองค์เจ้า + แม่ยศต่ำกว่าลงไป -> พระเจ้าหลานเธอ พระองค์เจ้า (ชั้นโท)
+        // 2. พ่อเจ้าฟ้า/พระองค์เจ้า + แม่สามัญชน -> พระหลานเธอ พระองค์เจ้า (ชั้นตรี)
         else {
-            p.royalRank = "พระองค์เจ้า (ชั้นโท)";
-            p.titlePrefix = "พระเจ้าหลานเธอ";
+            p.royalRank = "พระองค์เจ้า (ชั้นตรี)";
+            p.titlePrefix = "พระหลานเธอ";
             p.relationship = "พระเจ้าหลานเธอ";
-            showToast(`สถาปนาเป็น พระเจ้าหลานเธอ พระองค์เจ้า (ชั้นโท)`);
+            showToast(`สถาปนาเป็น พระหลานเธอ พระองค์เจ้า (ชั้นตรี)`);
         }
     } else {
         // --- กรณีไม่ใช่หลานสายตรง (ทั่วไป) -> พระวรวงศ์เธอ พระองค์เจ้า ---
-        p.royalRank = "พระองค์เจ้า (ชั้นโท)";
+        p.royalRank = "พระองค์เจ้า (ชั้นตรี)";
         p.titlePrefix = "พระวรวงศ์เธอ";
         p.relationship = "พระอนุวงศ์";
-        showToast(`สถาปนาเป็น พระวรวงศ์เธอ พระองค์เจ้า`);
+        showToast(`สถาปนาเป็น พระวรวงศ์เธอ พระองค์เจ้า (ชั้นตรี)`);
     }
 
     // บันทึกประวัติ อัปเดตสถานะ และรีเฟรชหน้าจอ
@@ -11924,20 +12026,29 @@ function propagateRoyalSurname(parentId, surname) {
 
 
 
-
-          if(isEdit) {
+if(isEdit) {
                 const idx = state.members.findIndex(m => m.id === id);
                 if(idx !== -1) {
                     const old = state.members[idx];
 
+                // === 1. ดึงข้อมูลเดิมที่ไม่เกี่ยวกับฟอร์ม (รวมถึงลำดับมือเดิม) กลับมาใส่ p ===
+                if (old.customPrecedence !== undefined) p.customPrecedence = old.customPrecedence;
+                if (old.titleHistory !== undefined) p.titleHistory = old.titleHistory;
+                if (old.destiny !== undefined) p.destiny = old.destiny;
 
-
-// === ส่วนที่เพิ่มใหม่: ปลดล็อคโปรเจียมถ้าเปลี่ยนยศหลัก หรือ ยศกรม ===
-                if (old.royalRank !== p.royalRank || old.kromRank !== p.kromRank) {
-                    delete p.customPrecedence;
+                // === 2. เลื่อนลำดับอัตโนมัติเมื่อเปลี่ยนยศ/กรม โดยคงระยะห่างสัมพัทธ์ที่จัดมือไว้ ===
+                if (old.royalRank !== p.royalRank || old.kromRank !== p.kromRank || old.kromTitle !== p.kromTitle) {
+                    if (p.customPrecedence !== undefined) {
+                        // คำนวณหาส่วนต่างคะแนนที่เกิดจากการเปลี่ยนยศ/กรม
+                        const oldScore = calculatePojiamScore(old);
+                        const newScore = calculatePojiamScore(p);
+                        const scoreDiff = newScore - oldScore;
+                        
+                        // เอาส่วนต่างไปบวกเพิ่มกับคะแนนลำดับมือเดิม
+                        p.customPrecedence = p.customPrecedence + scoreDiff;
+                    }
                 }
                 // ========================================================
-
 
                     old.spouseIds.forEach(sid => { if(!spouseIds.includes(sid)) { const s = state.members.find(x => x.id === sid); if(s) s.spouseIds = s.spouseIds.filter(x => x !== id); } });
                     state.members[idx] = p;
@@ -11991,9 +12102,6 @@ function propagateRoyalSurname(parentId, surname) {
             }
 
             spouseIds.forEach(sid => { const s = state.members.find(x => x.id === sid); if(s && !s.spouseIds.includes(id)) s.spouseIds.push(id); });
-
-// --- แทรกโค้ดนี้ภายใน handleSavePerson หลังบรรทัดที่บันทึกตัวแปร p ลง state.members แล้ว ---
-
 
 
 
@@ -13652,7 +13760,7 @@ function calculateChildRank(fatherId, motherId, gender, birthYearInput) {
             }
         } else if (isMotherSibling) {
              // === กรณีแม่เป็นพี่น้องกษัตริย์ ===
-             if (father && father.titlePrefix === "สมเด็จพระเจ้าภคนีปติเธอ") {
+             if (father && father.titlePrefix === "สมเด็จพระเจ้าเทวันเธอ") {
                 result.royalRank = "เจ้าฟ้า (ชั้นตรี)";
                 result.titlePrefix = "สมเด็จพระเจ้าวรวงศ์เธอ";
             } else {
@@ -13788,7 +13896,7 @@ function calculateChildRank(fatherId, motherId, gender, birthYearInput) {
                     result.royalRank = "เจ้าฟ้า (ชั้นตรี)";
                     if (fPrefix.includes("สมเด็จพระเจ้าหลานเธอ")) {
                         result.titlePrefix = "สมเด็จพระวรวงศ์เธอ";
-                    } else if (fPrefix.includes("หลานเธอ") || fPrefix.includes("บรมวงศ์เธอ")|| fPrefix.includes("บรมวงศ์เธอ") || fPrefix.includes("ภคนีปติเธอ")) {
+                    } else if (fPrefix.includes("หลานเธอ") || fPrefix.includes("บรมวงศ์เธอ")|| fPrefix.includes("บรมวงศ์เธอ") || fPrefix.includes("เทวันเธอ")) {
                         result.titlePrefix = "สมเด็จพระเจ้าวรวงศ์เธอ";
                     } else {
                         result.titlePrefix = "สมเด็จพระวรวงศ์เธอ";
@@ -13798,7 +13906,7 @@ function calculateChildRank(fatherId, motherId, gender, birthYearInput) {
                     if (fPrefix.includes("สมเด็จพระเจ้าหลานเธอ")) {
                         result.royalRank = "พระองค์เจ้า (ชั้นตรี)";
                         result.titlePrefix = "พระวรวงศ์เธอ";
-                    } else if (fPrefix.includes("หลานเธอ") || fPrefix.includes("บรมวงศ์เธอ") || fPrefix.includes("ภคนีปติเธอ")) {
+                    } else if (fPrefix.includes("หลานเธอ") || fPrefix.includes("บรมวงศ์เธอ") || fPrefix.includes("เทวันเธอ")) {
                         result.royalRank = "พระองค์เจ้า (ชั้นโท)";
                         result.titlePrefix = "พระเจ้าวรวงศ์เธอ";
                     } else {
@@ -14942,9 +15050,9 @@ function promoteToPhakkhaniPati(id) {
     const p = state.members.find(m => m.id === id);
     if (!p) return;
     
-    if (!confirm(`ยืนยันการสถาปนา ${p.name} ขึ้นเป็น "สมเด็จพระเจ้าภคนีปติเธอ เจ้าฟ้า (ชั้นตรี)"?`)) return;
+    if (!confirm(`ยืนยันการสถาปนา ${p.name} ขึ้นเป็น "สมเด็จพระเจ้าเทวันเธอ เจ้าฟ้า (ชั้นตรี)"?`)) return;
 
-    p.titlePrefix = "สมเด็จพระเจ้าภคนีปติเธอ";
+    p.titlePrefix = "สมเด็จพระเจ้าเทวันเธอ";
     p.royalRank = "เจ้าฟ้า (ชั้นตรี)";
     p.relationship = "พระอนุวงศ์";
     p.surname = ""; // ล้างนามสกุลเดิม (ถ้ามี)
@@ -14953,7 +15061,7 @@ function promoteToPhakkhaniPati(id) {
     saveState();
     updateApp();
     showDetail(p.id);
-    showToast(`สถาปนา ${p.name} เป็นสมเด็จพระเจ้าภคนีปติเธอ เรียบร้อยแล้ว ✨`);
+    showToast(`สถาปนา ${p.name} เป็นสมเด็จพระเจ้าเทวันเธอ เรียบร้อยแล้ว ✨`);
 }
 
 
@@ -15716,7 +15824,112 @@ function getAffiliationTitle(p) {
     }
 }
 
+function openPrecedenceModal() {
+    // 1. ดึงข้อมูลทุกคนที่แสดงอยู่ในตารางปัจจุบัน
+    const rows = document.querySelectorAll('#tableBody tr');
+    const displayedMembers = [];
+    
+    rows.forEach(row => {
+        const id = row.getAttribute('data-id');
+        if (id && typeof state !== 'undefined' && state.members) {
+            const member = state.members.find(m => String(m.id) === String(id));
+            if (member) displayedMembers.push(member);
+        }
+    });
 
+    // 2. ตรวจสอบเงื่อนไขรายบรรทัดในลำดับโปรเจียม
+    const items = document.querySelectorAll('.precedence-item');
+    
+    items.forEach(item => {
+        const keywordAttr = item.getAttribute('data-keyword') || "";
+        let isPresent = false;
+
+        for (const m of displayedMembers) {
+            // ดึงสถานะระบบ
+            const isMonarch = m.isMonarch === true;
+            const isQueenConsort = m.isQueenConsort === true;
+            const isExMonarch = m.isExMonarch === true;
+            
+            // ข้อมูลสำหรับเช็คข้อความ (รวมคำนำหน้า ยศ สร้อยพระนาม และความสัมพันธ์)
+            const prefix = (m.titlePrefix || '').replace(/\s+/g, '');
+            const rank = (m.royalRank || '').replace(/\s+/g, '');
+            const honorific = (m.honorificTitle || '').replace(/\s+/g, ''); // สมมติว่าเก็บสร้อยพระนามใน honorificTitle
+            const krom = (m.kromRank || '').replace(/\s+/g, '');
+            const rel = (m.relationship || '').replace(/\s+/g, '');
+            const fullText = prefix + rank + honorific + krom + rel;
+
+            // --- Logic การตรวจสอบตามเงื่อนไข ---
+
+            // ลำดับ ๑๐: มกุฎราชกุมาร/มกุฏราชกุมารี
+            // เงื่อนไข: ติ๊กรัชทายาทลำดับ 1 AND มีสร้อยพระนาม "มหามกุฎราชกุมาร" หรือ "มหามกุฏราชกุมารี"
+            if (keywordAttr === "มกุฎราชกุมาร") {
+                const isHeirNumberOne = (m.isHeir === true || m.heirOrder === 1 || m.heirOrder === "1");
+                const hasCrownPrinceTitle = fullText.includes("มหามกุฎราชกุมาร") || fullText.includes("มหามกุฏราชกุมารี");
+                
+                if (isHeirNumberOne && hasCrownPrinceTitle) { 
+                    isPresent = true; break; 
+                }
+            }
+            
+            // ลำดับ ๒: สมเด็จพระนางเจ้า (ที่เป็นราชินีคู่บัลลังก์)
+            else if (keywordAttr === "พระราชินีคู่บัลลังก์") {
+                if (isQueenConsort) { isPresent = true; break; }
+            } 
+
+            // ลำดับ ๑๗: สมเด็จพระนางเจ้า (ที่ไม่ได้เป็นราชินีคู่บัลลังก์)
+            else if (keywordAttr === "อัครมเหสี") {
+                const isSomdetQueen = fullText.includes("สมเด็จพระนางเจ้า") || fullText.includes("สมเด็จพระนางนาฏ");
+                if (isSomdetQueen && !isQueenConsort) { isPresent = true; break; }
+            }
+
+            // ลำดับ ๗, ๘, ๙, ๑๓: ความสัมพันธ์ทางสายเลือด (เช็คจาก relationship)
+            else if (keywordAttr === "พระปัยกา") {
+                if (rel.includes("พระปัยกา") || rel.includes("พระปัยกี")) { isPresent = true; break; }
+            }
+            else if (keywordAttr === "พระอัยกา") {
+                if (rel.includes("พระอัยกา") || rel.includes("พระอัยกี")) { isPresent = true; break; }
+            }
+            else if (keywordAttr === "พระชนก") {
+                if (rel.includes("พระชนก") || rel.includes("พระชนนี")) { isPresent = true; break; }
+            }
+            else if (keywordAttr === "พระปิตุลา") {
+                if (rel.includes("พระปิตุลา") || rel.includes("พระปิตุฉา") || rel.includes("พระมาตุลา") || rel.includes("พระมาตุฉา")) { isPresent = true; break; }
+            }
+            
+            // ลำดับ ๑๑-๑๒: วังหน้า วังหลัง (เช็คจาก relationship)
+            else if (keywordAttr === "วังหน้า") {
+                if (rel.includes("วังหน้า")) { isPresent = true; break; }
+            }
+            else if (keywordAttr === "วังหลัง") {
+                if (rel.includes("วังหลัง")) { isPresent = true; break; }
+            }
+
+            else {
+                // เช็คคำนำหน้าอื่นๆ ตาม data-keyword
+                const keywords = keywordAttr.split(',');
+                for (let k of keywords) {
+                    let cleanK = k.trim().replace(/\s+/g, '');
+                    if (!cleanK) continue;
+                    if (fullText.includes(cleanK)) { isPresent = true; break; }
+                }
+                if (isPresent) break;
+            }
+        }
+
+        // 3. แสดงผลสีฟ้า (Inline Style !important)
+        if (isPresent) {
+            item.style.setProperty('color', '#3b82f6', 'important'); 
+            item.style.setProperty('font-weight', 'bold', 'important');
+            item.style.setProperty('transform', 'translateX(10px)', 'important');
+        } else {
+            item.style.setProperty('color', '#334155', 'important'); 
+            item.style.setProperty('font-weight', 'normal', 'important');
+            item.style.setProperty('transform', 'translateX(0px)', 'important');
+        }
+    });
+
+    document.getElementById('precedenceModal').classList.add('active');
+}
 
 </script>
 
