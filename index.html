@@ -2049,9 +2049,9 @@ tr.rank-card-3 {
     <li class="precedence-item transition-colors" data-keyword="พระวงศ์เธอ พระองค์เจ้า">๖๒. พระวงศ์เธอ พระองค์เจ้า</li>
     <li class="precedence-item transition-colors" data-keyword="หม่อมเจ้า">๖๓. หม่อมเจ้า</li>
   </ul>
+        </div>
+     </div>
 </div>
-
-
     <!-- Toast Container -->
     <div id="toast-container"></div>
     
@@ -4359,30 +4359,23 @@ function getFullDisplayTitle(p) {
     if (p.isTao && p.taoTitle) {
         let prefix = p.titlePrefix || "";
 
-        // ++++++ [แก้ไขเพิ่ม] ซ่อน นาง/นางสาว ในวงเล็บ ++++++
+        // ++++++ ซ่อน นาง/นางสาว ในวงเล็บ ++++++
         if (prefix === 'นาง' || prefix === 'นางสาว') {
             prefix = "";
         }
-        // +++++++++++++++++++++++++++++++++++++++++++++++
 
         let name = p.name || "";
 
-        // =============================================================
-        // [แก้ไข] กรณีคุณท้าวที่เป็น ม.ร.ว. / ม.ล.
-        // =============================================================
+        // กรณีคุณท้าวที่เป็น ม.ร.ว. / ม.ล.
         if (p.royalRank === 'หม่อมราชวงศ์' || p.royalRank === 'หม่อมหลวง') {
-            // ถ้าคำนำหน้าเดิมเป็น "หม่อม" ให้ลบออกก่อน เพื่อไม่ให้ซ้ำกับยศ
             if (prefix === 'หม่อม') {
                 prefix = "";
             }
-            // แทรกยศเข้าไประหว่าง คำนำหน้า(ที่อาจจะว่างเปล่าแล้ว) และ ชื่อ
             prefix = prefix + p.royalRank;
         }
-        // =============================================================
 
-        // ++++++ [แก้ไขเพิ่ม] เช็ค hideSurname (ไม่แสดงนามสกุล) ++++++
+        // เช็ค hideSurname (ไม่แสดงนามสกุล)
         let surnameText = "";
-        // เพิ่มเงื่อนไข !p.hideSurname เพื่อตรวจสอบการติ๊กซ่อนนามสกุล
         if (!isConsort && !p.hideSurname) {
             if (p.royalSurname) {
                 surnameText = shouldSkipNa(p) ? ` ${p.royalSurname}` : ` ${p.royalSurname} ณ ${state.kingdomName}`;
@@ -4390,7 +4383,6 @@ function getFullDisplayTitle(p) {
                 surnameText = ` ${p.surname}`;
             }
         }
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         let innerName = prefix + name + surnameText;
 
@@ -4424,7 +4416,7 @@ function getFullDisplayTitle(p) {
     const attachedPrefixList = [
         "พระบาทสมเด็จพระเจ้าอยู่หัว", "สมเด็จพระเจ้าอยู่หัว", "สมเด็จพระศรี", "สมเด็จพระราชชนนีศรี", "สมเด็จพระมหา",
         "สมเด็จพระนางเจ้า","สมเด็จพระมเหสรา", "สมเด็จพระนางนาฏ", "สมเด็จพระนายเจ้า", "พระนางเจ้า", "พระนางนาฏ",
-        "สมเด็จพระราชินี", "พระนางเธอ", "พระนางเจ้า", "สมเด็จพระราชินี", "พระราชชชนนีศรี",
+        "สมเด็จพระราชินี", "พระนางเธอ", "พระนางเจ้า", "พระราชชชนนีศรี",
         "เจ้าพระ", "เจ้าคุณพระ", "ท้าว", "เจ้าจอม", "จอมมารดา", "เจ้าคุณจอม", "เจ้าจอมมารดา",
         "เจ้าคุณจอมมารดา", "หม่อม", "หม่อมเจ้า", "หม่อมราชวงศ์", "หม่อมหลวง", "นาย",
         "นาง", "นางสาว", "ท่านหญิง", "ท่านผู้หญิง", "คุณหญิง", "คุณ", "ขรัวตา", "ขรัวยาย",
@@ -4435,11 +4427,25 @@ function getFullDisplayTitle(p) {
     let displayName = p.name || "";
     let suffix = p.titleSuffix || "";
 
-    // แก้ไขเงื่อนไขให้รวม "บรมราชชนก" และ "พระบรมราชชนนีพันปีหลวง"
-    if ((prefix === "สมเด็จพระมหา" && (suffix === "พระบรมราชชนก" || suffix === "บรมราชชนก")) ||
-        (prefix === "สมเด็จพระศรี" && (suffix === "บรมราชชนนี" || suffix === "พระบรมราชชนนี" || suffix === "พระบรมราชชนนีพันปีหลวง" || suffix === "บรมราชชนนีพันปีหลวง"))) {
-        return (prefix + displayName + suffix).trim();
+    // ==================================================================
+    // [อัปเดต] กฎพิเศษ: กรณีคำนำหน้า + พระนาม + สร้อยพระนาม ต้องเขียนติดกันเป็นพืด
+    // ==================================================================
+    const isMahaSpecial = prefix === "สมเด็จพระมหา" && ["พระบรมราชชนก", "บรมราชชนก", "บรมปิตยกาบดี", "บรมมาตยกาบดี"].includes(suffix);
+    const isSriSpecial = prefix === "สมเด็จพระศรี" && ["บรมราชชนนี", "พระบรมราชชนนี", "พระบรมราชชนนีพันปีหลวง", "บรมราชชนนีพันปีหลวง"].includes(suffix);
+    const isThewiSpecial = ["สมเด็จพระนางเจ้า","สมเด็จพระนางนาฏ", "พระนางเธอ", "พระนางเจ้า", "พระนางนาฏ"].includes(prefix) && (suffix === "เทวี" || suffix === "ราชเทวี" || suffix === "วรเทวี" || suffix === "มหาเทวี");
+
+    if (isMahaSpecial || isSriSpecial || isThewiSpecial) {
+        let resultSpecialName = prefix + displayName + suffix;
+        
+        // เติมบริบทในรัชกาลที่ (ถ้ามี)
+        if (p.monarchSpouseContext) {
+            resultSpecialName += p.monarchSpouseContext.includes("ในรัชกาลที่") ?
+                " " + p.monarchSpouseContext :
+                ` ในรัชกาลที่ ${toThaiNumerals(p.monarchSpouseContext)}`;
+        }
+        return resultSpecialName.trim();
     }
+    // ==================================================================
 
     const isKingRole = p.isMonarch || p.isExMonarch || (!p.isAlive && p.royalRank && p.royalRank.includes('กษัตริย์'));
 
@@ -4514,13 +4520,10 @@ function getFullDisplayTitle(p) {
     let finalNameParts = [];
     let currentDisplayName = displayName;
 
-    // ==========================================================
-    // [แก้ไข] กรณีทั่วไป: ถ้าเป็น หม่อม + ม.ร.ว./ม.ล. ให้ตัดหม่อมออก
-    // ==========================================================
+    // กรณีทั่วไป: ถ้าเป็น หม่อม + ม.ร.ว./ม.ล. ให้ตัดหม่อมออก
     if (prefix === 'หม่อม' && (p.royalRank.includes('หม่อมราชวงศ์') || p.royalRank.includes('หม่อมหลวง'))) {
         prefix = "";
     }
-    // ==========================================================
 
     if (!p.hideRoyalRank && p.royalRank && p.royalRank !== 'สามัญชน') {
         const simpleRank = p.royalRank.split(' ')[0];
@@ -10868,7 +10871,7 @@ if (m.birthYear) {
 }
 
 
-// --- ส่วนจัดการ "สังกัด" (ปรับปรุง: พระองค์เจ้า/เจ้าฟ้า เขียนติดชื่อหรือกรมเสมอ) ---
+// --- ส่วนจัดการ "สังกัด" (ปรับปรุง: พระองค์เจ้า/เจ้าฟ้า เขียนติดชื่อหรือกรมเสมอ และรองรับสร้อยพิเศษ) ---
 const rowAffiliation = document.getElementById('row_affiliation');
 const dAffiliationName = document.getElementById('d_affiliationName');
 
@@ -10897,13 +10900,20 @@ if (rowAffiliation && dAffiliationName) {
                 const attachedPrefixList = [
                     "พระบาทสมเด็จพระเจ้าอยู่หัว", "สมเด็จพระเจ้าอยู่หัว", "สมเด็จพระศรี", "สมเด็จพระราชชนนีศรี", "สมเด็จพระมหา",
                     "สมเด็จพระนางเจ้า", "สมเด็จพระนางนาฏ", "สมเด็จพระนายเจ้า", "พระนางเจ้า", "พระนางนาฏ",
-                    "สมเด็จพระราชินี", "พระนางเธอ", "สมเด็จพระราชินี", "พระราชชชนนีศรี"
+                    "สมเด็จพระราชินี", "พระนางเธอ", "พระราชชชนนีศรี" // (แอบลบ "สมเด็จพระราชินี" ที่ซ้ำกันออกให้ครับ)
                 ];
 
                 const isAttached = attachedPrefixList.includes(prefix);
                 
+                // --- กำหนดเงื่อนไขพิเศษที่สร้อยพระนามต้องเขียนติดกับพระนาม ---
+                const isThewiCase = ["พระนางเธอ", "พระนางเจ้า", "พระนางนาฏ"].includes(prefix) && suffix === "เทวี";
+                const isSomdetMahaCase = prefix === "สมเด็จพระมหา" && ["บรมปิตยกาบดี", "บรมมาตยกาบดี"].includes(suffix);
+                
+                const isSpecialAttachedSuffix = isThewiCase || isSomdetMahaCase;
+
                 // กำหนดเนื้อหาเป้าหมาย (ชื่อกรม หรือ พระนาม)
-                let targetContent = hasKrom ? (kRank + kTitle) : name;
+                // ถ้าเข้าเงื่อนไขพิเศษสร้อยพระนาม จะบังคับใช้พระนาม (name) เพื่อให้เขียนติดกันทั้งหมด
+                let targetContent = (hasKrom && !isSpecialAttachedSuffix) ? (kRank + kTitle) : name;
 
                 if (isAttached) {
                     // กฎ: ถ้ามีคำนำหน้าพิเศษ ให้เขียนติดกับเนื้อหาทันที (ข้ามยศกลาง)
@@ -10926,7 +10936,13 @@ if (rowAffiliation && dAffiliationName) {
 
                 // ตบท้ายด้วยสร้อยพระนาม
                 if (suffix) {
-                    affiliationText += " " + suffix;
+                    if (isSpecialAttachedSuffix) {
+                        // ถ้าเป็นกรณีพิเศษ ให้เขียนติดกันไม่เว้นวรรค
+                        affiliationText += suffix;
+                    } else {
+                        // กรณีทั่วไป เว้นวรรคสร้อยพระนาม
+                        affiliationText += " " + suffix;
+                    }
                 }
             }
 
@@ -10945,7 +10961,6 @@ if (rowAffiliation && dAffiliationName) {
         rowAffiliation.classList.add('hidden');
     }
 }
-
 
 document.getElementById('d_birthYear').innerText = fullBirthDate;
 // ---------------------------------------
@@ -12026,29 +12041,20 @@ function propagateRoyalSurname(parentId, surname) {
 
 
 
-if(isEdit) {
+
+          if(isEdit) {
                 const idx = state.members.findIndex(m => m.id === id);
                 if(idx !== -1) {
                     const old = state.members[idx];
 
-                // === 1. ดึงข้อมูลเดิมที่ไม่เกี่ยวกับฟอร์ม (รวมถึงลำดับมือเดิม) กลับมาใส่ p ===
-                if (old.customPrecedence !== undefined) p.customPrecedence = old.customPrecedence;
-                if (old.titleHistory !== undefined) p.titleHistory = old.titleHistory;
-                if (old.destiny !== undefined) p.destiny = old.destiny;
 
-                // === 2. เลื่อนลำดับอัตโนมัติเมื่อเปลี่ยนยศ/กรม โดยคงระยะห่างสัมพัทธ์ที่จัดมือไว้ ===
-                if (old.royalRank !== p.royalRank || old.kromRank !== p.kromRank || old.kromTitle !== p.kromTitle) {
-                    if (p.customPrecedence !== undefined) {
-                        // คำนวณหาส่วนต่างคะแนนที่เกิดจากการเปลี่ยนยศ/กรม
-                        const oldScore = calculatePojiamScore(old);
-                        const newScore = calculatePojiamScore(p);
-                        const scoreDiff = newScore - oldScore;
-                        
-                        // เอาส่วนต่างไปบวกเพิ่มกับคะแนนลำดับมือเดิม
-                        p.customPrecedence = p.customPrecedence + scoreDiff;
-                    }
+
+// === ส่วนที่เพิ่มใหม่: ปลดล็อคโปรเจียมถ้าเปลี่ยนยศหลัก หรือ ยศกรม ===
+                if (old.royalRank !== p.royalRank || old.kromRank !== p.kromRank) {
+                    delete p.customPrecedence;
                 }
                 // ========================================================
+
 
                     old.spouseIds.forEach(sid => { if(!spouseIds.includes(sid)) { const s = state.members.find(x => x.id === sid); if(s) s.spouseIds = s.spouseIds.filter(x => x !== id); } });
                     state.members[idx] = p;
@@ -12102,6 +12108,9 @@ if(isEdit) {
             }
 
             spouseIds.forEach(sid => { const s = state.members.find(x => x.id === sid); if(s && !s.spouseIds.includes(id)) s.spouseIds.push(id); });
+
+// --- แทรกโค้ดนี้ภายใน handleSavePerson หลังบรรทัดที่บันทึกตัวแปร p ลง state.members แล้ว ---
+
 
 
 
