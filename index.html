@@ -5550,11 +5550,11 @@ function calculatePojiamScore(person) {
         return applySpecialKromRule(pituScore + (kromScoreMap[person.kromRank] || 0) + ageScore + (pPrecedence / 100));
     }
 
-   // 1. กลุ่ม High Sibling (เดิม 955M -> ปรับเป็น 956M เพื่อให้สูงที่สุดในหมวดพี่น้อง)
+   // 1. กลุ่ม High Sibling
     const highSiblingPrefixes = [
         "สมเด็จพระเชษฐภคินีเธอ", "สมเด็จพระกนิษฐาเธอ", 
         "สมเด็จพระกนิษฐาธิราชเจ้า", "สมเด็จพระเชษฐาธิราชเจ้า", 
-        "สมเด็จพระอนุชาธิราชเจ้า", "สมเด็จพระอนุชาธิราช", // เพิ่มตามที่ระบุ
+        "สมเด็จพระอนุชาธิราชเจ้า", "สมเด็จพระอนุชาธิราช", 
         "สมเด็จพระราชกนิษฐา"
     ];
     if (highSiblingPrefixes.includes(person.titlePrefix)) {
@@ -5562,7 +5562,7 @@ function calculatePojiamScore(person) {
         return applySpecialKromRule(highSibScore + (kromScoreMap[person.kromRank] || 0) + (pPrecedence / 100));
     }
 
-    // 2. กลุ่ม Mid Sibling (เดิม 956M -> ปรับเป็น 955M เพื่อให้อยู่ต่ำกว่ากลุ่มด้านบน)
+    // 2. กลุ่ม Mid Sibling
     const midSiblingPrefixes = ["สมเด็จพระเจ้าพี่ยาเธอ", "สมเด็จพระเจ้าพี่นางเธอ", "สมเด็จพระเจ้าน้องยาเธอ", "สมเด็จพระเจ้าน้องนางเธอ"];
     if (midSiblingPrefixes.includes(person.titlePrefix)) {
         let midSibScore = 955000000 + (parseInt(person.age) || 0) * 1000;
@@ -5570,12 +5570,13 @@ function calculatePojiamScore(person) {
     }
 
     // ====================================================================
-    // --- [เพิ่มใหม่] กลุ่ม พระพี่นาง/น้องนางเธอ (พระองค์เจ้า) ---
-    // แทรกกลางระหว่าง กลุ่มสมเด็จบรมวงศ์เธอ (845M) และ พระเจ้าบรมวงศ์เธอ (800M)
+    // --- [แก้ไข] กลุ่ม พระพี่นาง/น้องนางเธอ (พระองค์เจ้า) ---
+    // ปรับคะแนนฐานเป็น 807.5M เพื่อให้อยู่ต่ำกว่า สมเด็จพระเจ้าบรมวงศ์เธอ, สมเด็จพระเจ้าหลานเธอ 
+    // และสมเด็จพระเจ้าวรวงศ์เธอ แต่อยู่สูงกว่า พระเจ้าบรมวงศ์เธอ พระองค์เจ้า (สูงสุดราว 806.1M)
     // ====================================================================
     const midPhra_SiblingPrefixes = ["พระพี่นางเธอ", "พระพี่ยาเธอ", "พระน้องนางเธอ", "พระน้องยาเธอ"];
     if (midPhra_SiblingPrefixes.includes(person.titlePrefix) && (person.royalRank || "").includes("พระองค์เจ้า")) {
-        let phraSibScore = 820000000 + (kromScoreMap[person.kromRank] || 0);
+        let phraSibScore = 807500000 + (kromScoreMap[person.kromRank] || 0);
         return applySpecialKromRule(phraSibScore + (parseInt(person.age) || 0) * 1000 + (pPrecedence / 100));
     }
 
@@ -5795,15 +5796,11 @@ function calculatePojiamScore(person) {
         score += kromScoreMapAnu[person.kromRank]; 
     }
 
-    // ====================================================================
-    // --- [แก้ไข] จัดลำดับ วรวงศ์เธอ > เทวันเธอ > ชามาดาเธอ ---
-    // ====================================================================
     if (person.titlePrefix?.includes("พระเจ้าวรวงศ์เธอ")) {
         const isSomdejChaoFaWora = person.titlePrefix.includes("สมเด็จ") && isChaoFa;
         if (isSomdejChaoFaWora) {
             score = 800300000 + (rankWall[person.royalRank] || 0) + (kromScoreMap[person.kromRank] || 0);
         } else {
-            // ตั้งฐานคะแนน Worawongse ไว้ที่ 45M เพื่อให้ชนะ Thewan เสมอ
             score += 45000000 + (kromScoreMap[person.kromRank] || 0); 
             const isSpecialWora = (person.relationship === "พระอนุวงศ์" && ((person.titleSuffix || "").includes("พระวรชายา") || (person.titleSuffix || "").includes("พระวรสามี")));
             if (isSpecialWora) score += 650000000;
@@ -5812,7 +5809,6 @@ function calculatePojiamScore(person) {
     else if (person.titlePrefix?.includes("เทวันเธอ") || person.titlePrefix?.includes("ชามาดาเธอ") || person.titlePrefix?.includes("สุณิสาเธอ") || person.titlePrefix?.includes("มูลวงศ์เธอ")) {
         let inLawBase = 29000000; 
         
-        // กฎ: เทวันเธอ > ชามาดาเธอ
         if (person.titlePrefix.includes("เทวันเธอ")) inLawBase += 2000000; 
         if (person.titlePrefix.includes("ชามาดา")) inLawBase += 1000000;
         
@@ -5824,7 +5820,6 @@ function calculatePojiamScore(person) {
         if (partner) inLawBase += (rankWall[partner.royalRank] || 0) / 100;
         score += inLawBase + (kromScoreMap[person.kromRank] || 0);
     }
-    // ====================================================================
     else if (person.titlePrefix?.includes("พระเจ้าสุพันธวงศ์เธอ")) { score += 28000000 + (kromScoreMap[person.kromRank] || 0); }
     else if (person.titlePrefix?.includes("พระสุพันธวงศ์เธอ")) { score += 25000000 + (kromScoreMap[person.kromRank] || 0); }
     else if (person.titlePrefix?.includes("พระวรวงศ์เธอ")) { score += 20000000 + (kromScoreMap[person.kromRank] || 0); } 
@@ -5840,6 +5835,7 @@ function calculatePojiamScore(person) {
 
     return applySpecialKromRule(score);
 }
+
 
 // ฟังก์ชันสำหรับเลื่อนลำดับโปรเจียมขึ้น-ลง
 function movePrecedence(id, direction) {
