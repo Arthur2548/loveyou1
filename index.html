@@ -5566,6 +5566,16 @@ function calculatePojiamScore(person) {
         return applySpecialKromRule(pituScore + (kromScoreMap[person.kromRank] || 0) + ageScore + (pPrecedence / 100));
     }
 
+    // ====================================================================
+    // --- [เพิ่มใหม่] จัดกลุ่ม สมเด็จพระเจ้าพี่/น้อง ให้อยู่ต่ำกว่าปิตุลา/ปิตุฉา ---
+    // ====================================================================
+    const midSiblingPrefixes = ["สมเด็จพระเจ้าพี่ยาเธอ", "สมเด็จพระเจ้าพี่นางเธอ", "สมเด็จพระเจ้าน้องยาเธอ", "สมเด็จพระเจ้าน้องนางเธอ"];
+    if (midSiblingPrefixes.includes(person.titlePrefix)) {
+        let midSibScore = 956000000 + (parseInt(person.age) || 0) * 1000;
+        return applySpecialKromRule(midSibScore + (kromScoreMap[person.kromRank] || 0) + (pPrecedence / 100));
+    }
+    // ====================================================================
+
     const highSiblingPrefixes = ["สมเด็จพระเชษฐภคินีเธอ", "สมเด็จพระกนิษฐาเธอ", "สมเด็จพระกนิษฐาธิราชเจ้า", "สมเด็จพระเชษฐาธิราชเจ้า", "สมเด็จพระอนุชาธิราชเจ้า", "สมเด็จพระราชกนิษฐา"];
     if (highSiblingPrefixes.includes(person.titlePrefix)) {
         let highSibScore = 955000000 + (parseInt(person.age) || 0) * 1000;
