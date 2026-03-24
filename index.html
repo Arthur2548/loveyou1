@@ -1349,22 +1349,27 @@ tr.rank-card-3 {
     <span id="d_umbrella"></span></div>
 </div>
 
-            <div class="flex gap-2 justify-center border-t pt-4 border-slate-100">
-                <button onclick="editCurrent()" class="btn-icon w-10 h-10 flex items-center justify-center text-lg" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="toggleResignation(window.curPID)" id="btnResign" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-slate-500 hover:text-red-500 transition-all" title="ถอด/ลาออกจากพระราชวงศ์">
-                    <i class="fa-solid fa-user-slash"></i>
-                </button>
-                <button onclick="promoteMomChao()" id="btnPromoteMC" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-amber-500 hidden" title="สถาปนาเป็นพระองค์เจ้า">
-                    <i class="fa-solid fa-medal"></i>
-                </button>
-                <button onclick="promoteNobilityRank()" id="btnPromoteNobility" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-blue-600 hidden" title="เลื่อนบรรดาศักดิ์ขุนนาง">
-                    <i class="fa-solid fa-arrow-up-right-dots"></i>
-                </button>
-                <button onclick="abdicateCurrent()" id="btnAbdicate" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-purple-600 hover:text-purple-700 hidden" title="สละราชสมบัติ">
-                    <i class="fa-solid fa-person-walking-arrow-right"></i>
-                </button>
-                <button onclick="toggleDeath()" id="btnDeath" class="btn-icon w-10 h-10 flex items-center justify-center text-lg" title="แจ้งตาย/คืนชีพ"><i class="fa-solid fa-skull"></i></button>
-                <button onclick="deleteCurrent()" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-red-400" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+<div class="flex gap-2 justify-center border-t pt-4 border-slate-100">
+    <button onclick="editCurrent()" class="btn-icon w-10 h-10 flex items-center justify-center text-lg" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+    <button onclick="toggleResignation(window.curPID)" id="btnResign" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-slate-500 hover:text-red-500 transition-all" title="ถอด/ลาออกจากพระราชวงศ์">
+        <i class="fa-solid fa-user-slash"></i>
+    </button>
+    <button onclick="promoteMomChao()" id="btnPromoteMC" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-amber-500 hidden" title="สถาปนาเป็นพระองค์เจ้า">
+        <i class="fa-solid fa-medal"></i>
+    </button>
+    <button onclick="promoteNobilityRank()" id="btnPromoteNobility" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-blue-600 hidden" title="เลื่อนบรรดาศักดิ์ขุนนาง">
+        <i class="fa-solid fa-arrow-up-right-dots"></i>
+    </button>
+
+    <button onclick="openPromoteMRNModal()" id="btnPromoteMRN" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-amber-500 hidden" title="สถาปนาเป็นหม่อมราชนิกุล">
+        <i class="fa-solid fa-star"></i>
+    </button>
+
+    <button onclick="abdicateCurrent()" id="btnAbdicate" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-purple-600 hover:text-purple-700 hidden" title="สละราชสมบัติ">
+        <i class="fa-solid fa-person-walking-arrow-right"></i>
+    </button>
+    <button onclick="toggleDeath()" id="btnDeath" class="btn-icon w-10 h-10 flex items-center justify-center text-lg" title="แจ้งตาย/คืนชีพ"><i class="fa-solid fa-skull"></i></button>
+    <button onclick="deleteCurrent()" class="btn-icon w-10 h-10 flex items-center justify-center text-lg text-red-400" title="ลบ"><i class="fa-solid fa-trash"></i></button>
             </div>
         </div>
     </div>
@@ -2035,19 +2040,22 @@ tr.rank-card-3 {
     <li class="precedence-item transition-colors" data-keyword="พระเจ้าภาคิไนยเธอ พระองค์เจ้า">๔๘. พระเจ้าภาคิไนยเธอ พระองค์เจ้า (ลูกของพี่สาว/น้องสาว)</li>
     <li class="precedence-item transition-colors" data-keyword="พระเจ้าภาติยาเธอ พระองค์เจ้า">๔๙. พระเจ้าภาติยาเธอ พระองค์เจ้า (ลูกของพี่ชาย/น้องชาย)</li>
     <li class="precedence-item transition-colors" data-keyword="พระเจ้าวรวงศ์เธอ พระองค์เจ้า">๕๐. พระเจ้าวรวงศ์เธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระเจ้าชามาดาเธอ พระองค์เจ้า">๕๑. พระเจ้าชามาดาเธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระเจ้าสุณิสาเธอ พระองค์เจ้า">๕๒. พระเจ้าสุณิสาเธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระเจ้ามูลวงศ์เธอ พระองค์เจ้า">๕๓. พระเจ้ามูลวงศ์เธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระชามาดาเธอ พระองค์เจ้า">๕๔. พระชามาดาเธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระสุณิสาเธอ พระองค์เจ้า">๕๕. พระสุณิสาเธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระมูลวงศ์เธอ พระองค์เจ้า">๕๖. พระมูลวงศ์เธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระเจ้าสุพันธวงศ์เธอ พระองค์เจ้า">๕๗. พระเจ้าสุพันธวงศ์เธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระสุพันธวงศ์เธอ พระองค์เจ้า">๕๘. พระสุพันธวงศ์เธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระวรวงศ์เธอ พระองค์เจ้า">๕๙. พระวรวงศ์เธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระเจ้าพันธวงศ์เธอ พระองค์เจ้า">๖๐. พระเจ้าพันธวงศ์เธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระพันธวงศ์เธอ พระองค์เจ้า">๖๑. พระพันธวงศ์เธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="พระวงศ์เธอ พระองค์เจ้า">๖๒. พระวงศ์เธอ พระองค์เจ้า</li>
-    <li class="precedence-item transition-colors" data-keyword="หม่อมเจ้า">๖๓. หม่อมเจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าเทวันเธอ พระองค์เจ้า">๕๑. พระเจ้าเทวันเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าชามาดาเธอ พระองค์เจ้า">๕๒. พระเจ้าชามาดาเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าสุณิสาเธอ พระองค์เจ้า">๕๓. พระเจ้าสุณิสาเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้ามูลวงศ์เธอ พระองค์เจ้า">๕๔. พระเจ้ามูลวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเทวันเธอ พระองค์เจ้า">๕๕. พระเทวันเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระชามาดาเธอ พระองค์เจ้า">๕๖. พระชามาดาเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระสุณิสาเธอ พระองค์เจ้า">๕๗. พระสุณิสาเธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระมูลวงศ์เธอ พระองค์เจ้า">๕๘. พระมูลวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าสุพันธวงศ์เธอ พระองค์เจ้า">๕๙. พระเจ้าสุพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระสุพันธวงศ์เธอ พระองค์เจ้า">๖๐. พระสุพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระวรวงศ์เธอ พระองค์เจ้า">๖๑. พระวรวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระเจ้าพันธวงศ์เธอ พระองค์เจ้า">๖๒. พระเจ้าพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระพันธวงศ์เธอ พระองค์เจ้า">๖๓. พระพันธวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="พระวงศ์เธอ พระองค์เจ้า">๖๔. พระวงศ์เธอ พระองค์เจ้า</li>
+    <li class="precedence-item transition-colors" data-keyword="เจ้าหม่อม">๖๕. หม่อมราชนิกุล (เจ้าหม่อม)</li>
+    <li class="precedence-item transition-colors" data-keyword="หม่อมเจ้า">๖๕. หม่อมเจ้า</li>
   </ul>
         </div>
      </div>
@@ -2171,6 +2179,10 @@ function getRankBadgeClass(rank) {
     if (rank.includes('พระองค์เจ้า (ชั้นเอก)')) return 'rank-po-1';
     if (rank.includes('พระองค์เจ้า (ชั้นโท)')) return 'rank-po-2';
     if (rank.includes('พระองค์เจ้า (ชั้นตรี)')) return 'rank-po-3';
+
+    // --- [เพิ่มใหม่] หม่อมราชนิกุล ---
+    // (สามารถเปลี่ยนชื่อคลาสเป็นอย่างอื่นได้ เช่น 'rank-mrn' แล้วไปเขียน CSS เพิ่ม หรือใช้ Tailwind class ตรงๆ เลยก็ได้ครับ)
+    if (rank.includes('หม่อมราชนิกุล')) return 'bg-amber-100 text-amber-800 border-amber-300'; 
     
     // หม่อมเจ้า
     if (rank.includes('หม่อมเจ้า')) return 'rank-mc';
@@ -2840,16 +2852,16 @@ let state = {
             prefixes: ["สมเด็จพระมเหสรา"], 
             suffixes: { "สมเด็จพระมเหสรา": ["พระบรมสหยาธิบดี"] } 
         },
-        "พระชายา": { prefixes: ["พระชายา", "หม่อมเจ้า"], suffixes: {} },
+        "พระชายา": { prefixes: ["พระชายา",], suffixes: {} },
         "หม่อม": { prefixes: ["หม่อม", "จอมมารดา", "คุณ"], suffixes: {} },
         "พระราชโอรส": { prefixes: ["สมเด็จพระเจ้าลูกยาเธอ", "พระเจ้าลูกยาเธอ", "สมเด็จพระบรมโอรสาธิราช"], suffixes: { "สมเด็จพระเจ้าลูกยาเธอ": ["บรมราชกุมาร"], "พระเจ้าลูกยาเธอ": ["บวรราชกุมาร"], "สมเด็จพระบรมโอรสาธิราช": ["มหามกุฏราชกุมาร"] } },
         "พระราชธิดา": { prefixes: ["สมเด็จพระเจ้าลูกเธอ", "พระเจ้าลูกเธอ", "สมเด็จพระบรมบุตรีธิราช"], suffixes: { "สมเด็จพระเจ้าลูกเธอ": ["บรมราชบุตรี", "วรราชธิดา"], "พระเจ้าลูกเธอ": ["บวรราชบุตรี"], "สมเด็จพระบรมบุตรีธิราช": ["มหามกุฏราชกุมารี"] } },
         "พระเจ้าพี่น้องร่วมพระมารดา": { prefixes: ["สมเด็จพระเจ้าพี่ยาเธอ", "สมเด็จพระเชษฐาธิราชเจ้า","สมเด็จพระเจ้าน้องยาเธอ", "สมเด็จพระอนุชาธิราชเจ้า", "พระเจ้าพี่ยาเธอ", "พระเจ้าน้องยาเธอ", "สมเด็จพระเจ้าพี่นางเธอ", "สมเด็จพระเจ้าน้องนางเธอ","สมเด็จพระกนิษฐาธิราชเจ้า", "พระเจ้าพี่นางเธอ", "พระเจ้าน้องนางเธอ"], suffixes: {} },
         "พระเจ้าพี่น้องต่างพระมารดา": { prefixes: ["สมเด็จพระพี่ยาเธอ", "สมเด็จพระน้องยาเธอ", "พระพี่ยาเธอ", "พระน้องยาเธอ", "สมเด็จพระพี่นางเธอ", "สมเด็จพระน้องนางเธอ", "พระพี่นางเธอ", "พระน้องนางเธอ"], suffixes: {} },
-        "พระเจ้าพี่น้องรัชกาลที่ ๑": { prefixes: ["สมเด็จพระปฐมบรมเชษฐา", "สมเด็จพระปฐมบรมเชษฐภคนี", "สมเด็จพระปฐมบรมอนุชา", "สมเด็จพระปฐมบรมภคนี"], suffixes: {} },
+        "พระเจ้าพี่น้องรัชกาลที่ ๑": { prefixes: ["สมเด็จพระปฐมบรมเชษฐا", "สมเด็จพระปฐมบรมเชษฐภคนี", "สมเด็จพระปฐมบรมอนุชา", "สมเด็จพระปฐมบรมภคนี"], suffixes: {} },
         "พระบรมวงศ์": { prefixes: ["สมเด็จพระเจ้าบรมวงศ์เธอ", "พระเจ้าบรมวงศ์เธอ", "สมเด็จพระเจ้าราชวรวงศ์เธอ", "สมเด็จพระราชวรวงศ์เธอ","พระเจ้าราชวรวงศ์เธอ","พระราชวรวงศ์เธอ","สมเด็จพระเจ้าปรพันธวงศ์เธอ", "พระเจ้าปรพันธวงศ์เธอ","พระปรพันธวงศ์เธอ", "สมเด็จสัมพันธวงศ์เธอ","พระสัมพันธวงศ์เธอ","สมเด็จพระเจ้าภคนีเธอ","สมเด็จพระเจ้าเทวันเธอ","พระเจ้าเทวันเธอ"], suffixes: {} },
-        "พระอนุวงศ์": { prefixes: ["สมเด็จพระเจ้าวรวงศ์เธอ", "สมเด็จพระวรวงศ์เธอ","สมเด็จพระวงศ์เธอ",  "พระเจ้าวรวงศ์เธอ", "พระวรวงศ์เธอ","พระวงศ์เธอ", "หม่อมเจ้า"], suffixes: { "พระเจ้าวรวงศ์เธอ": ["พระวรชายา"], "พระเจ้าวรวงศ์เธอ": ["พระวรสามี"] } }, 
-        "พระเจ้าหลานเธอ": { prefixes: ["สมเด็จพระเจ้าหลานเธอ", "พระเจ้าหลานเธอ", "สมเด็จพระเจ้าภาติกาเธอ","พระเจ้าภาติกาเธอ","สมเด็จพระเจ้าภาคิไนยเธอ" , "พระเจ้าภาคิไนยเธอ","สมเด็จพระเจ้าภาติยเธอ" , "พระเจ้าภาติยเธอ" ], suffixes: {} },
+        "พระอนุวงศ์": { prefixes: ["สมเด็จพระเจ้าวรวงศ์เธอ", "สมเด็จพระวรวงศ์เธอ","สมเด็จพระวงศ์เธอ",  "พระเจ้าวรวงศ์เธอ", "พระวรวงศ์เธอ","พระวงศ์เธอ", "หม่อมเจ้า"], suffixes: {"สมเด็จพระเจ้าวรวงศ์เธอ": ["พระวรชายา", "พระวรสามี"],"พระเจ้าวรวงศ์เธอ": ["พระวรชายา", "พระวรสามี"]} },
+        "พระเจ้าหลานเธอ": { prefixes: ["สมเด็จพระเจ้าหลานเธอ", "พระเจ้าหลานเธอ","พระหลานเธอ", "สมเด็จพระเจ้าภาติกาเธอ","พระเจ้าภาติกาเธอ","สมเด็จพระเจ้าภาคิไนยเธอ" , "พระเจ้าภาคิไนยเธอ","สมเด็จพระเจ้าภาติยเธอ" , "พระเจ้าภาติยเธอ" ], suffixes: {} },
         "รัชทายาท": { prefixes: ["สมเด็จพระบรมโอรสาธิราช"], suffixes: { "สมเด็จพระบรมโอรสาธิราช": ["สยามมกุฎราชกุมาร"] } },
         "สามัญชน": { prefixes: ["นาย", "นาง", "นางสาว","หม่อมราชวงศ์","หม่อมหลวง", "คุณ", "คุณหญิง","ท่านหญิง", "ท่านผู้หญิง"], suffixes: {} },
         
@@ -2880,14 +2892,14 @@ let state = {
             suffixes: { "สมเด็จพระมหา": ["พระบรมราชชนก"], "สมเด็จพระเจ้าบรมวงศ์เธอ": ["พระราชบิดา"], "สมเด็จพระราชบิดา": [""] } 
         },
         "พระชนนี": { 
-            prefixes: ["สมเด็จพระศรี", "สมเด็จพระนางเจ้า"], 
+            prefixes: ["สมเด็จพระศรี", "สมเด็จพระนางเจ้า", "สมเด็จพระวิมาดาเธอ", "พระวิมาดาเธอ"], 
             suffixes: { 
                 "สมเด็จพระศรี": ["พระบรมราชชนนี", "บรมราชชนนี", "พระบรมราชชนนีพันปีหลวง","บรมราชชนนีพันปีหลวง", "พระบรมราชินีนาถ พระบรมราชชนนีพันปีหลวง", "พระบรมราชินี พระบรมราชชนนีพันปีหลวง"], 
                 "สมเด็จพระนางเจ้า": ["พระบรมราชินีนาถ พระบรมราชชนนีพันปีหลวง", "พระบรมราชินี พระบรมราชชนนีพันปีหลวง"] 
             } 
         },
         "ขุนนาง": { 
-            prefixes: ["หมู่", "จ่า", "พัน", "หมื่น", "ขุน", "หลวง", "พระ", "จมื่น", "พระยา", "เจ้าพระยา", "สมเด็จเจ้าพระยา"], 
+            prefixes: ["หมู่", "จ่า", "พัน", "หมื่น", "ขุน", "หลวง", "พระ", "จมื่น","เจ้าหม่อม", "พระยา", "เจ้าพระยา", "สมเด็จเจ้าพระยา"], 
             suffixes: { "หมู่": [""], "จ่า": [""], "พัน": [""], "หมื่น": [""], "ขุน": [""], "หลวง": [""], "พระ": [""], "จมื่น": [""], "พระยา": [""], "เจ้าพระยา": [""], "สมเด็จเจ้าพระยา": [""] } 
         },
         "วังหน้า": { 
@@ -4430,8 +4442,8 @@ function getFullDisplayTitle(p) {
     // ==================================================================
     // [อัปเดต] กฎพิเศษ: กรณีคำนำหน้า + พระนาม + สร้อยพระนาม ต้องเขียนติดกันเป็นพืด
     // ==================================================================
-    const isMahaSpecial = prefix === "สมเด็จพระมหา" && ["พระบรมราชชนก", "บรมราชชนก", "บรมปิตยกาบดี", "บรมมาตยกาบดี"].includes(suffix);
-    const isSriSpecial = prefix === "สมเด็จพระศรี" && ["บรมราชชนนี", "พระบรมราชชนนี", "พระบรมราชชนนีพันปีหลวง", "บรมราชชนนีพันปีหลวง"].includes(suffix);
+    const isMahaSpecial = prefix === "สมเด็จพระมหา" && ["พระบรมราชชนก", "บรมราชชนก","พระปฐมบรมราชชนก","ปฐมบรมราชชนก","พระราชสัสสุรเจ้า",  "บรมปิตยกาบดี", "บรมมาตยกาบดี"].includes(suffix);
+    const isSriSpecial = prefix === "สมเด็จพระศรี" && ["บรมราชชนนี","พระปฐมบรมราชชนนี","ปฐมบรมราชชนนี", "พระบรมราชชนนี","พระราชสัสสุรีเจ้า", "พระบรมราชชนนีพันปีหลวง", "บรมราชชนนีพันปีหลวง"].includes(suffix);
     const isThewiSpecial = ["สมเด็จพระนางเจ้า","สมเด็จพระนางนาฏ", "พระนางเธอ", "พระนางเจ้า", "พระนางนาฏ"].includes(prefix) && (suffix === "เทวี" || suffix === "ราชเทวี" || suffix === "วรเทวี" || suffix === "มหาเทวี");
 
     if (isMahaSpecial || isSriSpecial || isThewiSpecial) {
@@ -4498,20 +4510,35 @@ function getFullDisplayTitle(p) {
         return `${p.titlePrefix || ""} ${rank}${p.name}${kromInfo}${suffixStr}${contextStr}`.replace(/\s+/g, ' ').trim();
     }
 
-    // --- ส่วนที่ 3.5: เพิ่มกฎสำหรับขุนนาง ---
+// --- ส่วนที่ 3.5: เพิ่มกฎสำหรับขุนนาง ---
     if (p.relationship === 'ขุนนาง') {
         let pre = p.titlePrefix || "";
         let nob = p.nobilityTitle || "";
-        let n = p.name || "";
+        
+        // กำหนดตัวย่อตามอิสริยศเดิม
+        let rankAbbr = "";
+        if (p.royalRank === 'หม่อมเจ้า') rankAbbr = "ม.จ.";
+        else if (p.royalRank === 'หม่อมราชวงศ์') rankAbbr = "ม.ร.ว.";
+        else if (p.royalRank === 'หม่อมหลวง') rankAbbr = "ม.ล.";
+
+        // เอาตัวย่อมาต่อกับชื่อ
+        let n = (rankAbbr ? rankAbbr : "") + (p.name || "");
 
         let s = "";
         if (!p.hideSurname) {
-            if (p.royalSurname) s = ` ${p.royalSurname} ณ ${state.kingdomName}`;
-            else if (p.surname) s = ` ${p.surname}`;
+            // เช็คว่าถ้ามียศเดิมเป็น ม.จ., ม.ร.ว., ม.ล. จะต้องตัด "ณ" ออกหรือไม่
+            // โดยเรียกใช้ฟังก์ชัน shouldSkipNa() ที่คุณมีอยู่แล้ว
+            if (p.royalSurname) {
+                 s = shouldSkipNa(p) ? ` ${p.royalSurname}` : ` ${p.royalSurname} ณ ${state.kingdomName}`;
+            }
+            else if (p.surname) {
+                 s = ` ${p.surname}`;
+            }
         }
 
         let header = (pre + nob).trim();
         let fullName = (n + s).trim();
+        
         if (header && fullName) return `${header} (${fullName})`;
         return header || fullName;
     }
@@ -4579,7 +4606,6 @@ function getFullDisplayTitle(p) {
     return finalNameParts.join(" ").trim();
 }
 
-// ฟังก์ชัน getNicknameWithPrefix ไม่ต้องแก้ไข ใช้ของเดิมได้เลย
 function getNicknameWithPrefix(p) {
     if (!p.nickname) return '-';
     let prefix = '';
@@ -4596,9 +4622,13 @@ function getNicknameWithPrefix(p) {
         prefix = 'เสด็จ';
     } else if (r.includes('พระองค์เจ้า')) {
         prefix = isMale ? 'พระองค์ชาย' : 'พระองค์หญิง';
-    } else if (r.includes('หม่อมเจ้า')) {
+    } 
+    // --- อัปเดต: เพิ่ม "เจ้าหม่อม" ให้ใช้ ท่านชาย/ท่านหญิง ---
+    else if (r.includes('หม่อมเจ้า') || r.includes('เจ้าหม่อม') || tp.includes('เจ้าหม่อม')) {
         prefix = isMale ? 'ท่านชาย' : 'ท่านหญิง';
-    } else if (r.includes('หม่อมราชวงศ์')) {
+    } 
+    // ------------------------------------------------
+    else if (r.includes('หม่อมราชวงศ์')) {
         prefix = isMale ? 'คุณชาย' : 'คุณหญิง';
     } else if (r.includes('หม่อมหลวง')) {
         prefix = 'คุณ';
@@ -4617,28 +4647,28 @@ function getNicknameWithPrefix(p) {
         prefix = 'คุณหลวง';
     } else if (tp === 'ขุน') {
         prefix = 'ท่านขุน';
-        
     } else if (tp === 'หมื่น') {
         prefix = 'ท่านหมื่น';
     }
-
+    
     // 3. กลุ่มฝ่ายใน และ ความสัมพันธ์พิเศษ
     else if (tp.includes('เจ้าคุณพระ') || tp.includes('เจ้าคุณจอม')) {
         prefix = 'เจ้าคุณ';
-    } 
-    // --- เพิ่มส่วนนี้: ถ้าเป็นคุณท้าว ให้ใช้คำนำหน้าชื่อเล่นว่า "คุณท้าว" ---
-    else if (p.isTao || tp.startsWith('ท้าว')) {
+    } else if (p.isTao || tp.startsWith('ท้าว')) {
         prefix = 'คุณท้าว';
-    }
-    // -------------------------------------------------------------
-    else if (tp.includes('เจ้าจอม')) {
+    } 
+    // --- อัปเดต: เพิ่ม "จอมมารดา" ให้ใช้ คุณ ---
+    else if (tp.includes('เจ้าจอม') || tp.includes('จอมมารดา')) {
         prefix = 'คุณ';
-    } else if (tp === 'หม่อม') { 
+    } 
+    // ----------------------------------------
+    else if (tp === 'หม่อม') { 
         prefix = 'หม่อม';
     }
 
     return prefix + p.nickname;
 }
+
     /**
      * Retrieves the name displayed inside the tree node box.
      * Per user request, M.R.W. and M.L. (and high royal prefixes) are NOT shown here, only the name.
@@ -5497,6 +5527,16 @@ function calculatePojiamScore(person) {
         }
         return currentScore;
     };
+
+    // ====================================================================
+    // --- [เพิ่มใหม่] กฎพิเศษสำหรับ หม่อมราชนิกุล (เจ้าหม่อม) ---
+    // แทรกก่อนที่จะเช็ค if (!person.isQueenConsort) เพื่อไม่ให้ถูกปัดตกเป็น 0
+    if (person.titlePrefix === 'เจ้าหม่อม') {
+        let mrnScore = 3995000; // สูงกว่าหม่อมเจ้าทั้งหมด แต่ต่ำกว่าพระองค์เจ้า (4ล้าน)
+        if (person.age) mrnScore += (parseInt(person.age) * 10);
+        return applySpecialKromRule(mrnScore);
+    }
+    // ====================================================================
 
     if (!person.isQueenConsort) {
         if ((person.relationship || '').includes('บาทบริจาริกา') || person.relationship === 'หม่อม') return 0; 
@@ -8604,8 +8644,7 @@ if (filterStatus === 'royal_surnames') {
     });
     return;
 }
-
-  // ================= โหมดปกติ (ปรับปรุง Logic การเรียงโปรเจียม) =================
+// ================= โหมดปกติ (ปรับปรุง Logic การเรียงโปรเจียม) =================
     if (filterStatus === 'alive') list = list.filter(m => m.isAlive);
     else if (filterStatus === 'dead') list = list.filter(m => !m.isAlive);
     else if (filterStatus === 'precedence') list = list.filter(m => m.isAlive && calculatePojiamScore(m) > 0);
@@ -8705,6 +8744,14 @@ if (filterStatus === 'royal_surnames') {
                 <button onclick="movePrecedence('${m.id}', 1)" class="w-5 h-5 flex items-center justify-center text-[10px] text-slate-500 hover:text-white hover:bg-indigo-500 rounded bg-white border border-slate-200 shadow-sm"><i class="fa-solid fa-chevron-down"></i></button>
             </div>` : '';
         
+        // ==========================================================
+        // --- [เพิ่มใหม่] แปลงข้อความและสีป้ายยศสำหรับ หม่อมราชนิกุล ---
+        let displayRank = m.royalRank || 'สามัญชน';
+        if (m.titlePrefix === 'เจ้าหม่อม') {
+            displayRank = 'หม่อมราชนิกุล';
+        }
+        // ==========================================================
+
         const row = document.createElement('tr');
         row.className = "group bg-white border-b border-slate-100 hover:bg-indigo-50/40 transition-all duration-200 ease-in-out";
         row.setAttribute('data-id', m.id);
@@ -8739,8 +8786,8 @@ if (filterStatus === 'royal_surnames') {
                     </div>
 
                     <div class="shrink-0 ml-4">
-                        <span class="badge-rank ${getRankBadgeClass(m.royalRank)}">
-                            ${m.royalRank || 'สามัญชน'}
+                        <span class="badge-rank ${getRankBadgeClass(displayRank)}">
+                            ${displayRank}
                         </span>
                     </div>
 
@@ -8780,7 +8827,6 @@ if (filterStatus === 'royal_surnames') {
         initTableSortable();
     }
 }
-    
 
 
 
@@ -10351,13 +10397,13 @@ if (m.kromRank && m.kromTitle) {
 
 
 
-    // --- แก้ไข: ประกาศ actionsContainer ไว้ด้านบนสุดของฟังก์ชัน ---
+  // --- แก้ไข: ประกาศ actionsContainer ไว้ด้านบนสุดของฟังก์ชัน ---
     const actionsContainer = document.querySelector('#detailModal .flex.gap-2.justify-center.border-t');
     
     const btnPromote = document.getElementById('btnPromoteNobility');
     if (btnPromote) {
-        // --- แก้ไข: เปลี่ยนจาก p เป็น m ---
-        if (m.relationship === 'ขุนนาง') { 
+        // --- แก้ไข: เปลี่ยนจาก p เป็น m และเพิ่มเงื่อนไขซ่อนปุ่มถ้าเป็น 'เจ้าหม่อม' ---
+        if (m.relationship === 'ขุนนาง' && m.titlePrefix !== 'เจ้าหม่อม') { 
             btnPromote.classList.remove('hidden');
         } else {
             btnPromote.classList.add('hidden');
@@ -10381,6 +10427,22 @@ document.getElementById('d_nickname_container').classList.toggle('hidden', !m.ni
     } else {
         btnPromoteMC.classList.add('hidden');
     }
+
+
+// ตรวจสอบเงื่อนไขแสดงปุ่ม หม่อมราชนิกุล
+const btnPromoteMRN = document.getElementById('btnPromoteMRN');
+if (btnPromoteMRN) {
+    // ต้องเป็น สามัญชน + คำนำหน้า ม.ร.ว. + ยศ ม.ร.ว. (ถ้ากดสถาปนาไปแล้วจะกลายเป็นขุนนาง ปุ่มนี้จะซ่อนอัตโนมัติ)
+    if (m.relationship === 'สามัญชน' && m.titlePrefix === 'หม่อมราชวงศ์' && m.royalRank === 'หม่อมราชวงศ์') {
+        btnPromoteMRN.classList.remove('hidden');
+    } else {
+        btnPromoteMRN.classList.add('hidden');
+    }
+}
+
+
+
+  
 
     // --- วางต่อท้ายบรรทัด 3846 ในไฟล์ของคุณ ---
 const oldCoronationBtn = document.getElementById('btnCoronation');
@@ -10412,32 +10474,33 @@ if (oldWorachayaBtn) oldWorachayaBtn.remove();
 const oldWorasamiBtn = document.getElementById('btnPromoteWorasami');
 if (oldWorasamiBtn) oldWorasamiBtn.remove();
 
+// เงื่อนไขสถาปนาพระวรชายา / พระวรสามี (เฉพาะคู่สมรสของมกุฎราชกุมาร / มกุฎราชกุมารี)
 if (currentPerson.royalRank === "สามัญชน" && registeredSpouse) {
-    // 1. กรณีเป็นคู่สมรสของ "มหามกุฏราชกุมาร" (รัชทายาทอันดับ 1 และต้องเป็นชาย)
-    // เพิ่มการเช็ค gender === 'M' เพื่อระบุว่าเป็นพระราชโอรสเท่านั้นตามเงื่อนไขคุณ
-    const isCrownPrince = registeredSpouse.isHeir && parseInt(registeredSpouse.heirOrder) === 1 && registeredSpouse.gender === 'M';
+    // เช็คว่าคู่สมรสเป็นรัชทายาทอันดับที่ 1 หรือไม่ (เป็นเงื่อนไขบังคับสำหรับทั้งชายและหญิง)
+    const isFirstHeir = registeredSpouse.isHeir && parseInt(registeredSpouse.heirOrder) === 1;
     
-    // 2. กรณีเป็นคู่สมรสของ "พระราชธิดา"
-    const isRoyalDaughter = registeredSpouse.relationship === "พระราชธิดา";
+    // แยกเพศของรัชทายาทอันดับ 1 เพื่อกำหนดปุ่ม
+    const isCrownPrince = isFirstHeir && registeredSpouse.gender === 'M'; // มกุฎราชกุมาร
+    const isCrownPrincess = isFirstHeir && registeredSpouse.gender === 'F'; // มกุฎราชกุมารี
 
-    if (isCrownPrince) {
+    if (isCrownPrince && currentPerson.gender === 'F') { // ถ้าสามีเป็นมกุฎราชกุมาร ภรรยาจะเป็นพระวรชายา
         const btn = document.createElement('button');
-        btn.id = 'btnPromoteWorachaya'; // ใส่ ID เพื่อใช้ล้างปุ่ม
+        btn.id = 'btnPromoteWorachaya'; 
         btn.onclick = () => {
             promoteToPhraWorachaya(currentPerson.id);
-            btn.remove(); // กดแล้วให้หายไปทันที
+            btn.remove(); 
         };
         btn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-amber-600 border-2 border-amber-200 bg-amber-50 rounded-full hover:bg-amber-100 transition-colors";
         btn.title = "สถาปนาเป็นพระวรชายา";
         btn.innerHTML = '<i class="fa-solid fa-crown"></i>';
         actionsContainer.append(btn);
     } 
-    else if (isRoyalDaughter) {
+    else if (isCrownPrincess && currentPerson.gender === 'M') { // ถ้าภรรยาเป็นมกุฎราชกุมารี สามีจะเป็นพระวรสามี
         const btn = document.createElement('button');
-        btn.id = 'btnPromoteWorasami'; // ใส่ ID เพื่อใช้ล้างปุ่ม
+        btn.id = 'btnPromoteWorasami'; 
         btn.onclick = () => {
             promoteToPhraWorasami(currentPerson.id);
-            btn.remove(); // กดแล้วให้หายไปทันที
+            btn.remove(); 
         };
         btn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-blue-600 border-2 border-blue-200 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors";
         btn.title = "สถาปนาเป็นพระวรสามี";
@@ -10446,7 +10509,7 @@ if (currentPerson.royalRank === "สามัญชน" && registeredSpouse) {
     }
 }
 
-    // --- [เพิ่มใหม่] ส่วนที่ 1: ปุ่มปราบดาภิเษกสำหรับบุคคลคนแรก (สามัญชนขึ้นไป) ---
+   // --- [เพิ่มใหม่] ส่วนที่ 1: ปุ่มปราบดาภิเษกสำหรับบุคคลคนแรก (สามัญชนขึ้นไป) ---
     const oldPrabBtn = document.getElementById('btnPrabdaphisek');
     if (oldPrabBtn) oldPrabBtn.remove();
     
@@ -10468,108 +10531,401 @@ if (currentPerson.royalRank === "สามัญชน" && registeredSpouse) {
     }
     // ------------------------------------------------------------------
         
-        // Find and replace the onclick handler for the "เพิ่มคู่สมรส" button
-        const addSpouseButton = document.querySelector('#detailModal button[onclick^="openSpouseSelectionModal"]');
-        if (addSpouseButton) {
-             addSpouseButton.onclick = () => openSpouseSelectionModal(window.curPID);
-        } else {
-             // Fallback/Safety Check: Ensure the button uses the correct function in the HTML
-        }
-        
-        // Control Abdicate Button
-        const btnAbdicate = document.getElementById('btnAbdicate');
-        const btnDeath = document.getElementById('btnDeath');
-        const activeMonarch = state.members.find(p => p.isMonarch && p.isAlive && !p.isExMonarch);
-
-        // --- แทรก Code ส่วนนี้ ---
-const oldLanTherBtn = document.getElementById('btnPromoteLanTher');
-if (oldLanTherBtn) oldLanTherBtn.remove(); // ล้างปุ่มเก่า
-
-if (m && activeMonarch) {
-    // ใช้ฟังก์ชันตรวจสอบความเป็นหลานที่มีอยู่แล้วในระบบ
-    const checkRel = isDirectDescendant(activeMonarch.id, m.id);
-    
-    // เงื่อนไข: เป็นหลานหลวงสายตรง + มียศหม่อมเจ้า
-    if (checkRel.isGrandchild && m.royalRank === 'หม่อมเจ้า') {
-        const promoteBtn = document.createElement('button');
-        promoteBtn.id = 'btnPromoteLanTher';
-        promoteBtn.onclick = promoteToPhraOngChaoLanTher;
-        promoteBtn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-blue-600 border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all";
-        promoteBtn.title = "สถาปนาเป็นพระหลานเธอ พระองค์เจ้า";
-        promoteBtn.innerHTML = '<i class="fa-solid fa-award"></i>';
-        
-        // วางปุ่มไว้ข้างๆ ปุ่มสถาปนาหม่อมเจ้าเดิม หรือหน้าปุ่มแจ้งตาย
-        const btnDeath = document.getElementById('btnDeath');
-        actionsContainer.insertBefore(promoteBtn, btnDeath);
+    // Find and replace the onclick handler for the "เพิ่มคู่สมรส" button
+    const addSpouseButton = document.querySelector('#detailModal button[onclick^="openSpouseSelectionModal"]');
+    if (addSpouseButton) {
+         addSpouseButton.onclick = () => openSpouseSelectionModal(window.curPID);
+    } else {
+         // Fallback/Safety Check: Ensure the button uses the correct function in the HTML
     }
-}
-// -----------------------
+    
+    // Control Abdicate Button
+    const btnAbdicate = document.getElementById('btnAbdicate');
+    const btnDeath = document.getElementById('btnDeath');
+    const activeMonarch = state.members.find(p => p.isMonarch && p.isAlive && !p.isExMonarch);
 
-    // --- [เพิ่มใหม่] ส่วนที่ 2: ปุ่มสถาปนาญาติในรัชกาลที่ 1 (พ่อ แม่ พี่น้อง คู่สมรสพี่น้อง และลูกพี่น้อง) ---
+    // --- แทรก Code ส่วนนี้ ---
+  const oldLanTherBtn = document.getElementById('btnPromoteLanTher');
+    if (oldLanTherBtn) oldLanTherBtn.remove(); // ล้างปุ่มเก่า
+
+    if (m && activeMonarch) {
+        // ใช้ฟังก์ชันตรวจสอบความเป็นหลานที่มีอยู่แล้วในระบบ
+        const checkRel = isDirectDescendant(activeMonarch.id, m.id);
+        
+        // เงื่อนไข: เป็นหลานหลวงสายตรง + มียศหม่อมเจ้า
+        if (checkRel.isGrandchild && m.royalRank === 'หม่อมเจ้า') {
+            const promoteBtn = document.createElement('button');
+            promoteBtn.id = 'btnPromoteLanTher';
+            promoteBtn.onclick = promoteToPhraOngChaoLanTher;
+            promoteBtn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-blue-600 border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all";
+            promoteBtn.title = "สถาปนาเป็นพระหลานเธอ พระองค์เจ้า";
+            promoteBtn.innerHTML = '<i class="fa-solid fa-award"></i>';
+            
+            // วางปุ่มไว้ข้างๆ ปุ่มสถาปนาหม่อมเจ้าเดิม หรือหน้าปุ่มแจ้งตาย
+            actionsContainer.insertBefore(promoteBtn, btnDeath);
+        }
+    }
+    // -----------------------
+
+    // ====================================================================================
+    // --- [เพิ่มใหม่] ฟังก์ชัน Popup ล็อคช่องอื่นๆ ให้กรอกได้เฉพาะ "พระนามใหม่" ---
+    // ====================================================================================
+    if (!window.openPromotionPopup) {
+        window.openPromotionPopup = function(personId, defaultPrefix, defaultRank, newRel = "พระบรมวงศ์", defaultSuffix = "") {
+            const person = state.members.find(p => p.id === personId);
+            if (!person) return;
+
+            let modal = document.getElementById('promotionPopupModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'promotionPopupModal';
+                modal.className = "fixed inset-0 bg-slate-900/60 hidden z-[100] flex items-center justify-center backdrop-blur-sm transition-opacity";
+                modal.innerHTML = `
+                    <div class="bg-white rounded-[24px] w-full max-w-md overflow-hidden shadow-2xl transform transition-all scale-100 border border-purple-100">
+                        <div class="bg-gradient-to-r from-purple-800 via-purple-600 to-fuchsia-600 p-5 text-white flex justify-between items-center shadow-lg relative overflow-hidden">
+                            <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10"></div>
+                            <h3 class="font-bold text-xl relative z-10 tracking-wide">
+                                <i class="fa-solid fa-crown mr-2 text-fuchsia-200"></i> สถาปนาพระยศ
+                            </h3>
+                            <button onclick="closePromotionPopup()" class="text-white hover:text-fuchsia-200 transition-colors relative z-10 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20">
+                                <i class="fa-solid fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="p-6 bg-gradient-to-b from-purple-50/80 to-white max-h-[80vh] overflow-y-auto custom-scrollbar">
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold text-purple-900 mb-1.5">1. คำนำหน้าพระนาม <span class="text-xs text-gray-500 font-normal">(ระบบกำหนดให้)</span></label>
+                                <input type="text" id="promoPrefix" readonly class="w-full bg-gray-100 border border-gray-200 px-4 py-2.5 rounded-xl text-gray-600 font-bold focus:outline-none cursor-not-allowed shadow-inner" placeholder="-">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold text-purple-900 mb-1.5">2. อิสริยายศ <span class="text-xs text-gray-500 font-normal">(ระบบกำหนดให้)</span></label>
+                                <input type="text" id="promoRank" readonly class="w-full bg-gray-100 border border-gray-200 px-4 py-2.5 rounded-xl text-gray-600 focus:outline-none cursor-not-allowed shadow-inner" placeholder="-">
+                            </div>
+
+                            <div class="mb-4 relative">
+                                <label class="block text-sm font-semibold text-purple-900 mb-1.5">3. พระนามใหม่ <span class="text-pink-500">*</span></label>
+                                <input type="text" id="promoNewName" class="w-full border-2 border-purple-400 px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none text-lg shadow-sm bg-white transition-all placeholder-purple-300 text-purple-950 font-bold" placeholder="กรอกพระนามใหม่...">
+                            </div>
+
+                            <div class="mb-6 relative">
+                                <label class="block text-sm font-semibold text-purple-900 mb-1.5">4. สร้อยพระนาม / กรม <span class="text-xs text-gray-500 font-normal">(ระบบกำหนดให้)</span></label>
+                                <input type="text" id="promoSuffix" readonly class="w-full bg-gray-100 border border-gray-200 px-4 py-2.5 rounded-xl text-gray-600 focus:outline-none cursor-not-allowed shadow-inner" placeholder="-">
+                                
+                                <div class="bg-purple-100/50 rounded-lg p-3 mt-4 border border-purple-100">
+                                    <p class="text-xs text-purple-700 flex items-start leading-relaxed">
+                                        <i class="fa-solid fa-circle-info mt-0.5 mr-2 text-purple-500"></i> 
+                                        ระบบจะลบนามสกุลเดิมออก และบันทึกประวัติการสถาปนาลงในทำเนียบพระยศโดยอัตโนมัติ
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3 mt-2">
+                                <button onclick="closePromotionPopup()" class="flex-1 bg-white border-2 border-slate-200 text-slate-600 py-3 rounded-xl font-semibold hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800 transition-all shadow-sm">ยกเลิก</button>
+                                <button id="promoConfirmBtn" class="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white py-3 rounded-xl font-semibold shadow-md hover:from-purple-700 hover:to-fuchsia-700 transition-all hover:shadow-lg transform hover:-translate-y-0.5 border border-purple-700/50">บันทึกสถาปนา</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            // ดึงค่ามาแสดงผล 
+            document.getElementById('promoPrefix').value = defaultPrefix || "";
+            document.getElementById('promoRank').value = defaultRank || "";
+            document.getElementById('promoNewName').value = person.name || "";
+            document.getElementById('promoSuffix').value = defaultSuffix || person.titleSuffix || "";
+
+            modal.classList.remove('hidden');
+
+            // ทำให้ช่องพระนามใหม่ถูกโฟกัสพร้อมพิมพ์ได้ทันทีที่เปิด Pop-up
+            setTimeout(() => { document.getElementById('promoNewName').focus(); }, 100);
+
+            document.getElementById('promoConfirmBtn').onclick = () => {
+                const newName = document.getElementById('promoNewName').value.trim();
+                const newPrefix = document.getElementById('promoPrefix').value.trim();
+                const newRank = document.getElementById('promoRank').value.trim();
+                const newSuffix = document.getElementById('promoSuffix').value.trim(); 
+
+                if (!newName) {
+                    alert("กรุณากรอกพระนามใหม่");
+                    document.getElementById('promoNewName').focus();
+                    return;
+                }
+
+                // นำสร้อยพระนามมาแสดงในข้อความยืนยันด้วย
+                const confirmMessage = newSuffix 
+                    ? `ยืนยันการสถาปนาเป็น ${newPrefix} ${newName} ${newSuffix}?`
+                    : `ยืนยันการสถาปนาเป็น ${newPrefix} ${newName}?`;
+
+                if (confirm(confirmMessage)) {
+                    person.name = newName;
+                    person.titlePrefix = newPrefix;
+                    person.royalRank = newRank;
+                    person.titleSuffix = newSuffix; 
+                    person.surname = "";
+                    if (newRel) person.relationship = newRel;
+
+                    // บันทึกลงทำเนียบพระยศ
+                    if (typeof recordTitleHistory === 'function') recordTitleHistory(person);
+                    
+                    saveState();
+                    updateApp();
+                    showDetail(person.id);
+                    closePromotionPopup();
+                }
+            };
+        };
+
+        window.closePromotionPopup = function() {
+            const modal = document.getElementById('promotionPopupModal');
+            if (modal) modal.classList.add('hidden');
+        };
+    }
+    // ====================================================================================
+
+    // --- [ปรับปรุงใหม่] ส่วนที่ 2: ปุ่มสถาปนาญาติในรัชกาลที่ 1 (พ่อ แม่ พี่น้อง คู่สมรสพี่น้อง และลูกพี่น้อง ที่เป็นสามัญชน) ---
     const oldFoundingBtn = document.getElementById('btnPromoteFoundingFamily');
     if (oldFoundingBtn) oldFoundingBtn.remove();
     const oldSiblingSpouseBtn = document.getElementById('btnPromoteSiblingSpouse');
     if (oldSiblingSpouseBtn) oldSiblingSpouseBtn.remove();
     const oldSiblingChildBtn = document.getElementById('btnPromoteSiblingChild');
     if (oldSiblingChildBtn) oldSiblingChildBtn.remove();
+    const oldPhakkhaniBtn = document.getElementById('btnPromotePhakkhani');
+    if (oldPhakkhaniBtn) oldPhakkhaniBtn.remove();
 
-    if (activeMonarch && activeMonarch.globalReignNumber == 1 && m.id !== activeMonarch.id && m.isAlive) {
-        // ก. พ่อ แม่ พี่น้อง ร่วมบิดามารดา (สามัญชน)
-        const isParent = (m.id === activeMonarch.fatherId || m.id === activeMonarch.motherId);
-        const isSibling = (m.fatherId === activeMonarch.fatherId || m.motherId === activeMonarch.motherId);
+    if (activeMonarch && activeMonarch.globalReignNumber == 1 && m.id !== activeMonarch.id && m.isAlive && m.royalRank === 'สามัญชน') {
         
-        if ((isParent || isSibling) && m.royalRank === 'สามัญชน') {
+        // ฟังก์ชันช่วยเช็คว่าบุคคลนี้เป็น พี่น้อง ของกษัตริย์หรือไม่
+        const checkIsSibling = (person) => {
+            if (!person || person.id === activeMonarch.id) return false;
+            const sameFather = activeMonarch.fatherId && activeMonarch.fatherId === person.fatherId;
+            const sameMother = activeMonarch.motherId && activeMonarch.motherId === person.motherId;
+            return sameFather || sameMother;
+        };
+
+        const isParent = (m.id === activeMonarch.fatherId || m.id === activeMonarch.motherId);
+        const isSibling = checkIsSibling(m);
+        
+        // ก. พ่อ แม่ พี่น้อง ร่วมบิดามารดา (สามัญชน)
+        if (isParent || isSibling) {
             const fBtn = document.createElement('button');
             fBtn.id = 'btnPromoteFoundingFamily';
-            fBtn.onclick = () => promoteFoundingFamily(m.id, activeMonarch.id);
-            fBtn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-amber-600 border-2 border-amber-300 bg-amber-50";
+            
+            // ใช้ Pop-up สำหรับการสถาปนา
+            fBtn.onclick = () => {
+                let defPrefix = "สมเด็จพระเจ้าบรมวงศ์เธอ";
+                let defRank = "เจ้าฟ้า (ชั้นโท)"; 
+                let newRel = "พระบรมวงศ์";
+                let defSuffix = ""; // เพิ่มตัวแปรส่งค่าสร้อยพระนาม
+                
+                if (m.id === activeMonarch.fatherId) {
+                    defPrefix = "สมเด็จพระมหา"; 
+                    defRank = "เจ้าฟ้า (ชั้นพิเศษ)";
+                    newRel = "พระชนก"; 
+                    defSuffix = "พระปฐมบรมราชชนก"; // สร้อยพระนามสำหรับพ่อ
+                } else if (m.id === activeMonarch.motherId) {
+                    defPrefix = "สมเด็จพระศรี"; 
+                    defRank = "เจ้าฟ้า (ชั้นพิเศษ)";
+                    newRel = "พระชนนี"; 
+                    defSuffix = "พระปฐมบรมราชชนนี"; // สร้อยพระนามสำหรับแม่
+                } else {
+                    const isOlder = (m.birthYear && activeMonarch.birthYear) ? (m.birthYear < activeMonarch.birthYear) : (m.id < activeMonarch.id);
+                    const isSameFather = activeMonarch.fatherId && activeMonarch.fatherId === m.fatherId;
+                    const isSameMother = activeMonarch.motherId && activeMonarch.motherId === m.motherId;
+                    
+                    if (isSameFather && isSameMother) {
+                        newRel = "พระเจ้าพี่น้องร่วมพระมารดา";
+                        defRank = "เจ้าฟ้า (ชั้นโท)";
+                        if (m.gender === 'M') {
+                            defPrefix = isOlder ? "สมเด็จพระเจ้าพี่ยาเธอ" : "สมเด็จพระเจ้าน้องยาเธอ";
+                        } else {
+                            defPrefix = isOlder ? "สมเด็จพระเจ้าพี่นางเธอ" : "สมเด็จพระเจ้าน้องนางเธอ";
+                        }
+                    } else {
+                        newRel = "พระเจ้าพี่น้องต่างพระมารดา";
+                        const motherOfSibling = state.members.find(p => p.id === m.motherId);
+                        const isMotherRoyal = motherOfSibling && motherOfSibling.royalRank && motherOfSibling.royalRank !== 'สามัญชน';
+                        
+                        if (isMotherRoyal) {
+                            defRank = "เจ้าฟ้า (ชั้นโท)";
+                            if (m.gender === 'M') {
+                                defPrefix = isOlder ? "สมเด็จพระพี่ยาเธอ" : "สมเด็จพระน้องยาเธอ";
+                            } else {
+                                defPrefix = isOlder ? "สมเด็จพระพี่นางเธอ" : "สมเด็จพระน้องนางเธอ";
+                            }
+                        } else {
+                            defRank = "พระองค์เจ้า (ชั้นเอก)";
+                            if (m.gender === 'M') {
+                                defPrefix = isOlder ? "พระพี่ยาเธอ" : "พระน้องยาเธอ";
+                            } else {
+                                defPrefix = isOlder ? "พระพี่นางเธอ" : "พระน้องนางเธอ";
+                            }
+                        }
+                    }
+                }
+                
+                openPromotionPopup(m.id, defPrefix, defRank, newRel, defSuffix);
+            };
+
+            fBtn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-amber-600 border-2 border-amber-300 bg-amber-50 hover:bg-amber-100";
             fBtn.title = "สถาปนาเป็นเจ้า (รัชกาลแรก)";
             fBtn.innerHTML = '<i class="fa-solid fa-crown"></i>';
-            actionsContainer.append(fBtn);
+            actionsContainer.insertBefore(fBtn, btnDeath);
         }
 
-       
-
-        // ค. ลูกของพี่น้อง (สถาปนาเป็นเจ้าฟ้าชั้นตรี หรือ พระองค์เจ้า)
-        const father = state.members.find(f => f.id === m.fatherId);
-        const mother = state.members.find(mo => mo.id === m.motherId);
-        const isChildOfSibling = (father && (father.fatherId === activeMonarch.fatherId || father.motherId === activeMonarch.motherId)) || 
-                                 (mother && (mother.fatherId === activeMonarch.fatherId || mother.motherId === activeMonarch.motherId));
+        // ข. ลูกของพี่น้อง (สถาปนาเป็นเจ้าฟ้าชั้นตรี หรือ พระองค์เจ้า)
+        const mFather = state.members.find(f => f.id === m.fatherId);
+        const mMother = state.members.find(mo => mo.id === m.motherId);
+        const isChildOfSibling = checkIsSibling(mFather) || checkIsSibling(mMother);
         
-        if (isChildOfSibling && m.royalRank === 'สามัญชน') {
+        if (isChildOfSibling) {
             const scBtn = document.createElement('button');
             scBtn.id = 'btnPromoteSiblingChild';
-            scBtn.onclick = () => promoteSiblingChild(m.id, activeMonarch.id);
-            scBtn.className = "btn-icon w-10 h-10 flex items-center justify-center text-blue-500 border-2 border-blue-200 bg-blue-50";
+            
+            // ใช้ Pop-up
+            scBtn.onclick = () => openPromotionPopup(m.id, "สมเด็จพระเจ้าวรวงศ์เธอ", "เจ้าฟ้า (ชั้นตรี)", "พระอนุวงศ์");
+            
+            scBtn.className = "btn-icon w-10 h-10 flex items-center justify-center text-blue-500 border-2 border-blue-200 bg-blue-50 hover:bg-blue-100";
             scBtn.title = "สถาปนาลูกของพี่น้อง";
             scBtn.innerHTML = '<i class="fa-solid fa-star"></i>';
-            actionsContainer.append(scBtn);
+            actionsContainer.insertBefore(scBtn, btnDeath);
+        }
+
+        // ค. คู่สมรสของพี่น้อง (สามีพี่น้อง และ ภรรยาจดทะเบียนของพี่น้อง)
+        const isSiblingSpouse = state.members.some(sibling => {
+            if (!checkIsSibling(sibling)) return false; 
+            if (m.gender === 'M' && sibling.spouseIds && sibling.spouseIds.includes(m.id)) return true; // สามีพี่น้อง
+            if (m.gender === 'F' && sibling.registeredSpouseId === m.id) return true; // ภรรยาจดทะเบียนพี่น้อง
+            return false;
+        });
+
+        if (isSiblingSpouse) {
+            if (m.gender === 'M') {
+                const btn = document.createElement('button');
+                btn.id = 'btnPromotePhakkhani';
+                
+                // ใช้ Pop-up
+                btn.onclick = () => openPromotionPopup(m.id, "สมเด็จพระเจ้าเทวันเธอ", "เจ้าฟ้า (ชั้นตรี)", "พระบรมวงศ์");
+                
+                btn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-indigo-600 border-2 border-indigo-200 bg-indigo-50 rounded-full hover:bg-indigo-100 transition-colors";
+                btn.title = "สถาปนาเป็นสมเด็จพระเจ้าเทวันเธอ";
+                btn.innerHTML = '<i class="fa-solid fa-user-tie"></i>';
+                actionsContainer.insertBefore(btn, btnDeath);
+            } else if (m.gender === 'F') {
+                const btn = document.createElement('button');
+                btn.id = 'btnPromoteSiblingSpouse';
+                
+                // ใช้ Pop-up
+                btn.onclick = () => openPromotionPopup(m.id, "พระชายาเธอ", "พระองค์เจ้า (ชั้นตรี)", "พระชายา");
+                
+                btn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-pink-600 border-2 border-pink-200 bg-pink-50 rounded-full hover:bg-pink-100 transition-colors";
+                btn.title = "สถาปนาภรรยาของพี่น้อง";
+                btn.innerHTML = '<i class="fa-solid fa-ring"></i>';
+                actionsContainer.insertBefore(btn, btnDeath);
+            }
         }
     }
     // ------------------------------------------------------------------
 
-// ค้นหาโค้ดส่วน actionsContainer ในฟังก์ชัน showDetail
-const oldPhakkhaniBtn = document.getElementById('btnPromotePhakkhani');
-if (oldPhakkhaniBtn) oldPhakkhaniBtn.remove();
+    // ตัวแปร spouses ใช้ร่วมกันสำหรับการตรวจสอบคู่สมรสทั้งหมดด้านล่าง
+    const spouses = (m.spouseIds || []).map(sid => state.members.find(s => s.id === sid));
 
-// ตรวจสอบว่าเป็นสามีของพระพี่นาง/พระน้องนางในรัชกาลที่ 1 หรือไม่
-const spouses = (m.spouseIds || []).map(sid => state.members.find(s => s.id === sid));
-const isRoyalSisterSpouse = m.gender === 'M' && m.royalRank === 'สามัญชน' && spouses.some(s => 
-    s && (s.titlePrefix.includes("พระเจ้าพี่นางเธอ") || s.titlePrefix.includes("พระเจ้าน้องนางเธอ"))
-);
+    // ====================================================================================
+    // --- [เพิ่มใหม่] ปุ่มสถาปนาสามีสามัญชนของพระราชธิดา (พระเจ้าชามาดาเธอ / พระชามาดาเธอ) ---
+    // ====================================================================================
+    const oldChamadaBtn = document.getElementById('btnPromoteChamada');
+    if (oldChamadaBtn) oldChamadaBtn.remove();
 
-if (isRoyalSisterSpouse) {
-    const btn = document.createElement('button');
-    btn.id = 'btnPromotePhakkhani';
-    btn.onclick = () => { promoteToPhakkhaniPati(m.id); };
-    btn.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-indigo-600 border-2 border-indigo-200 bg-indigo-50 rounded-full hover:bg-indigo-100 transition-colors";
-    btn.title = "สถาปนาเป็นสมเด็จพระเจ้าเทวันเธอ";
-    btn.innerHTML = '<i class="fa-solid fa-user-tie"></i>';
-    actionsContainer.append(btn);
-}
+    if (m.gender === 'M' && m.royalRank === 'สามัญชน') {
+        const royalDaughter = spouses.find(w => 
+            w && w.registeredSpouseId === m.id && w.relationship === 'พระราชธิดา'
+        );
 
+        if (royalDaughter && royalDaughter.royalRank) {
+            let newRank = '', newPrefix = '', canPromote = false;
 
+            if (royalDaughter.royalRank.includes('เจ้าฟ้า')) {
+                newRank = 'พระองค์เจ้า (ชั้นโท)'; newPrefix = 'พระเจ้าชามาดาเธอ'; canPromote = true;
+            } else if (royalDaughter.royalRank.includes('พระองค์เจ้า')) {
+                newRank = 'พระองค์เจ้า (ชั้นตรี)'; newPrefix = 'พระชามาดาเธอ'; canPromote = true;
+            }
 
+            if (canPromote) {
+                const btnChamada = document.createElement('button');
+                btnChamada.id = 'btnPromoteChamada';
+                btnChamada.title = `สถาปนาขึ้นเป็น ${newPrefix} ${newRank}`;
+                btnChamada.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-teal-600 border-2 border-teal-200 bg-teal-50 rounded-full hover:bg-teal-100 transition-colors";
+                btnChamada.innerHTML = '<i class="fa-solid fa-user-tie"></i>';
+                
+                // ใช้ Pop-up
+                btnChamada.onclick = () => openPromotionPopup(m.id, newPrefix, newRank, "เขยสะใภ้");
+                
+                actionsContainer.insertBefore(btnChamada, btnDeath);
+            }
+        }
+    }
+
+    // ====================================================================================
+    // --- [เพิ่มใหม่] ปุ่มสถาปนาสามีสามัญชนของพระเจ้าพี่น้องร่วมพระมารดา (พระเจ้าเทวันเธอ) ---
+    // ====================================================================================
+    const oldThewanBtn = document.getElementById('btnPromoteThewanTher');
+    if (oldThewanBtn) oldThewanBtn.remove();
+
+    if (m.gender === 'M' && m.royalRank === 'สามัญชน') {
+        const royalSister = spouses.find(w => 
+            w && w.registeredSpouseId === m.id && w.relationship === 'พระเจ้าพี่น้องร่วมพระมารดา'
+        );
+
+        if (royalSister) {
+            const btnThewan = document.createElement('button');
+            btnThewan.id = 'btnPromoteThewanTher';
+            btnThewan.title = "สถาปนาขึ้นเป็น พระเจ้าเทวันเธอ พระองค์เจ้า (ชั้นโท)";
+            btnThewan.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-purple-600 border-2 border-purple-200 bg-purple-50 rounded-full hover:bg-purple-100 transition-colors";
+            btnThewan.innerHTML = '<i class="fa-solid fa-user-tie"></i>';
+            
+            // ใช้ Pop-up
+            btnThewan.onclick = () => openPromotionPopup(m.id, "พระเจ้าเทวันเธอ", "พระองค์เจ้า (ชั้นโท)", "พระบรมวงศ์");
+            
+            actionsContainer.insertBefore(btnThewan, btnDeath);
+        }
+    }
+
+    // ====================================================================================
+    // --- [เพิ่มใหม่] ปุ่มสถาปนาภรรยาสามัญชนของพระราชโอรส (พระเจ้าสุณิสาเธอ / พระสุณิสาเธอ) ---
+    // ====================================================================================
+    const oldSunisaBtn = document.getElementById('btnPromoteSunisa');
+    if (oldSunisaBtn) oldSunisaBtn.remove();
+
+    if (m.gender === 'F' && m.royalRank === 'สามัญชน') {
+        const royalHusband = spouses.find(h => 
+            h && h.registeredSpouseId === m.id && h.relationship === 'พระราชโอรส'
+        );
+
+        if (royalHusband && royalHusband.royalRank) {
+            let newRank = '', newPrefix = '', canPromote = false;
+
+            if (royalHusband.royalRank.includes('เจ้าฟ้า')) {
+                newRank = 'พระองค์เจ้า (ชั้นโท)'; newPrefix = 'พระเจ้าสุณิสาเธอ'; canPromote = true;
+            } else if (royalHusband.royalRank.includes('พระองค์เจ้า')) {
+                newRank = 'พระองค์เจ้า (ชั้นตรี)'; newPrefix = 'พระสุณิสาเธอ'; canPromote = true;
+            }
+
+            if (canPromote) {
+                const btnSunisa = document.createElement('button');
+                btnSunisa.id = 'btnPromoteSunisa';
+                btnSunisa.title = `สถาปนาขึ้นเป็น ${newPrefix} ${newRank}`;
+                btnSunisa.className = "btn-icon w-10 h-10 flex items-center justify-center text-lg text-pink-600 border-2 border-pink-200 bg-pink-50 rounded-full hover:bg-pink-100 transition-colors";
+                btnSunisa.innerHTML = '<i class="fa-solid fa-person-dress"></i>';
+                
+                // ใช้ Pop-up
+                btnSunisa.onclick = () => openPromotionPopup(m.id, newPrefix, newRank, "เขยสะใภ้");
+                
+                actionsContainer.insertBefore(btnSunisa, btnDeath);
+            }
+        }
+    }
         // MODIFICATION (Rule 1 & 2): Show 4 buttons for active monarch
         const isActiveMonarch = m.isMonarch && m.isAlive && !m.isExMonarch && m.id === activeMonarch?.id;
 
@@ -10677,7 +11033,7 @@ if (isRoyalSisterSpouse) {
     let consortGroup = "";
 
     const akkhraSuffixes = ["พระบรมราชินีนาถ", "พระบรมราชราชินี", "พระบรมราชินี", "พระบรมอัครราชเทวี", "พระบรมราชเทวี"];
-    const mahesiSuffixes = ["พระอัครเทวี", "พระวรราชเทวี", "พระราชเทวี"];
+    const mahesiSuffixes = ["พระอัครเทวี", "พระวรราชเทวี", "พระราชเทวี", "ราชเทวี", "เทวี", "มหาเทวี"];
 
     if (isQueenConsort) {
         consortGroup = "พระเอกอัครมเหสี";
@@ -10690,8 +11046,8 @@ if (isRoyalSisterSpouse) {
         prefix === "พระนางนาฏ" || 
         (prefix === "สมเด็จพระนางเจ้า" && mahesiSuffixes.includes(suffix)) ||
         (prefix === "สมเด็จพระนางนาฏ" && suffix === "บรมอัครราชเทวี") ||
-        (prefix === "พระนางนาฏ" && (suffix === "บรมอัครราชเทวี" || suffix === "ราชเทวี")) ||
-        (prefix === "พระนางเจ้า" && (suffix === "พระวรราชเทวี" || suffix === "พระราชเทวี"))
+        (prefix === "พระนางนาฏ" && (suffix === "บรมอัครราชเทวี" || suffix === "ราชเทวี"|| suffix === "เทวี")) ||
+        (prefix === "พระนางเจ้า" && (suffix === "พระวรราชเทวี" || suffix === "พระราชเทวี"|| suffix === "เทวี"| suffix === "มหาเทวี"))
     ) {
         consortGroup = "พระมเหสี";
     } 
@@ -10776,6 +11132,26 @@ if (isRoyalSisterSpouse) {
         badgesContainer.appendChild(b);
     }
         
+// --- 9. ป้ายหม่อมราชนิกุล (สีม่วง) - เพิ่มใหม่ ---
+    if (m.titlePrefix === 'เจ้าหม่อม') {
+        const b = document.createElement('div');
+        b.className = "bg-purple-100 text-purple-800 border border-purple-300 px-3 py-1 rounded-full text-xs font-bold shadow-sm flex items-center gap-1.5";
+        b.innerHTML = `<i class="fa-solid fa-star text-[10px]"></i> หม่อมราชนิกุล`; 
+        badgesContainer.appendChild(b);
+    }
+
+ // --- 10. ป้ายพระนางหน่อเจ้าหลวง (สีม่วงอ่อน) ---
+       if (m.relationship === "พระอนุวงศ์" && 
+         (m.titlePrefix === "พระเจ้าวรวงศ์เธอ" || m.titlePrefix === "สมเด็จพระเจ้าวรวงศ์เธอ") && 
+          m.titleSuffix === "พระวรชายา") {
+          const b = document.createElement('div');
+        b.className = "bg-purple-50 text-purple-600 border border-purple-200 px-3 py-1 rounded-full text-xs font-bold shadow-sm";
+         b.innerText = "พระนางหน่อเจ้าหลวง"; 
+       badgesContainer.appendChild(b);
+    }    
+
+
+
     // --- 9. DETAIL MODAL: Show Surname ONLY for the Founder (Per user request) ---
     if (m.isRoyalSurnameFounder && m.royalSurname) {
         const b = document.createElement('div');
@@ -14961,9 +15337,18 @@ function updateChildrenRankByMother(motherId) {
 function promoteToPhraWorachaya(id) {
     const p = state.members.find(m => m.id === id);
     if (!p) return;
+    
     p.royalRank = "พระองค์เจ้า (ชั้นโท)";
     p.titlePrefix = "พระเจ้าวรวงศ์เธอ";
     p.titleSuffix = "พระวรชายา";
+    
+    // เปลี่ยนความสัมพันธ์อื่นใดให้กลายเป็น "พระอนุวงศ์" ทันที
+    p.relationship = "พระอนุวงศ์"; 
+    
+    // บันทึกประวัติการสถาปนาลงในทำเนียบพระยศ
+    if (typeof recordTitleHistory === 'function') {
+        recordTitleHistory(p);
+    }
     
     saveState();
     updateApp();
@@ -14975,16 +15360,24 @@ function promoteToPhraWorachaya(id) {
 function promoteToPhraWorasami(id) {
     const p = state.members.find(m => m.id === id);
     if (!p) return;
+    
     p.royalRank = "พระองค์เจ้า (ชั้นโท)";
     p.titlePrefix = "พระเจ้าวรวงศ์เธอ";
     p.titleSuffix = "พระวรสามี";
+
+    // เปลี่ยนความสัมพันธ์อื่นใดให้กลายเป็น "พระอนุวงศ์" ทันที
+    p.relationship = "พระอนุวงศ์"; 
+
+    // บันทึกประวัติการสถาปนาลงในทำเนียบพระยศ
+    if (typeof recordTitleHistory === 'function') {
+        recordTitleHistory(p);
+    }
 
     saveState();
     updateApp();
     showDetail(p.id); // เมื่อรันใหม่ currentPerson.royalRank จะไม่ใช่ "สามัญชน" ปุ่มจะหายไปเอง
     showToast(`สถาปนาเป็น พระเจ้าวรวงศ์เธอ พระองค์เจ้า ${p.name} พระวรสามี เรียบร้อย ✨`);
 }
-
 
 function promoteToPhakkhaniPati(id) {
     const p = state.members.find(m => m.id === id);
@@ -15871,6 +16264,49 @@ function openPrecedenceModal() {
     document.getElementById('precedenceModal').classList.add('active');
 }
 
+
+// เปิดหน้าต่างกรอกบรรดาศักดิ์
+function openPromoteMRNModal() {
+    const id = window.curPID;
+    const p = state.members.find(m => m.id === id);
+    if (!p) return;
+    
+    document.getElementById('mrnTitleInput').value = p.nobilityTitle || '';
+    document.getElementById('promoteMRNModal').classList.add('active');
+}
+
+// ยืนยันการเปลี่ยนแปลงยศ
+function confirmPromoteMRN() {
+    const title = document.getElementById('mrnTitleInput').value.trim();
+    if (!title) {
+        showToast("กรุณาระบุบรรดาศักดิ์");
+        return;
+    }
+    
+    const id = window.curPID;
+    const p = state.members.find(m => m.id === id);
+    if (p) {
+        // อัปเดตข้อมูลตามที่กำหนด
+        p.relationship = 'ขุนนาง';
+        p.titlePrefix = 'เจ้าหม่อม';
+        p.royalRank = 'หม่อมราชวงศ์'; // อิสริยศเดิม
+        p.nobilityTitle = title;
+        
+        saveState();
+        closeModal('promoteMRNModal');
+        showDetail(id); // รีเฟรชหน้าต่างรายละเอียดเพื่อให้ข้อมูลอัปเดต
+        
+        if (typeof updateApp === 'function') updateApp();
+        showToast(`สถาปนาเป็น เจ้าหม่อม${title} เรียบร้อยแล้ว ✨`);
+    }
+}
+
+
+
+
+
+
+
 </script>
 
 <div id="gazetteModal" class="modal">
@@ -16132,6 +16568,30 @@ function openPrecedenceModal() {
         </div>
     </div>
 </div>
+
+<div id="promoteMRNModal" class="modal">
+    <div class="modal-content w-full max-w-sm p-6 text-center relative overflow-hidden border-2 border-amber-300 shadow-2xl" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);">
+        <button onclick="closeModal('promoteMRNModal')" class="absolute top-3 right-3 text-amber-700 hover:text-red-500 transition-colors"><i class="fa-solid fa-times"></i></button>
+        
+        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-md border-2 border-amber-400 relative">
+            <div class="absolute inset-0 bg-amber-200 rounded-full animate-ping opacity-50"></div>
+            <i class="fa-solid fa-star text-3xl text-amber-500 relative z-10"></i>
+        </div>
+        
+        <h3 class="font-bold text-xl mb-1 text-amber-800 font-cute">สถาปนาหม่อมราชนิกุล</h3>
+        <p class="text-xs text-amber-700/80 mb-5">โปรดระบุบรรดาศักดิ์ที่ได้รับพระราชทาน</p>
+        
+        <div class="flex items-center gap-2 bg-white p-2.5 rounded-xl border border-amber-200 mb-5 shadow-inner">
+            <span class="font-bold text-amber-800 text-sm whitespace-nowrap">เจ้าหม่อม</span>
+            <input type="text" id="mrnTitleInput" class="w-full text-sm outline-none bg-transparent font-bold text-indigo-700" placeholder="เช่น ราโชทัย, อนุวัตรวรพงษ์">
+        </div>
+        
+        <button onclick="confirmPromoteMRN()" class="w-full py-3 rounded-xl font-bold text-white shadow-lg transition-transform hover:scale-105 flex items-center justify-center gap-2" style="background: linear-gradient(to right, #f59e0b, #d97706);">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> ยืนยันการสถาปนา
+        </button>
+    </div>
+</div>
+
 
 
 </body>
