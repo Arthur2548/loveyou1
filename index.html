@@ -2915,8 +2915,10 @@ let state = {
         prefixes: [
             "พระเจ้าชามาดาเธอ", 
             "พระชามาดาเธอ", 
-            "พระเจ้าสุณิสาเธอ", 
+            "พระเจ้าสุณิสาเธอ",
             "พระสุณิสาเธอ", 
+            "พระเจ้าเทวันเธอ", 
+            "พระเทวันเธอ",  
             "พระเจ้ามูลวงศ์เธอ", 
             "พระมูลวงศ์เธอ"
         ], 
@@ -9499,11 +9501,70 @@ function performSuccession(newMonarchId, reignNameBase) {
         triggerHierarchyPromotion(p.id, p.royalRank, currentFullTitle); 
     });
 
+    // ============================================================
+    // --- PASS 3: เลื่อนยศ เขย/สะใภ้ อัตโนมัติ ตามสถานะใหม่ของคู่สมรส (เพิ่มใหม่) ---
+    // ============================================================
+    if (typeof updateAllInlawsPrefixesForNewReign === 'function') {
+        updateAllInlawsPrefixesForNewReign();
+    }
+
     saveState();
     updateApp();
     closeModal('reignSelectionModal');
     showFantasyPopup(newMonarch);
 }
+
+// ============================================================
+// ฟังก์ชันเลื่อนยศ เขย/สะใภ้ อัตโนมัติเมื่อเปลี่ยนรัชกาล (พร้อมบันทึกทำเนียบพระยศ)
+// ============================================================
+function updateAllInlawsPrefixesForNewReign() {
+    state.members.forEach(m => {
+        // ทำงานเฉพาะคนที่มีความสัมพันธ์เป็น "เขยสะใภ้" และมีคู่สมรสเท่านั้น
+        if (m.relationship !== "เขยสะใภ้" || !m.spouseIds || m.spouseIds.length === 0) return;
+
+        // แปลง ID ของคู่สมรสให้เป็นข้อความ (String) ทั้งหมด เพื่อป้องกันปัญหาประเภทข้อมูลไม่ตรงกัน
+        const spouseIdsStr = m.spouseIds.map(id => String(id));
+
+        if (m.gender === 'M') {
+            // เขย: ชามาดา -> เทวัน (เมื่อภรรยาเปลี่ยนเป็นพี่น้องกษัตริย์)
+            if (m.titlePrefix === "พระเจ้าชามาดาเธอ" || m.titlePrefix === "พระชามาดาเธอ") {
+                const isWifeNowSibling = state.members.some(wife => 
+                    spouseIdsStr.includes(String(wife.id)) && 
+                    (wife.relationship === "พระเจ้าพี่น้องร่วมพระมารดา" || wife.relationship === "พระเจ้าพี่น้องต่างพระมารดา")
+                );
+                if (isWifeNowSibling) {
+                    m.titlePrefix = (m.titlePrefix === "พระเจ้าชามาดาเธอ") ? "พระเจ้าเทวันเธอ" : "พระเทวันเธอ";
+                    recordTitleHistory(m); // <--- เพิ่มการบันทึกทำเนียบพระยศ
+                }
+            }
+            // เขย: เทวัน -> มูลวงศ์ (เมื่อภรรยาเปลี่ยนเป็นพระบรมวงศ์)
+            else if (m.titlePrefix === "พระเจ้าเทวันเธอ" || m.titlePrefix === "พระเทวันเธอ") {
+                const isWifeNowElderRoyal = state.members.some(wife => 
+                    spouseIdsStr.includes(String(wife.id)) && 
+                    (wife.relationship === "พระบรมวงศ์" || (wife.relationship && wife.relationship.includes("พระบรมวงศ์")))
+                );
+                if (isWifeNowElderRoyal) {
+                    m.titlePrefix = (m.titlePrefix === "พระเจ้าเทวันเธอ") ? "พระเจ้ามูลวงศ์เธอ" : "พระมูลวงศ์เธอ";
+                    recordTitleHistory(m); // <--- เพิ่มการบันทึกทำเนียบพระยศ
+                }
+            }
+        } 
+        else if (m.gender === 'F') {
+            // สะใภ้: สุณิสา -> มูลวงศ์ (เมื่อสามีเปลี่ยนเป็นพี่น้องกษัตริย์)
+            if (m.titlePrefix === "พระเจ้าสุณิสาเธอ" || m.titlePrefix === "พระสุณิสาเธอ") {
+                const isHusbandNowSibling = state.members.some(husband => 
+                    spouseIdsStr.includes(String(husband.id)) && 
+                    (husband.relationship === "พระเจ้าพี่น้องร่วมพระมารดา" || husband.relationship === "พระเจ้าพี่น้องต่างพระมารดา")
+                );
+                if (isHusbandNowSibling) {
+                    m.titlePrefix = (m.titlePrefix === "พระเจ้าสุณิสาเธอ") ? "พระเจ้ามูลวงศ์เธอ" : "พระมูลวงศ์เธอ";
+                    recordTitleHistory(m); // <--- เพิ่มการบันทึกทำเนียบพระยศ
+                }
+            }
+        }
+    });
+}
+
 
 function handleMonarchDeath(monarch) {
     // 1. จัดการข้อมูลกษัตริย์องค์ที่สวรรคต
@@ -9938,15 +9999,23 @@ function getGenerationNumber(id) {
 
 /**
  * [ห้ามลบ] ฟังก์ชันจัดรูปแบบ "ลำดับศักดิ์" สำหรับแสดงผลใน Pop-up
- * เพิ่มเงื่อนไขยกเว้นให้ "พระอนุวงศ์" ผ่านตัวกรองเดิมได้
+ * เพิ่มเงื่อนไขยกเว้นให้ "พระอนุวงศ์" และ "เขยสะใภ้" ผ่านตัวกรองเดิมได้
  */
 function formatRoyalRankWithGen(m) {
-    // 1. ตัวกรองหลัก: แสดงเฉพาะ "พระบรมวงศ์" หรือ "พระอนุวงศ์" เท่านั้น
+    // กำหนดกลุ่มคำนำหน้าพิเศษของความสัมพันธ์เขยสะใภ้ที่ต้องการให้แสดงผล
+    const allowedInLawTitles = [
+        "พระเจ้ามูลวงศ์เธอ",
+        "พระมูลวงศ์เธอ",
+        "สมเด็จพระเจ้ามูลวงศ์เธอ"
+    ];
+
+    // 1. ตัวกรองหลัก: แสดงเฉพาะ พระบรมวงศ์, พระอนุวงศ์ หรือ เขยสะใภ้กลุ่มพิเศษ
     const isBaromwong = (m.relationship === "พระบรมวงศ์");
     const isAnuwong = (m.relationship === "พระอนุวงศ์");
+    const isSpecialInLaw = allowedInLawTitles.includes(m.titlePrefix);
 
-    // ถ้าไม่ใช่ทั้งสองอย่างนี้ ให้ส่งคืน null (ซ่อน) ทันที
-    if (!isBaromwong && !isAnuwong) return null;
+    // ถ้าไม่ใช่ทั้งสามอย่างนี้ ให้ส่งคืน null (ซ่อน) ทันที
+    if (!isBaromwong && !isAnuwong && !isSpecialInLaw) return null;
 
     // 2. กรองเพิ่มเติมตามกฎเดิมของระบบ (เช่น กษัตริย์ หรือ การลาออก)
     if (m.isMonarch) return null;
@@ -9954,11 +10023,32 @@ function formatRoyalRankWithGen(m) {
     const isRestored = (m.isRestored === true);
     if (m.isResigned && !isAnuwong && !isRestored) return null;
 
-    // 3. การคำนวณเลขชั้นและการแสดงผล (ใช้รูปแบบเดิมที่ต้องการ)
-    const genNum = getGenerationNumber(m.id);
-    if (!genNum) return null;
+    // 3. การคำนวณเลขชั้นและการแสดงผล
+    // **สำคัญ:** ถ้าเป็นเขยสะใภ้ ต้องใช้ ID ของคู่สมรสในการสืบสายแทนตัวเขาเอง
+    let targetGenId = m.id; 
+    
+    if (isSpecialInLaw) {
+        // จัดการกรณีคู่สมรสเก็บเป็น Array (m.spouseIds)
+        if (m.spouseIds && m.spouseIds.length > 0) {
+            // วนหาคู่สมรสคนที่เป็นเจ้า (ดึงเลขรัชกาลได้)
+            for (let sId of m.spouseIds) {
+                if (getGenerationNumber(sId)) {
+                    targetGenId = sId;
+                    break;
+                }
+            }
+            // ถ้าหาไม่ได้จริงๆ (กรณีข้อมูลไม่สมบูรณ์) ให้ใช้คนแรกสุดไว้ก่อน
+            if (targetGenId === m.id) {
+                targetGenId = m.spouseIds[0];
+            }
+        }
+    }
+
+    const genNum = getGenerationNumber(targetGenId);
+    if (!genNum) return null; // หากสืบสายไม่ได้ ให้ส่งคืน null (ซ่อนแถว)
 
     const thaiGen = toThaiNumerals(genNum);
+    
     // ล้างวงเล็บออกจากยศเพื่อให้แสดงผลสวยงาม
     let baseRank = (m.royalRank || "").replace(/\s?\(|\)/g, ""); 
     let title = m.titlePrefix || "";
@@ -9968,10 +10058,11 @@ function formatRoyalRankWithGen(m) {
         return `หม่อมเจ้า ชั้น ${thaiGen}`;
     }
 
-    // แสดงผลรูปแบบเดิม: [คำนำหน้า] ชั้น [เลขไทย] [ยศ]
-    // ตัวอย่าง: พระเจ้าวรวงศ์เธอ ชั้น ๑๑ พระองค์เจ้า
-    // หากไม่มี title ให้ใช้ชื่อความสัมพันธ์แทน
-    const displayTitle = title || (isBaromwong ? "พระบรมวงศ์" : "พระอนุวงศ์");
+    // กำหนดชื่อสำหรับแสดงผล หากไม่มี title ให้ใช้ชื่อความสัมพันธ์แทน
+    let displayTitle = title;
+    if (!displayTitle) {
+        displayTitle = isBaromwong ? "พระบรมวงศ์" : (isAnuwong ? "พระอนุวงศ์" : "เขยสะใภ้");
+    }
     
     return `${displayTitle} ชั้น ${thaiGen} ${baseRank}`.trim();
 }
@@ -10886,7 +10977,7 @@ if (currentPerson.royalRank === "สามัญชน" && registeredSpouse) {
             btnThewan.innerHTML = '<i class="fa-solid fa-user-tie"></i>';
             
             // ใช้ Pop-up
-            btnThewan.onclick = () => openPromotionPopup(m.id, "พระเจ้าเทวันเธอ", "พระองค์เจ้า (ชั้นโท)", "พระบรมวงศ์");
+            btnThewan.onclick = () => openPromotionPopup(m.id, "พระเจ้าเทวันเธอ", "พระองค์เจ้า (ชั้นโท)", "เขยสะใภ้");
             
             actionsContainer.insertBefore(btnThewan, btnDeath);
         }
