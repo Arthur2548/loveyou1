@@ -3957,6 +3957,26 @@ function renderTree() {
 
             let spouses = (p.spouseIds || []).map(id => getP(id)).filter(s => s);
             
+            // =========================================================
+            // [เพิ่มใหม่] เรียงลำดับคู่สมรส: จดทะเบียน -> ยศ -> อายุ
+            // =========================================================
+            spouses.sort((a, b) => {
+                const isRegA = (p.registeredSpouseId === a.id) ? 1 : 0;
+                const isRegB = (p.registeredSpouseId === b.id) ? 1 : 0;
+                
+                // 1. คู่สมรสจดทะเบียน (มเหสีเอก/ภรรยาเอก) มาก่อนเสมอ
+                if (isRegA !== isRegB) return isRegB - isRegA;
+
+                // 2. เรียงตามยศ (Rank)
+                const rankA = typeof RANK_CODES !== 'undefined' ? parseInt(RANK_CODES[a.royalRank] || '99', 36) : 99;
+                const rankB = typeof RANK_CODES !== 'undefined' ? parseInt(RANK_CODES[b.royalRank] || '99', 36) : 99;
+                if (rankA !== rankB) return rankA - rankB;
+
+                // 3. เรียงตามปีเกิด (เกิดก่อน/อายุมากกว่าอยู่ก่อน)
+                return (parseInt(a.birthYear) || 9999) - (parseInt(b.birthYear) || 9999);
+            });
+            // =========================================================
+
          // --- เริ่มส่วนที่แก้ไข: กรองบุตรหลานสำหรับโหมด All View (v2) ---
 const children = memberList.filter(m => {
     const isChild = m.fatherId === pid || m.motherId === pid;
