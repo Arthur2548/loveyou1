@@ -1146,7 +1146,6 @@ tr.rank-card-3 {
         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-amber-600 text-[10px] pointer-events-none"></i>
     </div>
 </div>
-
 <div id="affiliationFilterContainer" class="hidden flex gap-3 mb-6 relative z-50">
     <div class="relative min-w-[320px]">
         <input type="text" id="affiliationSearchInput" 
@@ -1165,8 +1164,39 @@ tr.rank-card-3 {
     </div>
 </div>
                 
+<div id="palaceLawFilterContainer" class="hidden flex flex-wrap gap-2 mb-6 relative z-50">
+    <div class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-xl shadow-sm hover:bg-indigo-100 transition-colors">
+        <input type="checkbox" id="allowPhraOngChaoRoot" 
+               class="w-4 h-4 text-indigo-600 bg-white border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+               onchange="renderTable()"> 
+        <label for="allowPhraOngChaoRoot" class="text-xs font-bold text-indigo-800 cursor-pointer select-none">
+            อนุญาตพระองค์เจ้าต้นสาย
+        </label>
+    </div>
 
-               <select id="tableFilterStatus" class="bg-white px-4 py-1.5 rounded-full border border-slate-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition cursor-pointer shadow-sm" onchange="onTableFilterChange()">
+    <div class="flex items-center px-2 py-1 bg-indigo-50 border border-indigo-200 rounded-xl shadow-sm hover:bg-indigo-100 transition-colors">
+        <select id="palaceLawLimitSelect" 
+                class="bg-transparent border-none text-xs font-bold text-indigo-800 cursor-pointer outline-none w-full focus:ring-0" 
+                onchange="renderTable()">
+            <option value="all">กรองทั้งหมด</option>
+            <option value="3">3 ลำดับแรก</option>
+            <option value="5">5 ลำดับ</option>
+            <option value="10">10 ลำดับ</option>
+            <option value="20">20 ลำดับ</option>
+            <option value="50">50 ลำดับ</option>
+            <option value="100">100 ลำดับ</option>
+            <option value="200">200 ลำดับ</option>
+            <option value="500">500 ลำดับ</option>
+            <option value="1000">1000 ลำดับ</option>
+        </select>
+    </div>
+
+    <button onclick="downloadPalaceLawPNG()" class="flex items-center gap-2 px-4 py-1.5 bg-rose-600 text-white rounded-xl shadow-sm hover:bg-rose-700 transition-colors text-sm font-bold">
+        <i class="fa-solid fa-file-arrow-down"></i> ดาวน์โหลดเป็นภาพ (PNG)
+    </button>
+</div>
+
+<select id="tableFilterStatus" class="bg-white px-4 py-1.5 rounded-full border border-slate-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition cursor-pointer shadow-sm" onchange="onTableFilterChange()">
     <option value="all">แสดงทั้งหมด</option>
     <option value="alive" selected>เฉพาะผู้มีชีวิต</option>
     <option value="dead">เฉพาะผู้เสียชีวิต</option>
@@ -1806,10 +1836,14 @@ tr.rank-card-3 {
 </div>
 
     <!-- Appoint Modal -->
-   <div id="appointModal" class="modal">
+  <div id="appointModal" class="modal">
     <div class="modal-content w-full max-w-md p-6 text-center">
         <h3 class="font-cute text-2xl mb-4 text-amber-600">สถาปนาพระมหากษัตริย์</h3>
-        <p class="text-[11px] text-slate-400 mb-6 italic">โปรดเลือกพระรัชทายาทเพื่อสืบสันตติวงศ์</p>
+        <p class="text-[11px] text-slate-400 mb-4 italic">โปรดเลือกพระรัชทายาทเพื่อสืบสันตติวงศ์</p>
+        
+        <label class="flex items-center gap-2 justify-center mb-4 cursor-pointer bg-amber-50 p-2.5 rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors">
+            <input type="checkbox" id="allowPhraOngChaoOrigin" class="accent-amber-600 w-4 h-4" onchange="renderAppointList()"> <span class="text-sm font-bold text-amber-800">อนุญาตพระองค์เจ้าต้นสาย</span>
+        </label>
         
         <div id="appointSelectModal" class="appoint-list-container"></div>
         
@@ -6223,8 +6257,9 @@ function onTableFilterChange() {
     const kingsContainer = document.getElementById('kingsFilterContainer'); 
     const spouseContainer = document.getElementById('spouseFilterContainer'); 
     const kulachetContainer = document.getElementById('kulachetFilterContainer');
-    // เพิ่มตัวแปรสำหรับ Container ใหม่
     const affiliationContainer = document.getElementById('affiliationFilterContainer'); 
+    // [NEW] เพิ่มตัวแปรสำหรับปุ่มติ๊กอนุญาตพระองค์เจ้า
+    const palaceLawContainer = document.getElementById('palaceLawFilterContainer'); 
     const royalHeader = document.getElementById('royalChildrenHeader');
     
     // จัดการ SortableJS (คงเดิม)
@@ -6235,10 +6270,10 @@ function onTableFilterChange() {
 
     // แสดงปุ่ม Reset Precedence (คงเดิม) และปุ่มแสดง Modal ลำดับชั้นยศโปรเจียม (เพิ่มใหม่)
     const btnReset = document.getElementById('btnResetPrecedence');
-    const btnPrecedence = document.getElementById('btnShowPrecedenceModal'); // เพิ่มตัวแปรปุ่มนี้
+    const btnPrecedence = document.getElementById('btnShowPrecedenceModal'); 
     
     if (btnReset) btnReset.classList.toggle('hidden', filterStatus !== 'precedence');
-    if (btnPrecedence) btnPrecedence.classList.toggle('hidden', filterStatus !== 'precedence'); // สั่งซ่อน/แสดงปุ่ม
+    if (btnPrecedence) btnPrecedence.classList.toggle('hidden', filterStatus !== 'precedence'); 
 
     // --- ส่วน Logic การแสดงผล ---
     if (filterStatus === 'royal_children') {
@@ -6248,7 +6283,8 @@ function onTableFilterChange() {
         if (kingsContainer) kingsContainer.classList.add('hidden'); 
         if (spouseContainer) spouseContainer.classList.add('hidden');
         if (kulachetContainer) kulachetContainer.classList.add('hidden');
-        if (affiliationContainer) affiliationContainer.classList.add('hidden'); // ซ่อน affiliation
+        if (affiliationContainer) affiliationContainer.classList.add('hidden'); 
+        if (palaceLawContainer) palaceLawContainer.classList.add('hidden'); // ซ่อนปุ่มพระองค์เจ้า
         populateMonarchFilterSelect();
     } 
     else if (filterStatus === 'royal_surnames') { 
@@ -6257,7 +6293,8 @@ function onTableFilterChange() {
         if (kingsContainer) kingsContainer.classList.add('hidden'); 
         if (spouseContainer) spouseContainer.classList.add('hidden'); 
         if (kulachetContainer) kulachetContainer.classList.add('hidden');
-        if (affiliationContainer) affiliationContainer.classList.add('hidden'); // ซ่อน affiliation
+        if (affiliationContainer) affiliationContainer.classList.add('hidden'); 
+        if (palaceLawContainer) palaceLawContainer.classList.add('hidden'); // ซ่อนปุ่มพระองค์เจ้า
         
         if (surnameContainer) {
             surnameContainer.classList.remove('hidden');
@@ -6275,7 +6312,8 @@ function onTableFilterChange() {
         if (surnameContainer) surnameContainer.classList.add('hidden');
         if (spouseContainer) spouseContainer.classList.add('hidden'); 
         if (kulachetContainer) kulachetContainer.classList.add('hidden');
-        if (affiliationContainer) affiliationContainer.classList.add('hidden'); // ซ่อน affiliation
+        if (affiliationContainer) affiliationContainer.classList.add('hidden'); 
+        if (palaceLawContainer) palaceLawContainer.classList.add('hidden'); // ซ่อนปุ่มพระองค์เจ้า
         
         if (kingsContainer) {
             kingsContainer.classList.remove('hidden');
@@ -6289,7 +6327,8 @@ function onTableFilterChange() {
         if (surnameContainer) surnameContainer.classList.add('hidden');
         if (kingsContainer) kingsContainer.classList.add('hidden'); 
         if (kulachetContainer) kulachetContainer.classList.add('hidden');
-        if (affiliationContainer) affiliationContainer.classList.add('hidden'); // ซ่อน affiliation
+        if (affiliationContainer) affiliationContainer.classList.add('hidden'); 
+        if (palaceLawContainer) palaceLawContainer.classList.add('hidden'); // ซ่อนปุ่มพระองค์เจ้า
         
         if (spouseContainer) {
             spouseContainer.classList.remove('hidden');
@@ -6303,7 +6342,8 @@ function onTableFilterChange() {
         if (surnameContainer) surnameContainer.classList.add('hidden');
         if (kingsContainer) kingsContainer.classList.add('hidden'); 
         if (spouseContainer) spouseContainer.classList.add('hidden');
-        if (affiliationContainer) affiliationContainer.classList.add('hidden'); // ซ่อน affiliation
+        if (affiliationContainer) affiliationContainer.classList.add('hidden'); 
+        if (palaceLawContainer) palaceLawContainer.classList.add('hidden'); // ซ่อนปุ่มพระองค์เจ้า
         if (royalHeader) royalHeader.classList.add('hidden');
         
         if (kulachetContainer) {
@@ -6319,7 +6359,13 @@ function onTableFilterChange() {
         if (kingsContainer) kingsContainer.classList.add('hidden'); 
         if (spouseContainer) spouseContainer.classList.add('hidden');
         if (kulachetContainer) kulachetContainer.classList.add('hidden');
-        if (affiliationContainer) affiliationContainer.classList.add('hidden'); // ซ่อน affiliation
+        if (affiliationContainer) affiliationContainer.classList.add('hidden'); 
+
+        // [NEW] แสดงปุ่มติ๊กอนุญาตพระองค์เจ้าเฉพาะโหมดนี้
+        if (palaceLawContainer) {
+            palaceLawContainer.classList.remove('hidden');
+            palaceLawContainer.classList.add('flex');
+        }
         
         if (royalHeader) {
             const activeKing = (typeof state !== 'undefined' && state.members) 
@@ -6334,7 +6380,6 @@ function onTableFilterChange() {
             royalHeader.classList.remove('hidden');
         }
     }
-    // +++++ เพิ่มส่วน Precedence (โปรเจียม) +++++
     else if (filterStatus === 'precedence') {
         monarchContainer.classList.add('hidden');
         monarchContainer.classList.remove('flex');
@@ -6342,7 +6387,8 @@ function onTableFilterChange() {
         if (kingsContainer) kingsContainer.classList.add('hidden'); 
         if (spouseContainer) spouseContainer.classList.add('hidden');
         if (kulachetContainer) kulachetContainer.classList.add('hidden');
-        if (affiliationContainer) affiliationContainer.classList.add('hidden'); // ซ่อน affiliation
+        if (affiliationContainer) affiliationContainer.classList.add('hidden'); 
+        if (palaceLawContainer) palaceLawContainer.classList.add('hidden'); // ซ่อนปุ่มพระองค์เจ้า
 
         if (royalHeader) {
             const activeKing = (typeof state !== 'undefined' && state.members) 
@@ -6357,7 +6403,6 @@ function onTableFilterChange() {
             royalHeader.classList.remove('hidden');
         }
     }
-    // +++++ เพิ่มส่วน Affiliation (ทำเนียบสังกัดนางใน) +++++
     else if (filterStatus === 'affiliation') {
         monarchContainer.classList.add('hidden');
         monarchContainer.classList.remove('flex');
@@ -6365,14 +6410,14 @@ function onTableFilterChange() {
         if (kingsContainer) kingsContainer.classList.add('hidden'); 
         if (spouseContainer) spouseContainer.classList.add('hidden');
         if (kulachetContainer) kulachetContainer.classList.add('hidden');
+        if (palaceLawContainer) palaceLawContainer.classList.add('hidden'); // ซ่อนปุ่มพระองค์เจ้า
         
         if (affiliationContainer) {
             affiliationContainer.classList.remove('hidden');
             affiliationContainer.classList.add('flex');
-            populateAffiliationSelect(); // เรียกฟังก์ชันดึงข้อมูลเจ้านาย
+            populateAffiliationSelect(); 
         }
     }
-    // +++++++++++++++++++++++++++++++++++++++++++++++
     else {
         // กรณี Default (All, Alive, Dead)
         monarchContainer.classList.add('hidden');
@@ -6381,13 +6426,13 @@ function onTableFilterChange() {
         if (kingsContainer) kingsContainer.classList.add('hidden'); 
         if (spouseContainer) spouseContainer.classList.add('hidden'); 
         if (kulachetContainer) kulachetContainer.classList.add('hidden');
-        if (affiliationContainer) affiliationContainer.classList.add('hidden'); // ซ่อน affiliation
+        if (affiliationContainer) affiliationContainer.classList.add('hidden'); 
+        if (palaceLawContainer) palaceLawContainer.classList.add('hidden'); // ซ่อนปุ่มพระองค์เจ้า
         if (royalHeader) royalHeader.classList.add('hidden');
     }
     
     renderTable();
 }
-
 
 // ฟังก์ชันสำหรับโหลดรายชื่อพระนามแผ่นดินลงในช่องเลือก (Dropdown)
 // 1. ฟังก์ชันเดิม (คงไว้ตามปกติ)
@@ -6877,7 +6922,34 @@ function isWangNaOrWangLang(p) {
     return keywords.some(k => fullText.includes(k));
 }
 
-// [UPDATED] เช็คคำต้องห้าม (ครอบคลุม พระพี่ยาเธอ พระน้องยาเธอ พระเจ้าบรมวงศ์เธอ)
+// [NEW] ตรวจสอบว่าเป็นต้นสายที่อนุญาตหรือไม่ (เจ้าฟ้า หรือ พระองค์เจ้าที่ถูกติ๊กอนุญาต)
+function isAllowedRoot(p) {
+    if (!p) return false;
+    if (isStrictChaoFa(p)) return true; // เจ้าฟ้าเป็นต้นสายเสมอ
+    
+    // ดึงค่าจากปุ่มติ๊กที่ UI
+    const allowCheckbox = document.getElementById('allowPhraOngChaoRoot');
+    const allowPhraOngChao = allowCheckbox ? allowCheckbox.checked : false;
+    
+    if (allowPhraOngChao) {
+        const fullText = `${p.royalRank || ""} ${p.titlePrefix || ""}`;
+        const allowedRoots = [
+            "พระเจ้าลูกเธอ",
+            "พระเจ้าลูกยาเธอ",
+            "พระพี่ยาเธอ",
+            "พระน้องยาเธอ",
+            "พระเจ้าบรมวงศ์เธอ" // ครอบคลุม "สมเด็จพระเจ้าบรมวงศ์เธอ" ด้วย
+        ];
+        
+        // ต้องเป็นพระองค์เจ้า และอยู่ในกลุ่มคำนำหน้าที่ระบุ
+        if (fullText.includes("พระองค์เจ้า") && allowedRoots.some(k => fullText.includes(k))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// [UPDATED] เช็คคำต้องห้าม (ปลดล็อคเมื่อติ๊กปุ่มให้เป็นต้นสาย)
 function isBlacklistedRank(p) {
     if (!p) return false;
     const rank = p.royalRank || "";
@@ -6886,13 +6958,21 @@ function isBlacklistedRank(p) {
     
     // รายการคำนำหน้าต้องห้ามตามที่คุณระบุ
     const blacklist = [
+        "พระเจ้าลูกยาเธอ", 
         "พระพี่ยาเธอ", 
         "พระน้องยาเธอ",
         "พระเจ้าบรมวงศ์เธอ"
     ];
     
-    // ถ้ามีคำเหล่านี้ และ "ไม่ใช่เจ้าฟ้า" -> ให้ซ่อน (return true)
-    return blacklist.some(k => fullText.includes(k)) && !fullText.includes("เจ้าฟ้า");
+    const inBlacklist = blacklist.some(k => fullText.includes(k));
+
+    // ถ้าติ๊กอนุญาต และคนนี้คือพระองค์เจ้าต้นสายที่อนุญาต -> ไม่ติด Blacklist
+    if (inBlacklist && isAllowedRoot(p) && !isStrictChaoFa(p)) {
+        return false;
+    }
+    
+    // ถ้ามีคำเหล่านี้ และ "ไม่ใช่เจ้าฟ้า" -> ให้ซ่อน
+    return inBlacklist && !fullText.includes("เจ้าฟ้า");
 }
 
 function isEligibleToDisplay(p) {
@@ -6934,19 +7014,16 @@ function getBranchLabelName(p) {
         return `${cleanPrefix} ${chaoFaKeyword}${target}`;
     } 
     
-    // 3. [NEW] จัดการกลุ่ม พระเจ้าวรวงศ์เธอ / พระวรวงศ์เธอ / พระเจ้าหลานเธอ
-    const groupPrefixes = ["พระเจ้าวรวงศ์เธอ", "พระวรวงศ์เธอ", "พระเจ้าหลานเธอ"];
+    // 3. จัดการกลุ่ม พระเจ้าวรวงศ์เธอ / พระวรวงศ์เธอ / พระเจ้าหลานเธอ
+    const groupPrefixes = ["พระเจ้าวรวงศ์เธอ", "พระวรวงศ์เธอ", "พระเจ้าหลานเธอ", "พระหลานเธอ", "พระเจ้าลูกเธอ", "พระเจ้าลูกยาเธอ","พระพี่ยาเธอ", "พระน้องยาเธอ", "พระเจ้าบรมวงศ์เธอ"];
     const foundPrefix = groupPrefixes.find(pre => rawPrefix.includes(pre));
 
     if (foundPrefix) {
-        // ตัดคำว่า "พระองค์เจ้า" ออกจาก prefix เดิมก่อนเพื่อป้องกันการซ้อนกัน
         let basePrefix = rawPrefix.replace("พระองค์เจ้า", "").trim();
         
         if (hasKrom) {
-            // ถ้ามีกรม: "พระวรวงศ์เธอ กรมหมื่น..." (ตัดพระองค์เจ้าออก)
             return `${basePrefix} ${target}`.trim();
         } else {
-            // ถ้าไม่มีกรม: "พระวรวงศ์เธอ พระองค์เจ้าสุพรรณภูมิดิลก" (เติมพระองค์เจ้าหน้าชื่อ)
             return `${basePrefix} พระองค์เจ้า${target}`.trim();
         }
     } 
@@ -6972,13 +7049,12 @@ function getMotherPriorityScore(person, father) {
 }
 
 // ============================================================================
-// 1. ฟังก์ชันหาลูกหลาน (ปรับปรุงให้ส่งต่อป้ายสายลงไปในชั้นลูกหลาน)
+// 1. ฟังก์ชันหาลูกหลาน
 // ============================================================================
 function getPalaceSuccessionLine(parentId, labelText) {
     const parent = state.members.find(m => m.id === parentId);
     if (!parent) return [];
 
-    // หยุดทันทีถ้าเจอวังหน้า/วังหลัง
     if (isWangNaOrWangLang(parent)) return [];
 
     let sons = state.members.filter(m => m.fatherId === parentId && m.gender === 'M' && hasRoyalRank(m));
@@ -6992,9 +7068,8 @@ function getPalaceSuccessionLine(parentId, labelText) {
 
     let line = [];
     sons.forEach(son => {
-        // กฎ: ถ้าคนนี้เป็นเจ้าฟ้า เขาจะกลายเป็นต้นสายใหม่สำหรับลูกหลานของเขา
         let currentSonLabel = labelText;
-        if (isStrictChaoFa(son)) {
+        if (isAllowedRoot(son)) {
             const sonName = getBranchLabelName(son);
             currentSonLabel = sonName ? ("สาย " + sonName) : labelText;
         }
@@ -7003,18 +7078,17 @@ function getPalaceSuccessionLine(parentId, labelText) {
             const entry = { ...son };
             
             // --- [กฎการแสดงป้ายสาย] ---
-            if (isStrictChaoFa(entry)) {
-                // เจ้าฟ้าไม่ต้องมีป้าย
+            if (isAllowedRoot(entry)) {
+                // องค์ต้นสาย (เจ้าฟ้า หรือ พระองค์เจ้าที่อนุญาต) ไม่ต้องมีป้าย
                 delete entry._branchLabel;
             } else if (currentSonLabel) {
-                // พระองค์เจ้า / หม่อมเจ้า ต้องแสดงป้ายสายเสมอ
+                // ลูกหลานต้องแสดงป้ายสายเสมอ
                 entry._branchLabel = currentSonLabel;
             }
             
             line.push(entry);
         }
         
-        // ส่งต่อป้ายสาย (labelText) ลงไปในชั้นลูกหลานเหลนโหลน
         const descendants = getPalaceSuccessionLine(son.id, currentSonLabel);
         line = line.concat(descendants);
     });
@@ -7038,7 +7112,6 @@ function calculatePalaceSuccessionList() {
             if (!list.find(x => x.id === person.id) && person.id !== king.id && !isBlacklistedRank(person)) {
                 const entry = { ...person }; 
                 
-                // ใช้ป้ายที่ติดมากับตัว (จาก recursive) หรือป้ายที่ส่งมาจาก batch
                 let finalLabel = entry._branchLabel || labelText;
 
                 if (finalLabel && finalLabel.trim() !== "" && finalLabel !== "สาย null") {
@@ -7046,8 +7119,8 @@ function calculatePalaceSuccessionList() {
                     if (ancestorId && !entry._branchAncestorId) entry._branchAncestorId = ancestorId;
                 }
 
-                // กฎเหล็ก: เจ้าฟ้าห้ามมีป้ายเด็ดขาด (Clean UI)
-                if (isStrictChaoFa(entry)) {
+                // กฎเหล็ก: องค์ต้นสาย (เจ้าฟ้า และพระองค์เจ้าที่อนุญาต) ห้ามมีป้ายเด็ดขาด (Clean UI)
+                if (isAllowedRoot(entry)) {
                    delete entry._branchLabel; 
                    delete entry._branchAncestorId;
                 }
@@ -7065,15 +7138,50 @@ function calculatePalaceSuccessionList() {
         addBatch(getPalaceSuccessionLine(designatedHeir.id, heirLabel), heirLabel, designatedHeir.id);
     }
 
-    // --- 2. ลูกหลวง (ลูกกษัตริย์ปัจจุบัน) ---
+    // เตรียมดึงรายชื่อพระราชโอรสทั้งหมดที่มีสิทธิเป็นต้นสาย
     const kingsSons = state.members.filter(m => 
         m.fatherId === king.id && 
         m.gender === 'M' && 
         hasRoyalRank(m) &&
-        isStrictChaoFa(m) && 
+        isAllowedRoot(m) && 
         !isWangNaOrWangLang(m) &&
         !isBlacklistedRank(m)
     );
+
+    // เช็คว่ามีสายพระราชโอรสที่ยังมีชีวิตอยู่หรือไม่ (ตัวโอรสเองรอดชีวิต หรือมีลูกหลานชายรอดชีวิต)
+    let hasActiveMaleLineFromKing = kingsSons.some(son => 
+        son.isAlive || getPalaceSuccessionLine(son.id, "").length > 0
+    );
+
+    // --- 2. [NEW] กฎพิเศษสืบราชสันตติวงศ์ (พระราชธิดา) ---
+    // ทำงานเฉพาะเมื่อ "ไม่มี" พระราชโอรสสายตรงที่สืบทอดได้
+    if (!hasActiveMaleLineFromKing) {
+        const queenDaughters = state.members.filter(m => 
+            m.fatherId === king.id && 
+            m.gender === 'F' && 
+            m.isAlive && 
+            !m.isResigned &&
+            m.motherId === king.registeredSpouseId // ต้องเกิดจากราชินีคู่บัลลังก์
+        );
+
+        if (queenDaughters.length > 0) {
+            // เรียงลำดับตามปีเกิด เอาองค์โตที่สุด
+            queenDaughters.sort((a, b) => (parseInt(a.birthYear)||9999) - (parseInt(b.birthYear)||9999));
+            const firstDaughter = { ...queenDaughters[0] };
+            
+            // ตั้งค่า Flag สำหรับ UI และไม่ต้องแสดงป้ายเพื่อให้ดูเป็นรัชทายาทสายตรง
+            firstDaughter._isFemaleFallback = true;
+            delete firstDaughter._branchLabel; 
+            delete firstDaughter._branchAncestorId;
+
+            // แทรกเข้าตารางเป็นลำดับที่ 1 (ต่อจากรัชทายาทแต่งตั้ง) แซงหน้าเจ้านายองค์อื่นๆ
+            if (!list.find(x => x.id === firstDaughter.id)) {
+                list.push(firstDaughter);
+            }
+        }
+    }
+
+    // --- 3. ลูกหลวง (ลูกกษัตริย์ปัจจุบัน) ---
     kingsSons.sort((a, b) => {
         const scoreA = getMotherPriorityScore(a, king);
         const scoreB = getMotherPriorityScore(b, king);
@@ -7087,11 +7195,10 @@ function calculatePalaceSuccessionList() {
         const branchName = rawLabel ? ("สาย " + rawLabel) : ""; 
         
         if (isEligibleToDisplay(son)) addBatch([son], branchName, son.id);
-        // ลูกๆ ของเจ้าฟ้าองค์นี้ (แม้จะเป็นพระองค์เจ้าจากแม่ยศสูง) จะได้ป้าย branchName
         addBatch(getPalaceSuccessionLine(son.id, branchName), branchName, son.id);
     }
 
-    // --- 3. พี่น้อง/ลุงอา (ย้อนขึ้นไป) ---
+    // --- 4. พี่น้อง/ลุงอา (ย้อนขึ้นไป) ---
     let currentGenerationChildId = king.id; 
     let currentAncestorId = king.fatherId;  
     let loopCount = 0;
@@ -7105,7 +7212,7 @@ function calculatePalaceSuccessionList() {
             m.id !== currentGenerationChildId &&    
             m.gender === 'M' &&
             hasRoyalRank(m) &&
-            (isStrictChaoFa(m) || isKing(m)) &&
+            (isAllowedRoot(m) || isKing(m)) && 
             !isBlacklistedRank(m)
         );
         
@@ -7120,17 +7227,17 @@ function calculatePalaceSuccessionList() {
             if (list.length >= MAX_LIMIT) break;
 
             if (isKing(royalRelative)) {
-                const kingChaoFaSons = state.members.filter(son => 
+                const kingAllowedSons = state.members.filter(son => 
                     son.fatherId === royalRelative.id && 
                     son.gender === 'M' && 
                     hasRoyalRank(son) && 
-                    isStrictChaoFa(son) && 
+                    isAllowedRoot(son) && 
                     !isBlacklistedRank(son) &&
                     !isWangNaOrWangLang(son) 
                 );
-                kingChaoFaSons.sort((a, b) => (parseInt(a.birthYear)||0) - (parseInt(b.birthYear)||0));
+                kingAllowedSons.sort((a, b) => (parseInt(a.birthYear)||0) - (parseInt(b.birthYear)||0));
 
-                for (const kSon of kingChaoFaSons) {
+                for (const kSon of kingAllowedSons) {
                     const rawLabel = getBranchLabelName(kSon); 
                     if (rawLabel) {
                         const sonBranchName = "สาย " + rawLabel;
@@ -7158,13 +7265,13 @@ function calculatePalaceSuccessionList() {
         loopCount++;
     }
 
-    // --- 4. SAFETY SWEEP (กวาดเก็บตกเฉพาะเจ้าฟ้า) ---
+    // --- 5. SAFETY SWEEP (กวาดเก็บตกเฉพาะสายที่อนุญาต) ---
     if (list.length < MAX_LIMIT) {
         const allMembers = state.members;
         const missedPrinces = allMembers.filter(m => {
             if (list.find(x => x.id === m.id) || m.id === king.id) return false;
             if (m.gender !== 'M' || !hasRoyalRank(m)) return false;
-            if (!isStrictChaoFa(m)) return false; 
+            if (!isAllowedRoot(m)) return false; 
             if (isBlacklistedRank(m)) return false; 
             
             const father = allMembers.find(f => f.id === m.fatherId);
@@ -7186,22 +7293,6 @@ function calculatePalaceSuccessionList() {
             if (!isWangNa) {
                 addBatch(getPalaceSuccessionLine(prince.id, branchName), branchName, prince.id);
             }
-        }
-    }
-
-    // --- 5. Fallback (หญิง) ---
-    if (list.length === 0) {
-         const daughters = state.members.filter(m => 
-            m.fatherId === king.id && m.gender === 'F' && m.isAlive && !m.isResigned &&
-            m.motherId === king.registeredSpouseId 
-        );
-        daughters.sort((a, b) => (parseInt(a.birthYear)||0) - (parseInt(b.birthYear)||0));
-        if (daughters.length > 0) {
-            const dEntry = { ...daughters[0] };
-            dEntry._isFemaleFallback = true;
-            dEntry._branchLabel = "กรณีพิเศษ (พระราชธิดา)";
-            dEntry._branchAncestorId = dEntry.id;
-            list.push(dEntry);
         }
     }
 
@@ -7364,146 +7455,198 @@ if (filterStatus === 'palace_law') {
     }
 
     // 2. เรียกสูตรคำนวณ
-    const palaceList = calculatePalaceSuccessionList();
+    let palaceList = calculatePalaceSuccessionList();
     const king = state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
 
-    // 3. กรณีไม่พบ
+    // =========================================================
+    // 🌟 1. ดำเนินการกรองบุคคลที่ไม่เกี่ยวออกไปก่อน (Double Filter)
+    // =========================================================
+    palaceList = palaceList.filter(p => {
+        
+        // 🌟 กฎที่ 1: ตรวจสอบตัวเองและปีนเช็คขึ้นไปหาพ่อ/ปู่/ทวด
+        // ถ้ามาจากสายที่ไม่ได้ติ๊กอนุญาต (isAllowedRoot) ให้ซ่อนลูกหลานในสายนั้นทั้งหมด
+        let isBlockedFromRoot = false;
+        let checkNode = p;
+        for (let i = 0; i < 10; i++) { // ปีนเช็คขึ้นไป 10 รุ่น (ป้องกัน loop)
+            if (!checkNode) break;
+            
+            const fullTitleCheck = `${checkNode.royalRank || ""} ${checkNode.titlePrefix || ""}`;
+            const hiddenPrefixes = [
+                "พระพี่ยาเธอ", "พระพี่นางเธอ", "พระเจ้าลูกเธอ","พระเจ้าลูกยาเธอ",
+                "พระน้องยาเธอ", "พระน้องนางเธอ", 
+                "พระเจ้าบรมวงศ์เธอ" 
+            ];
+            
+            if (hiddenPrefixes.some(k => fullTitleCheck.includes(k))) {
+                if (!isAllowedRoot(checkNode)) {
+                    isBlockedFromRoot = true;
+                    break;
+                }
+            }
+            
+            if (!checkNode.fatherId) break;
+            checkNode = state.members.find(m => m.id === checkNode.fatherId);
+        }
+
+        if (isBlockedFromRoot) return false; 
+        
+        // 🌟 กฎที่ 2: เช็คสายวังหน้า
+        const wangKeywords = ["สมเด็จพระบวรราชเจ้า", "กรมพระราชวังบวร", "พระราชวังบวร", "วังหน้า", "วังหลัง", "สถานมงคล", "สถานพิมุข", "พระบัณฑูรน้อย", "ฝ่ายหน้า", "ฝ่ายหลัง"];
+        const fatherObj = state.members.find(m => m.id === p.fatherId);
+        if (fatherObj) {
+             const fatherFullText = `${fatherObj.royalRank || ""} ${fatherObj.titlePrefix || ""} ${fatherObj.name || ""}`;
+             if (wangKeywords.some(k => fatherFullText.includes(k))) return false;
+        }
+
+        // 🌟 กฎที่ 3: เช็คบุตรที่เกิดจากสามัญชน 
+        const motherObj = state.members.find(m => m.id === p.motherId);
+        if (fatherObj && motherObj) {
+            const isFatherKing = (typeof isKing === 'function') ? isKing(fatherObj) : (fatherObj.isMonarch || fatherObj.isExMonarch);
+            const isFullSiblingOfKing = king ? (p.fatherId === king.fatherId && p.motherId === king.motherId && p.fatherId) : false;
+
+            if (!isFatherKing && !isFullSiblingOfKing) {
+                const motherRankInfo = `${motherObj.royalRank || ""} ${motherObj.titlePrefix || ""}`;
+                const isMotherRoyal = motherRankInfo.includes('เจ้าฟ้า') || 
+                                      motherRankInfo.includes('พระองค์เจ้า') || 
+                                      motherRankInfo.includes('หม่อมเจ้า') || 
+                                      motherRankInfo.includes('พระชายา') ||
+                                      motherRankInfo.includes('พระราชินี');
+
+                const isRegisteredSpouse = (fatherObj.registeredSpouseId === motherObj.id);
+
+                if (!isMotherRoyal && !isRegisteredSpouse) {
+                    if (!p.isMonarch) {
+                        return false; 
+                    }
+                }
+            }
+        }
+        return true; 
+    });
+
+    // =========================================================
+    // 🌟 2. โค้ดกรองจำนวนลำดับจาก Dropdown 
+    // =========================================================
+    const limitSelect = document.getElementById('palaceLawLimitSelect');
+    if (limitSelect && limitSelect.value !== 'all') {
+        const limitNumber = parseInt(limitSelect.value);
+        palaceList = palaceList.slice(0, limitNumber); 
+    }
+
     if (palaceList.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-400 font-light text-lg">ไม่พบผู้มีสิทธิ์สืบราชสันตติวงศ์ตามกฎมณเฑียรบาล</td></tr>`;
         return;
     }
 
-    // --- Helper คำนวณความสัมพันธ์ (แบบระบุรัชกาล + ลำดับญาติละเอียด) ---
-const getRoyalRelationship = (person, king) => {
-    if (!king) return "-";
+    // --- Helper คำนวณความสัมพันธ์ ---
+    const getRoyalRelationship = (person, king) => {
+        if (!king) return "-";
 
-    // ดึงข้อมูลบรรพบุรุษของบุคคล (Subject)
-    const pFather = state.members.find(m => m.id === person.fatherId);
-    const pGrandFather = pFather ? state.members.find(m => m.id === pFather.fatherId) : null;
-    const pGreatGrandFather = pGrandFather ? state.members.find(m => m.id === pGrandFather.fatherId) : null;
+        const pFather = state.members.find(m => m.id === person.fatherId);
+        const pGrandFather = pFather ? state.members.find(m => m.id === pFather.fatherId) : null;
+        const pGreatGrandFather = pGrandFather ? state.members.find(m => m.id === pGrandFather.fatherId) : null;
 
-    // ดึงข้อมูลบรรพบุรุษของกษัตริย์ปัจจุบัน (Reference)
-    const kFather = state.members.find(m => m.id === king.fatherId);
-    const kGrandFather = kFather ? state.members.find(m => m.id === kFather.fatherId) : null;
+        const kFather = state.members.find(m => m.id === king.fatherId);
+        const kGrandFather = kFather ? state.members.find(m => m.id === kFather.fatherId) : null;
 
-    const pYear = parseInt(person.birthYear) || 9999;
-    const kYear = parseInt(king.birthYear) || 9999;
+        const pYear = parseInt(person.birthYear) || 9999;
+        const kYear = parseInt(king.birthYear) || 9999;
 
-    // 1. พระราชโอรส (ลูกโดยตรง)
-    if (person.fatherId === king.id) return "พระราชโอรส";
+        if (person.fatherId === king.id) return "พระราชโอรส";
 
-    // 2. พระเชษฐา / พระอนุชา (พี่น้องร่วมพระบิดากับกษัตริย์)
-    if (pFather && kFather && pFather.id === kFather.id) {
-        return pYear < kYear ? "พระเชษฐา (พี่ชาย)" : "พระอนุชา (น้องชาย)";
-    }
-
- // 1. เช็คกรณี "พี่น้องท้องเดียวกันกับพระมารดา" (ร่วมทั้งพ่อและแม่) -> ให้ถือสายแม่ทันที
-const kMother = state.members.find(m => m.id === king.motherId);
-if (pFather && kMother) {
-    const isFullSiblingMaternal = pFather.fatherId === kMother.fatherId && 
-                                 pFather.motherId === kMother.motherId && 
-                                 pFather.fatherId && pFather.motherId;
-    if (isFullSiblingMaternal) {
-        const pFYear = parseInt(pFather.birthYear) || 9999;
-        const kMYear = parseInt(kMother.birthYear) || 9999;
-        return pFYear < kMYear ? "พระมาตุลา (ลุง)" : "พระมาตุลา (น้า)";
-    }
-}
-
-// 2. ฝั่งพระบิดา (ปิตุลา - ลุง/อา) -> Priority ต่อมา (สายเลือดหลักทางพ่อ)
-if (pFather && kFather && pFather.id !== kFather.id) {
-    const shareFather = pFather.fatherId && pFather.fatherId === kFather.fatherId;
-    const shareMother = pFather.motherId && pFather.motherId === kFather.motherId;
-    
-    if (shareFather || shareMother) {
-        const pFYear = parseInt(pFather.birthYear) || 9999;
-        const kFYear = parseInt(kFather.birthYear) || 9999;
-        return pFYear < kFYear ? "พระปิตุลา (ลุง)" : "พระปิตุลา (อา)";
-    }
-}
-
-// 3. ฝั่งพระมารดา (มาตุลา - กรณีพี่น้องต่างบิดาหรือต่างมารดา)
-if (pFather && kMother) {
-    const shareFather = pFather.fatherId && pFather.fatherId === kMother.fatherId;
-    const shareMother = pFather.motherId && pFather.motherId === kMother.motherId;
-    
-    if (shareFather || shareMother) {
-        const pFYear = parseInt(pFather.birthYear) || 9999;
-        const kMYear = parseInt(kMother.birthYear) || 9999;
-        return pFYear < kMYear ? "พระมาตุลา (ลุง)" : "พระมาตุลา (น้า)";
-    }
-}
-
-    // 4. พระราชนัดดา (หลานปู่ - ลูกของโอรสกษัตริย์)
-    if (pGrandFather && pGrandFather.id === king.id) return "พระราชนัดดา (หลานปู่)";
-
-    // 5. พระราชนัดดา (หลานเธอ - ลูกของพี่น้องกษัตริย์)
-    if (pGrandFather && kFather && pGrandFather.id === kFather.id) return "พระราชนัดดา (หลานเธอ)";
-
-    // 6. พระภาดา (ลูกพี่ลูกน้อง - พ่อเป็นพี่น้องกับพ่อกษัตริย์)
-    if (pGrandFather && kGrandFather && pGrandFather.id === kGrandFather.id) return "พระภาดา (ลูกพี่ลูกน้อง)";
-
-    // 7. พระราชปนัดดา (เหลน - ลูกของหลานปู่)
-    if (pGrandFather && pGrandFather.fatherId === king.id) return "พระราชปนัดดา (เหลน)";
-
-    // --- FALLBACK: กรณีเป็นโอรส/นัดดา ในรัชกาลก่อนๆ (แก้ไขให้แสดงเลขรัชกาล) ---
-    
-    // 1. พระราชโอรส (ชั้นลูกกษัตริย์รัชกาลก่อน)
-    if (pFather && isKing(pFather)) {
-        // ใช้ globalReignNumber ซึ่งเป็นชื่อตัวแปรที่เก็บค่าเลขรัชกาลในระบบของคุณ
-        const reignNum = pFather.globalReignNumber || pFather.reignNumber || "?";
-        return `พระราชโอรสในรัชกาลที่ ${toThaiNumerals(reignNum)}`;
-    }
-
-    // 2. พระราชนัดดา (ชั้นหลานกษัตริย์รัชกาลก่อน)
-    if (pGrandFather && isKing(pGrandFather)) {
-        const reignNum = pGrandFather.globalReignNumber || pGrandFather.reignNumber || "?";
-        return `พระราชนัดดาในรัชกาลที่ ${toThaiNumerals(reignNum)}`;
-    }
-
-    // 3. พระราชปนัดดา (ชั้นเหลนกษัตริย์รัชกาลก่อน)
-    if (pGreatGrandFather && isKing(pGreatGrandFather)) {
-        const reignNum = pGreatGrandFather.globalReignNumber || pGreatGrandFather.reignNumber || "?";
-        return `พระราชปนัดดาในรัชกาลที่ ${toThaiNumerals(reignNum)}`;
-    }
-
-    return "พระบรมวงศานุวงศ์";
-};
-
-    // 4. วาดตาราง
-    let renderIndex = 0; 
-
-    palaceList.forEach((p) => {
-        
-        // --- ส่วนการกรอง (Double Filter) ---
-        const fullTitleCheck = `${p.royalRank || ""} ${p.titlePrefix || ""}`;
-        const hiddenPrefixes = [
-            "พระพี่ยาเธอ", "พระพี่นางเธอ",
-            "พระน้องยาเธอ", "พระน้องนางเธอ", 
-            "พระเจ้าบรมวงศ์เธอ" 
-        ];
-        
-        if (hiddenPrefixes.some(k => fullTitleCheck.includes(k)) && !fullTitleCheck.includes("เจ้าฟ้า")) {
-            return; 
+        if (pFather && kFather && pFather.id === kFather.id) {
+            return pYear < kYear ? "พระเชษฐา (พี่ชาย)" : "พระอนุชา (น้องชาย)";
         }
-        
-        const wangKeywords = ["สมเด็จพระบวรราชเจ้า", "กรมพระราชวังบวร", "พระราชวังบวร", "วังหน้า", "วังหลัง", "สถานมงคล", "สถานพิมุข", "พระบัณฑูรน้อย", "ฝ่ายหน้า", "ฝ่ายหลัง"];
-        const fullWangCheck = `${p.royalRank || ""} ${p.titlePrefix || ""} ${p.name || ""}`;
-        
-        // ถ้าเป็นลูกหลานของวังหน้า (เช็คจากพ่อ) -> ไม่แสดง
-        const fatherObj = state.members.find(m => m.id === p.fatherId);
-        if (fatherObj) {
-             const fatherFullText = `${fatherObj.royalRank || ""} ${fatherObj.titlePrefix || ""} ${fatherObj.name || ""}`;
-             if (wangKeywords.some(k => fatherFullText.includes(k))) return;
+
+        const kMother = state.members.find(m => m.id === king.motherId);
+        if (pFather && kMother) {
+            const isFullSiblingMaternal = pFather.fatherId === kMother.fatherId && 
+                                          pFather.motherId === kMother.motherId && 
+                                          pFather.fatherId && pFather.motherId;
+            if (isFullSiblingMaternal) {
+                const pFYear = parseInt(pFather.birthYear) || 9999;
+                const kMYear = parseInt(kMother.birthYear) || 9999;
+                return pFYear < kMYear ? "พระมาตุลา (ลุง)" : "พระมาตุลา (น้า)";
+            }
         }
-        // ถ้าตัวเองเป็นวังหน้า (และไม่ใช่เจ้าฟ้าชั้นเอกที่ควรแสดง) -> อันนี้แล้วแต่ Logic เดิมของคุณ
-        // แต่ตามโค้ดนี้เราปล่อยให้แสดงตัววังหน้าได้ แต่ลูกหลานโดนตัดตั้งแต่ Logic หลักแล้ว
 
-        // ------------------------------------
+        if (pFather && kFather && pFather.id !== kFather.id) {
+            const shareFather = pFather.fatherId && pFather.fatherId === kFather.fatherId;
+            const shareMother = pFather.motherId && pFather.motherId === kFather.motherId;
+            
+            if (shareFather || shareMother) {
+                const pFYear = parseInt(pFather.birthYear) || 9999;
+                const kFYear = parseInt(kFather.birthYear) || 9999;
+                return pFYear < kFYear ? "พระปิตุลา (ลุง)" : "พระปิตุลา (อา)";
+            }
+        }
 
-        const idx = renderIndex++;
+        if (pFather && kMother) {
+            const shareFather = pFather.fatherId && pFather.fatherId === kMother.fatherId;
+            const shareMother = pFather.motherId && pFather.motherId === kMother.motherId;
+            
+            if (shareFather || shareMother) {
+                const pFYear = parseInt(pFather.birthYear) || 9999;
+                const kMYear = parseInt(kMother.birthYear) || 9999;
+                return pFYear < kMYear ? "พระมาตุลา (ลุง)" : "พระมาตุลา (น้า)";
+            }
+        }
 
-        // --- ดึงข้อมูล พ่อ และ แม่ ---
+        if (pGrandFather && pGrandFather.id === king.id) return "พระราชนัดดา (หลานปู่)";
+        if (pGrandFather && kFather && pGrandFather.id === kFather.id) return "พระราชนัดดา (หลานเธอ)";
+        if (pGrandFather && kGrandFather && pGrandFather.id === kGrandFather.id) return "พระภาดา (ลูกพี่ลูกน้อง)";
+        if (pGrandFather && pGrandFather.fatherId === king.id) return "พระราชปนัดดา (เหลน)";
+
+        if (pFather && isKing(pFather)) {
+            const reignNum = pFather.globalReignNumber || pFather.reignNumber || "?";
+            return `พระราชโอรสในรัชกาลที่ ${toThaiNumerals(reignNum)}`;
+        }
+
+        if (pGrandFather && isKing(pGrandFather)) {
+            const reignNum = pGrandFather.globalReignNumber || pGrandFather.reignNumber || "?";
+            return `พระราชนัดดาในรัชกาลที่ ${toThaiNumerals(reignNum)}`;
+        }
+
+        if (pGreatGrandFather && isKing(pGreatGrandFather)) {
+            const reignNum = pGreatGrandFather.globalReignNumber || pGreatGrandFather.reignNumber || "?";
+            return `พระราชปนัดดาในรัชกาลที่ ${toThaiNumerals(reignNum)}`;
+        }
+
+        return "พระบรมวงศานุวงศ์";
+    };
+
+    // =========================================================
+    // 🌟 ฟังก์ชันหา "หัวหน้าสายตระกูล" สำหรับจัดกลุ่มสี / เส้นคั่น
+    // =========================================================
+    const getTopAncestorId = (person) => {
+        let current = person;
+        for (let i = 0; i < 10; i++) { 
+            const fatherInList = palaceList.find(m => m.id === current.fatherId);
+            if (fatherInList) {
+                current = fatherInList; 
+            } else {
+                break; 
+            }
+        }
+        return current.id; 
+    };
+
+    let prevBranch = null;
+    let branchColorIndex = 0;
+    const branchColors = [
+        "border-l-blue-500", 
+        "border-l-emerald-500", 
+        "border-l-purple-500", 
+        "border-l-rose-500", 
+        "border-l-cyan-500", 
+        "border-l-amber-500",
+        "border-l-indigo-500",
+        "border-l-pink-500"
+    ];
+
+    // 4. วาดตาราง (Render)
+    palaceList.forEach((p, idx) => { 
+        
         const father = state.members.find(m => m.id === p.fatherId);
         const mother = state.members.find(m => m.id === p.motherId);
         
@@ -7514,12 +7657,10 @@ if (pFather && kMother) {
         let motherHtml = mother ? `<span class="text-sm text-slate-700 font-medium hover:text-rose-600 hover:underline cursor-pointer transition-colors leading-snug" onclick="event.stopPropagation(); showDetail('${mother.id}')">${motherName}</span>` : `<span class="text-sm text-slate-400 select-none">-</span>`;
         const isRegistered = father && father.registeredSpouseId === p.motherId;
 
-        // --- ใช้ฟังก์ชันหาความสัมพันธ์ใหม่ ---
         let relText = getRoyalRelationship(p, king);
         
         if (p._isFemaleFallback) relText = '<span class="text-rose-600 font-bold flex items-center gap-1"><i class="fa-solid fa-star"></i> พระราชธิดา (กรณีพิเศษ)</span>';
 
-        // จัด Format พระนาม
         let fullNameDisplay = "";
         const isMomChao = (p.royalRank === 'หม่อมเจ้า' || (p.titlePrefix || "").includes('หม่อมเจ้า'));
 
@@ -7539,7 +7680,6 @@ if (pFather && kMother) {
             }
         }
 
-        // ป้ายสาย
         let branchLabelHtml = '';
         if (p._branchLabel) {
             if (p._branchAncestorId) {
@@ -7549,7 +7689,6 @@ if (pFather && kMother) {
             }
         }
 
-        // สถานะ
         let statusBadgeHtml = '<span class="text-slate-300 text-2xl">•</span>'; 
         let specialHeirBadgeName = ''; 
         if (p.isHeir) {
@@ -7561,10 +7700,31 @@ if (pFather && kMother) {
             }
         }
 
-        // Row Styling
+        // =========================================================
+        // 🌟 วาดเส้นแดงคั่นตระกูลเมื่อขึ้นสายใหม่
+        // =========================================================
+        const currentBranch = getTopAncestorId(p);
+        let isNewBranch = false;
+
+        if (idx > 0 && currentBranch !== prevBranch) {
+            isNewBranch = true;
+            branchColorIndex = (branchColorIndex + 1) % branchColors.length;
+            
+            const separatorRow = document.createElement('tr');
+            separatorRow.innerHTML = `<td colspan="5" class="p-0 border-none"><div class="h-[4px] bg-red-500 w-full shadow-sm"></div></td>`;
+            tbody.appendChild(separatorRow);
+        }
+        prevBranch = currentBranch;
+        const currentLeftBorderColor = branchColors[branchColorIndex];
+        // =========================================================
+
         const isFirst = (idx === 0);
         const row = document.createElement('tr');
-        let rowClass = isFirst ? "group border-b-4 border-amber-500 bg-gradient-to-r from-[#FFFBE6] via-[#FFFDF5] to-white hover:from-amber-100 transition-all duration-200 cursor-pointer shadow-sm relative z-10" : "group border-b border-slate-100 hover:bg-gradient-to-r hover:from-slate-50 hover:to-white transition-all duration-200 cursor-pointer";
+        
+        let rowClass = isFirst 
+            ? `group border-b-4 border-amber-500 bg-gradient-to-r from-[#FFFBE6] via-[#FFFDF5] to-white hover:from-amber-100 transition-all duration-200 cursor-pointer shadow-sm relative z-10 border-l-[6px] ${currentLeftBorderColor}` 
+            : `group border-b border-slate-100 hover:bg-gradient-to-r hover:from-slate-50 hover:to-white transition-all duration-200 cursor-pointer border-l-[6px] ${currentLeftBorderColor}`;
+            
         let nameTextClass = isFirst ? "font-extrabold text-amber-900 text-lg group-hover:text-amber-700 transition-colors drop-shadow-sm" : "font-bold text-slate-800 text-base group-hover:text-amber-700 transition-colors";
         
         let rankBadgeHtml = isFirst ? 
@@ -7613,189 +7773,6 @@ if (pFather && kMother) {
     });
     return;
 }
-
-
-// ==========================================
-    // [ฉบับสมบูรณ์] โหมดทำเนียบพระกุลเชษฐ์ (เวอร์ชันแก้ไข/ลบได้ + รองรับช่วงรัชกาล 1-3)
-    // ==========================================
-    else if (filterStatus === 'kulachet') {
-        // ดึงสถานะจากปุ่มติ๊ก "ไม่แสดงอายุ"
-        const isHideAge = document.getElementById('toggleHideAge')?.checked;
-        const filterVal = document.getElementById('kulachetFilterSelect')?.value || 'all'; // รับค่าตัวกรอง
-
-        // 1. ตั้งค่าหัวตาราง (ปรับจำนวนคอลัมน์ตามการซ่อนอายุ)
-        if (tableHead) {
-            tableHead.innerHTML = `
-                <th class="text-center w-12">ลำดับ</th>
-                <th class="text-center w-20">รูป</th>
-                <th>พระนาม</th>
-                <th class="text-center">ช่วงเวลาที่ดำรงตำแหน่ง</th>
-                <th class="text-center">ในรัชสมัย</th>
-                ${!isHideAge ? '<th class="text-center">พระชนมายุ (เมื่อพ้นตำแหน่ง/ปัจจุบัน)</th>' : ''}
-                <th class="text-center w-24">จัดการ</th>
-            `;
-        }
-
-        // 2. ดึงข้อมูลประวัติจาก state
-        if (!state.kulachetHistory) state.kulachetHistory = [];
-        let history = [...state.kulachetHistory]; // clone array เพื่อไม่ให้กระทบ master data
-
-        // --- [Logic: บันทึกประวัติศาสตร์แบบต่อเนื่อง] --- (คงเดิมตามที่คุณส่งมา)
-        const currentKula = state.members.find(m => m.isPhraKulachet && m.status !== 'dead');
-        const lastEntry = state.kulachetHistory.length > 0 ? state.kulachetHistory[state.kulachetHistory.length - 1] : null;
-
-        if (currentKula) {
-            if (!lastEntry) {
-                state.kulachetHistory.push({
-                    memberId: currentKula.id,
-                    start: state.worldTime.year,
-                    end: state.worldTime.year,
-                    isCurrent: true,
-                    manualReign: "" 
-                });
-                if (typeof saveState === 'function') saveState();
-            }
-            else if (lastEntry.memberId !== currentKula.id) {
-                lastEntry.isCurrent = false;
-                lastEntry.end = state.worldTime.year; 
-                state.kulachetHistory.push({
-                    memberId: currentKula.id,
-                    start: state.worldTime.year,
-                    end: state.worldTime.year,
-                    isCurrent: true,
-                    manualReign: "" 
-                });
-                if (typeof saveState === 'function') saveState();
-            }
-            else {
-                lastEntry.isCurrent = true;
-                lastEntry.end = state.worldTime.year;
-            }
-        } 
-        else if (lastEntry && lastEntry.isCurrent) {
-            lastEntry.isCurrent = false;
-            lastEntry.end = state.worldTime.year;
-            if (typeof saveState === 'function') saveState();
-        }
-
-        // อัปเดตตัวแปร history อีกครั้งหลังจาก update state เสร็จแล้ว
-        history = [...state.kulachetHistory];
-
-        // ++++++ [Logic การกรองแบบอัจฉริยะ: รองรับช่วง "1-3"] ++++++
-        if (filterVal === 'current') {
-            history = history.filter(h => h.isCurrent);
-        } 
-        else if (filterVal.startsWith('reign_')) {
-            const targetReign = parseInt(filterVal.split('_')[1]); // เลขรัชกาลที่เลือก
-            
-            // เตรียมข้อมูลรัชกาลเป้าหมาย (เผื่อต้องใช้ Time Overlap)
-            const monarch = state.members.find(m => m.isMonarch && parseInt(m.globalReignNumber) === targetReign);
-            const rStart = monarch ? (parseInt(monarch.reignStartYear || monarch.reignStart) || 0) : 0;
-            const rEnd = monarch ? ((monarch.isAlive && !monarch.isExMonarch) ? (state.worldTime.year || 9999) : (parseInt(monarch.reignEndYear || monarch.reignEnd) || 9999)) : 0;
-
-            history = history.filter(h => {
-                // A. ดึงข้อความรัชสมัย (Manual หรือ Auto)
-                const textToCheck = h.manualReign || (typeof getReignPeriod === 'function' ? getReignPeriod(h.start, h.end) : "");
-                
-                // B. ใช้ฟังก์ชัน parseReignCoverage แกะช่วงตัวเลข (ต้องมีฟังก์ชันนี้ในโค้ดตามขั้นตอนก่อนหน้า)
-                const coveredReigns = typeof parseReignCoverage === 'function' ? parseReignCoverage(textToCheck) : [];
-
-                // C. ตรวจสอบว่ารัชกาลที่เลือก (targetReign) อยู่ในรายการที่ครอบคลุมหรือไม่
-                if (coveredReigns.includes(targetReign)) return true;
-
-                // D. (สำรอง) ถ้าแกะตัวเลขไม่ได้ ให้ใช้ Time Overlap
-                if (monarch && coveredReigns.length === 0) {
-                    const kStart = h.start;
-                    const kEnd = h.isCurrent ? state.worldTime.year : h.end;
-                    return (kStart <= rEnd) && (kEnd >= rStart);
-                }
-                return false;
-            });
-        }
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-        // 3. วาดตาราง (Render)
-        tbody.innerHTML = '';
-
-        if (history.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="${isHideAge ? 6 : 7}" class="text-center py-10 text-slate-400 italic">ไม่พบข้อมูลพระกุลเชษฐ์ตามตัวกรอง</td></tr>`;
-            return;
-        }
-
-        history.forEach((h, i) => {
-            const m = state.members.find(mem => mem.id === h.memberId);
-            if (!m) return; 
-
-            const isPresent = h.isCurrent;
-            const row = document.createElement('tr');
-            row.className = `data-row border-b border-slate-100 hover:bg-slate-50 transition ${isPresent ? 'bg-orange-50/60' : ''}`;
-            
-            // คำนวณอายุ (ใช้เลขไทย)
-            const birthY = parseInt(m.birthYear) || 0;
-            let ageLabel = "-";
-            if (birthY > 0) {
-                const targetYear = isPresent ? state.worldTime.year : h.end;
-                const ageCalc = targetYear - birthY;
-                ageLabel = typeof toThaiNumerals === 'function' ? toThaiNumerals(ageCalc > 0 ? ageCalc : 0) : ageCalc;
-            }
-
-            // ตรวจสอบรัชสมัย
-            const reignText = h.manualReign || (typeof getReignPeriod === 'function' ? getReignPeriod(h.start, h.end) : '-');
-
-            const statusBadge = isPresent
-                ? `<span class="bg-amber-100 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-bold ml-2 shadow-sm border border-amber-200">
-                     <i class="fa-solid fa-circle-check mr-1 text-[8px]"></i>ปัจจุบัน
-                   </span>`
-                : `<span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-bold ml-2 border border-slate-200">อดีต</span>`;
-
-            row.innerHTML = `
-                <td class="text-center py-4 font-bold text-slate-400 text-lg">${typeof toThaiNumerals === 'function' ? toThaiNumerals(i + 1) : (i + 1)}</td>
-                <td class="text-center py-4">
-                    <div class="relative w-12 h-12 mx-auto">
-                        <img src="${m.image || (m.gender==='M'?DEFAULT_IMG_MALE:DEFAULT_IMG_FEMALE)}" 
-                             class="w-full h-full rounded-full object-cover border shadow-sm ${!isPresent ? 'grayscale opacity-80' : 'ring-2 ring-amber-200'}">
-                        ${isPresent ? '<div class="absolute -bottom-1 -right-1 text-xs">👑</div>' : ''}
-                    </div>
-                </td>
-                <td class="py-4 text-sm font-bold text-slate-700 cursor-pointer group" onclick="showDetail('${m.id}')">
-                    <div class="text-indigo-600 text-base mb-1 group-hover:text-indigo-800 transition">${typeof getFullDisplayTitle === 'function' ? getFullDisplayTitle(m) : m.name}</div>
-                    <div class="flex items-center flex-wrap gap-1">
-                        <span class="badge-kulachet">พระกุลเชษฐ์</span>
-                        ${statusBadge}
-                    </div>
-                </td>
-                <td class="py-4 text-center text-sm text-slate-600 font-mono">
-                    <span class="bg-white border border-slate-200 px-3 py-1 rounded-lg shadow-sm whitespace-nowrap">
-                        พ.ศ. ${typeof toThaiNumerals === 'function' ? toThaiNumerals(h.start) : h.start} - ${isPresent ? 'ปัจจุบัน' : (typeof toThaiNumerals === 'function' ? toThaiNumerals(h.end) : h.end)}
-                    </span>
-                </td>
-                <td class="py-4 text-center text-sm">
-                    <span onclick="editKulachetReign(${i})" class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold ${isPresent ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'} border border-transparent shadow-sm cursor-pointer hover:ring-2 hover:ring-amber-300 transition" title="คลิกเพื่อแก้ไขรัชสมัย">
-                        <i class="fa-solid fa-crown mr-1.5 opacity-70 text-[10px]"></i>
-                        ${reignText}
-                    </span>
-                </td>
-                ${!isHideAge ? `
-                <td class="py-4 text-center font-bold text-rose-600 text-sm">
-                    ${ageLabel} ปี
-                </td>` : ''}
-                <td class="text-center py-4">
-                    <div class="flex items-center justify-center gap-1">
-                        <button onclick="editPersonDirect('${m.id}')" class="text-slate-400 hover:text-amber-500 p-2 rounded-full hover:bg-amber-50 transition" title="แก้ไขข้อมูลบุคคล">
-                            <i class="fa-solid fa-user-pen"></i>
-                        </button>
-                        <button onclick="deleteKulachetEntry(${i})" class="text-slate-300 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition" title="ลบออกจากทำเนียบ">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
-        return;
-    }
-
- 
     
 
 
@@ -10144,46 +10121,42 @@ function getConsortCategoryLabel(p) {
     
 
 
-// --- ส่วนที่เพิ่ม: แสดงพระยศเดิม (แสดงพระนามเต็ม และตัดนามสกุลออกทั้งหมด) ---
+/// --- ส่วนที่เพิ่ม: แสดงพระยศเดิม (แสดงพระนามเต็ม และตัดนามสกุลออกทั้งหมด) ---
 const originalRankRow = document.getElementById('d_originalRankRow');
 const originalRankEl = document.getElementById('d_originalRank');
 
 if (m.isResigned && m.originalRoyalRank) {
-    // สร้าง Object จำลอง (Mock) เพื่อดึงพระนามเต็มยศเดิม
     const mockPerson = {
         ...m,
         royalRank: m.originalRoyalRank,
         relationship: m.originalRelationship,
         titlePrefix: m.originalTitlePrefix,
-        
-        // [แก้ไข] ให้เช็คสร้อยพระนามเดิมก่อน ถ้าไม่มีค่อยใช้ของปัจจุบัน
         titleSuffix: m.originalTitleSuffix || m.titleSuffix || "", 
-
-        // [เพิ่ม] ต้องใส่ยศกรมเดิม (เช่น กรมหลวง) ด้วย ไม่งั้นระบบจะไม่นำหน้านามกรมให้
         kromRank: m.originalKromRank || "", 
         kromTitle: m.originalKromTitle || "",
-
-        royalSurname: "", // ไม่แสดงนามสกุลพระราชทาน/ณ อยุธยา
-        surname: "",      // ไม่แสดงนามสกุลสามัญชนที่ได้รับภายหลัง
-        isResigned: false // ปิด flag ชั่วคราวเพื่อให้ฟังก์ชันแสดงผลตามรูปแบบเจ้านาย
+        royalSurname: "", 
+        surname: "",      
+        isResigned: false 
     };
     
-    // ใช้ฟังก์ชัน getFullDisplayTitle เพื่อประกอบพระนามเต็ม (เช่น สมเด็จพระเจ้าลูกเธอ เจ้าฟ้า...)
-    originalRankEl.innerText = getFullDisplayTitle(mockPerson);
+    let originalName = getFullDisplayTitle(mockPerson);
+    // ทำความสะอาดชื่อ (ติดกัน + ลบชั้นยศ) ให้เหมือนป้ายคู่สมรส
+    originalName = originalName.replace(/[\s\u00A0]*\((ชั้นเอก|ชั้นโท|ชั้นตรี)\)/g, '');
+    originalName = originalName.replace(/(เจ้าฟ้า|พระองค์เจ้า|หม่อมเจ้า)[\s\u00A0]+/g, '$1');
+    
+    originalRankEl.innerText = originalName;
     originalRankRow.classList.remove('hidden');
 } else {
     originalRankRow.classList.add('hidden');
 }
 
-// --- ส่วนที่ปรับปรุง: ป้ายชื่อคู่สมรส (ขนาดใหญ่ขึ้น + แยกบรรทัดเมื่อมีป้ายกรม) ---
+// --- ส่วนที่ปรับปรุง: ป้ายชื่อคู่สมรส (เจ้าฟ้าติดกรม / ยศติดพระนาม / ตัดชั้นเอก-โท-ตรี) ---
 const spouseTagEl = document.getElementById('d_spouse_tag');
-const kromTagEl = document.getElementById('d_krom'); // อ้างอิงป้ายกรมเพื่อจัดการบรรทัด
+const kromTagEl = document.getElementById('d_krom'); 
 
 if (spouseTagEl) {
     spouseTagEl.classList.add('hidden');
-    // ล้างคลาสเก่าออกเพื่อจัดระเบียบใหม่
     spouseTagEl.classList.remove('block', 'inline-block', 'mt-1', 'mt-2', 'text-[10px]', 'mx-auto', 'w-fit'); 
-    // เพิ่มขนาด Font ใหม่ (text-[12px])
     spouseTagEl.classList.add('text-[12px]');
 
     if (state.showSpouseLabel && m.gender === 'F') {
@@ -10200,14 +10173,26 @@ if (spouseTagEl) {
             }
 
             if (husband && husband.royalRank && !husband.isMonarch) {
-                const hRank = husband.royalRank;
-                const isRoyalHusband = hRank.includes('เจ้าฟ้า') || 
-                                       hRank.includes('พระองค์เจ้า') || 
-                                       hRank.includes('หม่อมเจ้า');
+                const hRankCheck = husband.royalRank;
+                const isRoyalHusband = hRankCheck.includes('เจ้าฟ้า') || 
+                                       hRankCheck.includes('พระองค์เจ้า') || 
+                                       hRankCheck.includes('หม่อมเจ้า');
 
                 if (isRoyalHusband) {
-                    const husbandName = getFullDisplayTitle(husband).split(' ในรัชกาลที่')[0].trim();
+                    // 🌟 1. ดึงชื่อจากฟังก์ชันระบบ
+                    let husbandName = getAffiliationTitle(husband).split(' ในรัชกาลที่')[0].trim();
                     
+                    // 🌟 2. ลบคำว่า (ชั้นเอก) (ชั้นโท) (ชั้นตรี) ออก (รวมถึงช่องว่างข้างหน้าถ้ามี)
+                    // ใช้ [\s\u00A0]* เพื่อดักจับทั้ง Space ปกติ และ Non-breaking space
+                    husbandName = husbandName.replace(/[\s\u00A0]*\((ชั้นเอก|ชั้นโท|ชั้นตรี)\)/g, '');
+
+                    // 🌟 3. จัดการให้ "เจ้าฟ้า" ติดกับ "กรม"
+                    husbandName = husbandName.replace(/(เจ้าฟ้า)[\s\u00A0]+(กรม)/g, '$1$2');
+                    
+                    // 🌟 4. จัดการให้ "อิสริยายศ" ติดกับ "พระนาม" 
+                    // ลบช่องว่างทุกชนิดที่ตามหลัง เจ้าฟ้า/พระองค์เจ้า/หม่อมเจ้า
+                    husbandName = husbandName.replace(/(เจ้าฟ้า|พระองค์เจ้า|หม่อมเจ้า)[\s\u00A0]+/g, '$1');
+
                     let prefix = "หม่อมใน";
                     const royalKeywords = ["เจ้าฟ้า", "พระองค์เจ้า", "หม่อมเจ้า", "พระวรวงศ์เธอ", "พระเจ้าวรวงศ์เธอ", "พระชายา"];
                     
@@ -10217,20 +10202,16 @@ if (spouseTagEl) {
 
                     spouseTagEl.innerText = `${prefix} ${husbandName}`;
 
-                    // --- เช็คการขึ้นบรรทัดใหม่: ถ้ามีป้ายกรม ให้แสดงคนละบรรทัด ---
-                    // เช็คทั้งจาก royalRank และ kromRank (ถ้ามีในฐานข้อมูล)
+                    // --- เช็คการขึ้นบรรทัดใหม่ตามปกติ ---
                     const hasKrom = (m.royalRank && (m.royalRank.includes("กรม") || m.royalRank.includes("ทรงกรม"))) || (m.kromRank && m.kromRank !== "");
 
                     if (hasKrom) {
-                        // 1. บังคับให้ป้ายกรมเป็น block และจัดกลาง
                         if (kromTagEl) {
                             kromTagEl.classList.remove('inline-block');
                             kromTagEl.classList.add('block', 'mx-auto', 'w-fit');
                         }
-                        // 2. ป้ายคู่สมรสขึ้นบรรทัดใหม่ (block) + เว้นระยะห่างด้านบน (mt-2) + จัดกลาง (mx-auto)
                         spouseTagEl.classList.add('block', 'mt-2', 'w-fit', 'mx-auto');
                     } else {
-                        // ถ้าไม่มีกรม ให้แสดงเป็น inline-block ต่อท้ายชื่อปกติ
                         spouseTagEl.classList.add('inline-block', 'mt-1');
                     }
 
@@ -10240,7 +10221,6 @@ if (spouseTagEl) {
         }
     }
 }
-
 
 // เพิ่มส่วนนี้ไว้ในฟังก์ชัน showDetail(id)
 const informalRow = document.getElementById('d_informalNameRow');
@@ -16414,11 +16394,233 @@ function confirmPromoteMRN() {
 
 
 
+// ==========================================
+// ฟังก์ชันสำหรับดาวน์โหลดลำดับกฎมณเฑียรบาลเป็น PNG (A4)
+// ==========================================
+async function downloadPalaceLawPNG() {
+    // 1. หาข้อมูลกษัตริย์ปัจจุบัน
+    const king = state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
+    const kingFullName = king ? ((typeof getFullDisplayTitle === 'function') ? getFullDisplayTitle(king) : king.name) : "พระมหากษัตริย์";
 
+    // 2. เรียกสูตรคำนวณและกรอง (Double Filter)
+    let palaceList = calculatePalaceSuccessionList();
+    
+    palaceList = palaceList.filter(p => {
+        let isBlockedFromRoot = false;
+        let checkNode = p;
+        for (let i = 0; i < 10; i++) {
+            if (!checkNode) break;
+            const fullTitleCheck = `${checkNode.royalRank || ""} ${checkNode.titlePrefix || ""}`;
+            const hiddenPrefixes = ["พระพี่ยาเธอ", "พระพี่นางเธอ", "พระเจ้าลูกเธอ","พระเจ้าลูกยาเธอ", "พระน้องยาเธอ", "พระน้องนางเธอ", "พระเจ้าบรมวงศ์เธอ"];
+            if (hiddenPrefixes.some(k => fullTitleCheck.includes(k))) {
+                if (typeof isAllowedRoot === 'function' && !isAllowedRoot(checkNode)) {
+                    isBlockedFromRoot = true; break;
+                }
+            }
+            if (!checkNode.fatherId) break;
+            checkNode = state.members.find(m => m.id === checkNode.fatherId);
+        }
+        if (isBlockedFromRoot) return false; 
+        
+        const wangKeywords = ["สมเด็จพระบวรราชเจ้า", "กรมพระราชวังบวร", "พระราชวังบวร", "วังหน้า", "วังหลัง", "สถานมงคล", "สถานพิมุข", "พระบัณฑูรน้อย", "ฝ่ายหน้า", "ฝ่ายหลัง"];
+        const fatherObj = state.members.find(m => m.id === p.fatherId);
+        if (fatherObj) {
+             const fatherFullText = `${fatherObj.royalRank || ""} ${fatherObj.titlePrefix || ""} ${fatherObj.name || ""}`;
+             if (wangKeywords.some(k => fatherFullText.includes(k))) return false;
+        }
+
+        const motherObj = state.members.find(m => m.id === p.motherId);
+        if (fatherObj && motherObj) {
+            const isFatherKing = (typeof isKing === 'function') ? isKing(fatherObj) : (fatherObj.isMonarch || fatherObj.isExMonarch);
+            const isFullSiblingOfKing = king ? (p.fatherId === king.fatherId && p.motherId === king.motherId && p.fatherId) : false;
+            if (!isFatherKing && !isFullSiblingOfKing) {
+                const motherRankInfo = `${motherObj.royalRank || ""} ${motherObj.titlePrefix || ""}`;
+                const isMotherRoyal = motherRankInfo.includes('เจ้าฟ้า') || motherRankInfo.includes('พระองค์เจ้า') || motherRankInfo.includes('หม่อมเจ้า') || motherRankInfo.includes('พระชายา') || motherRankInfo.includes('พระราชินี');
+                const isRegisteredSpouse = (fatherObj.registeredSpouseId === motherObj.id);
+                if (!isMotherRoyal && !isRegisteredSpouse && !p.isMonarch) return false; 
+            }
+        }
+        return true; 
+    });
+
+    const limitSelect = document.getElementById('palaceLawLimitSelect');
+    if (limitSelect && limitSelect.value !== 'all') {
+        palaceList = palaceList.slice(0, parseInt(limitSelect.value)); 
+    }
+
+    if (palaceList.length === 0) {
+        alert("ไม่พบข้อมูลผู้มีสิทธิ์สืบราชสันตติวงศ์สำหรับสร้างเอกสาร");
+        return;
+    }
+
+    const toThaiDigit = (num) => {
+        const thaiNumbers = ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'];
+        return num.toString().replace(/\d/g, (d) => thaiNumbers[d]);
+    };
+
+    const removeBrackets = (str) => {
+        return str ? str.replace(/\s*\(.*?\)/g, '').trim() : '';
+    };
+
+    // ฟังก์ชันหา "หัวหน้าสายตระกูล" สำหรับวาดเส้นคั่น
+    const getTopAncestorId = (person) => {
+        let current = person;
+        for (let i = 0; i < 10; i++) { 
+            const fatherInList = palaceList.find(m => m.id === current.fatherId);
+            if (fatherInList) {
+                current = fatherInList; 
+            } else {
+                break; 
+            }
+        }
+        return current.id; 
+    };
+
+    // 3. สร้าง Element ชั่วคราวสำหรับเป็นหน้า A4
+    const printContainer = document.createElement('div');
+    printContainer.className = "w-[800px] bg-white absolute -left-[9999px] top-0 text-slate-800 font-['Sarabun'] leading-relaxed";
+    printContainer.style.padding = "60px"; 
+    printContainer.style.minHeight = "1131px"; 
+
+    const cleanKingFullName = removeBrackets(kingFullName);
+
+    let htmlContent = `
+        <div class="text-center mb-10">
+            <h1 class="text-[26px] font-bold mb-2">ลำดับพระรัชทายาทสืบสันตติวงศ์</h1>
+            <h2 class="text-[22px] font-semibold">ใน ${cleanKingFullName}</h2>
+        </div>
+        <div class="flex flex-col gap-4">
+    `;
+
+    let prevBranch = null;
+
+    palaceList.forEach((p, index) => {
+        const father = state.members.find(m => m.id === p.fatherId);
+        const mother = state.members.find(m => m.id === p.motherId);
+        
+        let fatherName = father ? ((typeof getFullDisplayTitle === 'function') ? getFullDisplayTitle(father) : father.name) : "ไม่ปรากฏนาม";
+        let motherName = mother ? ((typeof getFullDisplayTitle === 'function') ? getFullDisplayTitle(mother) : mother.name) : "ไม่ปรากฏนาม";
+        
+        fatherName = removeBrackets(fatherName);
+        motherName = removeBrackets(motherName);
+
+        let prefix = removeBrackets(p.titlePrefix || "").trim();
+        let cleanRank = removeBrackets(p.royalRank || "").trim();
+        let pname = removeBrackets(p.name || "").trim();
+        let suffix = removeBrackets(p.titleSuffix || "").trim();
+        let surname = removeBrackets(p.royalSurname || "").trim();
+        
+        let kromRank = removeBrackets(p.kromRank || "").trim();
+        let kromTitle = removeBrackets(p.kromTitle || "").trim();
+        
+        let isMomChao = (cleanRank.includes('หม่อมเจ้า') || prefix.includes('หม่อมเจ้า') || pname.includes('หม่อมเจ้า'));
+        let isChaoFa = (cleanRank.includes("เจ้าฟ้า") || prefix.includes("เจ้าฟ้า") || pname.includes("เจ้าฟ้า"));
+        
+        let hasKrom = false;
+        let fullKromText = "";
+        let trailingSoi = ""; 
+        let soiFromName = ""; 
+
+        if (kromRank.includes("กรม")) {
+            hasKrom = true;
+            fullKromText = `${kromRank.trim()}${kromTitle.trim()}`; 
+            if (suffix && !suffix.includes("กรม")) trailingSoi = suffix;
+        } else if (suffix.includes("กรม")) {
+            hasKrom = true;
+            fullKromText = suffix.trim(); 
+        } else if (pname.includes("กรม")) {
+            hasKrom = true;
+            let match = pname.match(/(กรม.*)/);
+            if(match) {
+                fullKromText = match[1].trim();
+            } else {
+                fullKromText = pname.trim();
+            }
+            if (suffix) trailingSoi = suffix;
+        }
+
+        if (hasKrom && !pname.includes("กรม") && pname.includes(" ")) {
+             let nameParts = pname.trim().split(" ");
+             nameParts.shift(); 
+             soiFromName = nameParts.join(" ").trim(); 
+        }
+        
+        let fullNameDisplay = "";
+
+        if (isMomChao) {
+            let cleanPname = pname.replace(/หม่อมเจ้า/g, '').trim();
+            fullNameDisplay = `หม่อมเจ้า${cleanPname}`;
+            let displaySurname = surname || trailingSoi || (suffix && !hasKrom ? suffix : "");
+            if (displaySurname) fullNameDisplay += ` ${displaySurname}`;
+        } else if (hasKrom) {
+            let cleanPrefix = prefix.replace(/เจ้าฟ้า/g, "").replace(/พระองค์เจ้า/g, "").replace(/\s+/g, " ").trim();
+            let rankText = isChaoFa ? "เจ้าฟ้า" : "";
+            fullNameDisplay = cleanPrefix ? `${cleanPrefix} ${rankText}${fullKromText}` : `${rankText}${fullKromText}`;
+            if (soiFromName) fullNameDisplay += ` ${soiFromName}`;
+            if (trailingSoi) fullNameDisplay += ` ${trailingSoi}`;
+        } else {
+            let cleanPname = pname.replace(/เจ้าฟ้า/g, '').replace(/พระองค์เจ้า/g, '').trim();
+            let rankAndName = (cleanRank && !prefix.includes(cleanRank)) ? `${cleanRank}${cleanPname}` : cleanPname;
+            fullNameDisplay = prefix ? `${prefix} ${rankAndName}` : rankAndName;
+            if (suffix) fullNameDisplay += ` ${suffix}`;
+        }
+
+        fullNameDisplay = fullNameDisplay.replace(/\s+/g, ' ').trim();
+        const thaiIndex = toThaiDigit(index + 1);
+
+        // 🌟 ตรวจสอบสายตระกูลและเพิ่มเส้นคั่นสีดำ
+        const currentBranch = getTopAncestorId(p);
+        if (index > 0 && currentBranch !== prevBranch) {
+            htmlContent += `<div class="w-full border-t-2 border-black my-4 opacity-80"></div>`;
+        }
+        prevBranch = currentBranch;
+
+        htmlContent += `
+            <div class="pl-2">
+                <div class="text-[20px] font-bold">
+                    ${thaiIndex}. ${fullNameDisplay}
+                </div>
+                <div class="text-[18px] text-slate-700 pl-8 mt-1">
+                    ใน ${fatherName} กับ ${motherName}
+                </div>
+            </div>
+        `;
+    });
+
+    htmlContent += `</div>`;
+    printContainer.innerHTML = htmlContent;
+    document.body.appendChild(printContainer);
+
+    try {
+        const btn = document.querySelector('button[onclick="downloadPalaceLawPNG()"]');
+        const originalText = btn ? btn.innerHTML : '';
+        if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสร้างไฟล์...';
+
+        const canvas = await html2canvas(printContainer, {
+            scale: 2, 
+            useCORS: true,
+            backgroundColor: "#ffffff",
+            logging: false
+        });
+
+        const link = document.createElement('a');
+        link.download = `ลำดับการสืบสันตติวงศ์_${cleanKingFullName.replace(/\s+/g, '_')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        if(btn) btn.innerHTML = originalText;
+    } catch (error) {
+        console.error("Error generating image:", error);
+        alert("เกิดข้อผิดพลาดในการสร้างไฟล์ภาพ");
+    } finally {
+        document.body.removeChild(printContainer);
+    }
+}
 
 
 
 </script>
+
 
 <div id="gazetteModal" class="modal">
     <div class="modal-content w-full max-w-2xl bg-white p-0 overflow-hidden flex flex-col">
