@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&family=Mali:wght@400;600&family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -1192,7 +1193,7 @@ tr.rank-card-3 {
     </div>
 
     <button onclick="downloadPalaceLawPNG()" class="flex items-center gap-2 px-4 py-1.5 bg-rose-600 text-white rounded-xl shadow-sm hover:bg-rose-700 transition-colors text-sm font-bold">
-        <i class="fa-solid fa-file-arrow-down"></i> ดาวน์โหลดเป็นภาพ (PNG)
+        <i class="fa-solid fa-file-arrow-down"></i> ดาวน์โหลดเอกสาร
     </button>
 </div>
 
@@ -16393,230 +16394,295 @@ function confirmPromoteMRN() {
 }
 
 
+/// ==========================================
+// ✅ ส่วนที่ 1: ประกาศตัวแปร Global (ต้องอยู่บนสุดเพื่อแก้บัก Initialization)
+// ==========================================
+var globalCleanKingFullName = ""; 
 
 // ==========================================
-// ฟังก์ชันสำหรับดาวน์โหลดลำดับกฎมณเฑียรบาลเป็น PNG (A4)
+// ✅ ส่วนที่ 2: ฟังก์ชันของคุณ (ห้ามลบ - คงไว้ตามต้นฉบับ)
 // ==========================================
 async function downloadPalaceLawPNG() {
-    // 1. หาข้อมูลกษัตริย์ปัจจุบัน
-    const king = state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
-    const kingFullName = king ? ((typeof getFullDisplayTitle === 'function') ? getFullDisplayTitle(king) : king.name) : "พระมหากษัตริย์";
+    try {
+        // เช็คว่ามี Pop-up อยู่ใน HTML หรือไม่
+        const modalBox = document.getElementById('palacePdfModal');
+        const previewBox = document.getElementById('palacePdfPreview');
+        if (!modalBox || !previewBox) {
+            alert("❌ โค้ดทำงานไม่ได้: ไม่พบ HTML สำหรับหน้าต่าง Pop-up (id='palacePdfModal')");
+            return;
+        }
 
-    // 2. เรียกสูตรคำนวณและกรอง (Double Filter)
-    let palaceList = calculatePalaceSuccessionList();
-    
-    palaceList = palaceList.filter(p => {
-        let isBlockedFromRoot = false;
-        let checkNode = p;
-        for (let i = 0; i < 10; i++) {
-            if (!checkNode) break;
-            const fullTitleCheck = `${checkNode.royalRank || ""} ${checkNode.titlePrefix || ""}`;
-            const hiddenPrefixes = ["พระพี่ยาเธอ", "พระพี่นางเธอ", "พระเจ้าลูกเธอ","พระเจ้าลูกยาเธอ", "พระน้องยาเธอ", "พระน้องนางเธอ", "พระเจ้าบรมวงศ์เธอ"];
-            if (hiddenPrefixes.some(k => fullTitleCheck.includes(k))) {
-                if (typeof isAllowedRoot === 'function' && !isAllowedRoot(checkNode)) {
-                    isBlockedFromRoot = true; break;
+        if (typeof state === 'undefined' || !state.members) {
+            alert("❌ โค้ดทำงานไม่ได้: ไม่พบข้อมูล state.members ในระบบ");
+            return;
+        }
+
+        const king = state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch);
+        const kingFullName = king ? ((typeof getFullDisplayTitle === 'function') ? getFullDisplayTitle(king) : king.name) : "พระมหากษัตริย์";
+
+        if (typeof calculatePalaceSuccessionList !== 'function') {
+            alert("❌ โค้ดทำงานไม่ได้: ไม่พบฟังก์ชัน calculatePalaceSuccessionList()");
+            return;
+        }
+
+        let palaceList = calculatePalaceSuccessionList();
+        
+        palaceList = palaceList.filter(p => {
+            let isBlockedFromRoot = false;
+            let checkNode = p;
+            for (let i = 0; i < 10; i++) {
+                if (!checkNode) break;
+                const fullTitleCheck = `${checkNode.royalRank || ""} ${checkNode.titlePrefix || ""}`;
+                const hiddenPrefixes = ["พระพี่ยาเธอ", "พระพี่นางเธอ", "พระเจ้าลูกเธอ","พระเจ้าลูกยาเธอ", "พระน้องยาเธอ", "พระน้องนางเธอ", "พระเจ้าบรมวงศ์เธอ"];
+                if (hiddenPrefixes.some(k => fullTitleCheck.includes(k))) {
+                    if (typeof isAllowedRoot === 'function' && !isAllowedRoot(checkNode)) {
+                        isBlockedFromRoot = true; break;
+                    }
+                }
+                if (!checkNode.fatherId) break;
+                checkNode = state.members.find(m => m.id === checkNode.fatherId);
+            }
+            if (isBlockedFromRoot) return false; 
+            
+            const wangKeywords = ["สมเด็จพระบวรราชเจ้า", "กรมพระราชวังบวร", "พระราชวังบวร", "วังหน้า", "วังหลัง", "สถานมงคล", "สถานพิมุข", "พระบัณฑูรน้อย", "ฝ่ายหน้า", "ฝ่ายหลัง"];
+            const fatherObj = state.members.find(m => m.id === p.fatherId);
+            if (fatherObj) {
+                 const fatherFullText = `${fatherObj.royalRank || ""} ${fatherObj.titlePrefix || ""} ${fatherObj.name || ""}`;
+                 if (wangKeywords.some(k => fatherFullText.includes(k))) return false;
+            }
+
+            const motherObj = state.members.find(m => m.id === p.motherId);
+            if (fatherObj && motherObj) {
+                const isFatherKing = (typeof isKing === 'function') ? isKing(fatherObj) : (fatherObj.isMonarch || fatherObj.isExMonarch);
+                const isFullSiblingOfKing = king ? (p.fatherId === king.fatherId && p.motherId === king.motherId && p.fatherId) : false;
+                if (!isFatherKing && !isFullSiblingOfKing) {
+                    const motherRankInfo = `${motherObj.royalRank || ""} ${motherObj.titlePrefix || ""}`;
+                    const isMotherRoyal = motherRankInfo.includes('เจ้าฟ้า') || motherRankInfo.includes('พระองค์เจ้า') || motherRankInfo.includes('หม่อมเจ้า') || motherRankInfo.includes('พระชายา') || motherRankInfo.includes('พระราชินี');
+                    const isRegisteredSpouse = (fatherObj.registeredSpouseId === motherObj.id);
+                    if (!isMotherRoyal && !isRegisteredSpouse && !p.isMonarch) return false; 
                 }
             }
-            if (!checkNode.fatherId) break;
-            checkNode = state.members.find(m => m.id === checkNode.fatherId);
-        }
-        if (isBlockedFromRoot) return false; 
-        
-        const wangKeywords = ["สมเด็จพระบวรราชเจ้า", "กรมพระราชวังบวร", "พระราชวังบวร", "วังหน้า", "วังหลัง", "สถานมงคล", "สถานพิมุข", "พระบัณฑูรน้อย", "ฝ่ายหน้า", "ฝ่ายหลัง"];
-        const fatherObj = state.members.find(m => m.id === p.fatherId);
-        if (fatherObj) {
-             const fatherFullText = `${fatherObj.royalRank || ""} ${fatherObj.titlePrefix || ""} ${fatherObj.name || ""}`;
-             if (wangKeywords.some(k => fatherFullText.includes(k))) return false;
-        }
-
-        const motherObj = state.members.find(m => m.id === p.motherId);
-        if (fatherObj && motherObj) {
-            const isFatherKing = (typeof isKing === 'function') ? isKing(fatherObj) : (fatherObj.isMonarch || fatherObj.isExMonarch);
-            const isFullSiblingOfKing = king ? (p.fatherId === king.fatherId && p.motherId === king.motherId && p.fatherId) : false;
-            if (!isFatherKing && !isFullSiblingOfKing) {
-                const motherRankInfo = `${motherObj.royalRank || ""} ${motherObj.titlePrefix || ""}`;
-                const isMotherRoyal = motherRankInfo.includes('เจ้าฟ้า') || motherRankInfo.includes('พระองค์เจ้า') || motherRankInfo.includes('หม่อมเจ้า') || motherRankInfo.includes('พระชายา') || motherRankInfo.includes('พระราชินี');
-                const isRegisteredSpouse = (fatherObj.registeredSpouseId === motherObj.id);
-                if (!isMotherRoyal && !isRegisteredSpouse && !p.isMonarch) return false; 
-            }
-        }
-        return true; 
-    });
-
-    const limitSelect = document.getElementById('palaceLawLimitSelect');
-    if (limitSelect && limitSelect.value !== 'all') {
-        palaceList = palaceList.slice(0, parseInt(limitSelect.value)); 
-    }
-
-    if (palaceList.length === 0) {
-        alert("ไม่พบข้อมูลผู้มีสิทธิ์สืบราชสันตติวงศ์สำหรับสร้างเอกสาร");
-        return;
-    }
-
-    const toThaiDigit = (num) => {
-        const thaiNumbers = ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'];
-        return num.toString().replace(/\d/g, (d) => thaiNumbers[d]);
-    };
-
-    const removeBrackets = (str) => {
-        return str ? str.replace(/\s*\(.*?\)/g, '').trim() : '';
-    };
-
-    // ฟังก์ชันหา "หัวหน้าสายตระกูล" สำหรับวาดเส้นคั่น
-    const getTopAncestorId = (person) => {
-        let current = person;
-        for (let i = 0; i < 10; i++) { 
-            const fatherInList = palaceList.find(m => m.id === current.fatherId);
-            if (fatherInList) {
-                current = fatherInList; 
-            } else {
-                break; 
-            }
-        }
-        return current.id; 
-    };
-
-    // 3. สร้าง Element ชั่วคราวสำหรับเป็นหน้า A4
-    const printContainer = document.createElement('div');
-    printContainer.className = "w-[800px] bg-white absolute -left-[9999px] top-0 text-slate-800 font-['Sarabun'] leading-relaxed";
-    printContainer.style.padding = "60px"; 
-    printContainer.style.minHeight = "1131px"; 
-
-    const cleanKingFullName = removeBrackets(kingFullName);
-
-    let htmlContent = `
-        <div class="text-center mb-10">
-            <h1 class="text-[26px] font-bold mb-2">ลำดับพระรัชทายาทสืบสันตติวงศ์</h1>
-            <h2 class="text-[22px] font-semibold">ใน ${cleanKingFullName}</h2>
-        </div>
-        <div class="flex flex-col gap-4">
-    `;
-
-    let prevBranch = null;
-
-    palaceList.forEach((p, index) => {
-        const father = state.members.find(m => m.id === p.fatherId);
-        const mother = state.members.find(m => m.id === p.motherId);
-        
-        let fatherName = father ? ((typeof getFullDisplayTitle === 'function') ? getFullDisplayTitle(father) : father.name) : "ไม่ปรากฏนาม";
-        let motherName = mother ? ((typeof getFullDisplayTitle === 'function') ? getFullDisplayTitle(mother) : mother.name) : "ไม่ปรากฏนาม";
-        
-        fatherName = removeBrackets(fatherName);
-        motherName = removeBrackets(motherName);
-
-        let prefix = removeBrackets(p.titlePrefix || "").trim();
-        let cleanRank = removeBrackets(p.royalRank || "").trim();
-        let pname = removeBrackets(p.name || "").trim();
-        let suffix = removeBrackets(p.titleSuffix || "").trim();
-        let surname = removeBrackets(p.royalSurname || "").trim();
-        
-        let kromRank = removeBrackets(p.kromRank || "").trim();
-        let kromTitle = removeBrackets(p.kromTitle || "").trim();
-        
-        let isMomChao = (cleanRank.includes('หม่อมเจ้า') || prefix.includes('หม่อมเจ้า') || pname.includes('หม่อมเจ้า'));
-        let isChaoFa = (cleanRank.includes("เจ้าฟ้า") || prefix.includes("เจ้าฟ้า") || pname.includes("เจ้าฟ้า"));
-        
-        let hasKrom = false;
-        let fullKromText = "";
-        let trailingSoi = ""; 
-        let soiFromName = ""; 
-
-        if (kromRank.includes("กรม")) {
-            hasKrom = true;
-            fullKromText = `${kromRank.trim()}${kromTitle.trim()}`; 
-            if (suffix && !suffix.includes("กรม")) trailingSoi = suffix;
-        } else if (suffix.includes("กรม")) {
-            hasKrom = true;
-            fullKromText = suffix.trim(); 
-        } else if (pname.includes("กรม")) {
-            hasKrom = true;
-            let match = pname.match(/(กรม.*)/);
-            if(match) {
-                fullKromText = match[1].trim();
-            } else {
-                fullKromText = pname.trim();
-            }
-            if (suffix) trailingSoi = suffix;
-        }
-
-        if (hasKrom && !pname.includes("กรม") && pname.includes(" ")) {
-             let nameParts = pname.trim().split(" ");
-             nameParts.shift(); 
-             soiFromName = nameParts.join(" ").trim(); 
-        }
-        
-        let fullNameDisplay = "";
-
-        if (isMomChao) {
-            let cleanPname = pname.replace(/หม่อมเจ้า/g, '').trim();
-            fullNameDisplay = `หม่อมเจ้า${cleanPname}`;
-            let displaySurname = surname || trailingSoi || (suffix && !hasKrom ? suffix : "");
-            if (displaySurname) fullNameDisplay += ` ${displaySurname}`;
-        } else if (hasKrom) {
-            let cleanPrefix = prefix.replace(/เจ้าฟ้า/g, "").replace(/พระองค์เจ้า/g, "").replace(/\s+/g, " ").trim();
-            let rankText = isChaoFa ? "เจ้าฟ้า" : "";
-            fullNameDisplay = cleanPrefix ? `${cleanPrefix} ${rankText}${fullKromText}` : `${rankText}${fullKromText}`;
-            if (soiFromName) fullNameDisplay += ` ${soiFromName}`;
-            if (trailingSoi) fullNameDisplay += ` ${trailingSoi}`;
-        } else {
-            let cleanPname = pname.replace(/เจ้าฟ้า/g, '').replace(/พระองค์เจ้า/g, '').trim();
-            let rankAndName = (cleanRank && !prefix.includes(cleanRank)) ? `${cleanRank}${cleanPname}` : cleanPname;
-            fullNameDisplay = prefix ? `${prefix} ${rankAndName}` : rankAndName;
-            if (suffix) fullNameDisplay += ` ${suffix}`;
-        }
-
-        fullNameDisplay = fullNameDisplay.replace(/\s+/g, ' ').trim();
-        const thaiIndex = toThaiDigit(index + 1);
-
-        // 🌟 ตรวจสอบสายตระกูลและเพิ่มเส้นคั่นสีดำ
-        const currentBranch = getTopAncestorId(p);
-        if (index > 0 && currentBranch !== prevBranch) {
-            htmlContent += `<div class="w-full border-t-2 border-black my-4 opacity-80"></div>`;
-        }
-        prevBranch = currentBranch;
-
-        htmlContent += `
-            <div class="pl-2">
-                <div class="text-[20px] font-bold">
-                    ${thaiIndex}. ${fullNameDisplay}
-                </div>
-                <div class="text-[18px] text-slate-700 pl-8 mt-1">
-                    ใน ${fatherName} กับ ${motherName}
-                </div>
-            </div>
-        `;
-    });
-
-    htmlContent += `</div>`;
-    printContainer.innerHTML = htmlContent;
-    document.body.appendChild(printContainer);
-
-    try {
-        const btn = document.querySelector('button[onclick="downloadPalaceLawPNG()"]');
-        const originalText = btn ? btn.innerHTML : '';
-        if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสร้างไฟล์...';
-
-        const canvas = await html2canvas(printContainer, {
-            scale: 2, 
-            useCORS: true,
-            backgroundColor: "#ffffff",
-            logging: false
+            return true; 
         });
 
-        const link = document.createElement('a');
-        link.download = `ลำดับการสืบสันตติวงศ์_${cleanKingFullName.replace(/\s+/g, '_')}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        const limitSelect = document.getElementById('palaceLawLimitSelect');
+        if (limitSelect && limitSelect.value !== 'all') {
+            palaceList = palaceList.slice(0, parseInt(limitSelect.value)); 
+        }
 
-        if(btn) btn.innerHTML = originalText;
-    } catch (error) {
-        console.error("Error generating image:", error);
-        alert("เกิดข้อผิดพลาดในการสร้างไฟล์ภาพ");
-    } finally {
-        document.body.removeChild(printContainer);
+        if (palaceList.length === 0) {
+            alert("ไม่พบข้อมูลผู้มีสิทธิ์สืบราชสันตติวงศ์ที่จะนำมาสร้างเอกสาร");
+            return;
+        }
+
+        const toThaiDigit = (num) => num.toString().replace(/\d/g, (d) => ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'][d]);
+        const removeBrackets = (str) => str ? str.replace(/\s*\(.*?\)/g, '').trim() : '';
+        
+        const getTopAncestorId = (person) => {
+            let current = person;
+            for (let i = 0; i < 10; i++) { 
+                const fatherInList = palaceList.find(m => m.id === current.fatherId);
+                if (fatherInList) current = fatherInList; else break; 
+            }
+            return current.id; 
+        };
+
+        const pageSize = 7;
+        const pages = [];
+        for (let i = 0; i < palaceList.length; i += pageSize) {
+            pages.push(palaceList.slice(i, i + pageSize));
+        }
+
+        globalCleanKingFullName = removeBrackets(kingFullName);
+        let htmlPreview = "";
+        let prevBranch = null;
+
+        pages.forEach((pageData, pIdx) => {
+            htmlPreview += `<div class="a4-pdf-page bg-white relative shrink-0 border border-slate-300 shadow-xl" style="width: 794px; height: 1123px; padding: 60px; transform-origin: top center; transform: scale(0.85); margin-bottom: -150px;">`;
+            
+            // 🌟 เงื่อนไข: หน้าแรกแสดงหัวข้อและ "เส้นคั่นแบบสั้น"
+            if (pIdx === 0) {
+                htmlPreview += `
+                    <div class="text-center mb-10">
+                        <h1 class="text-[26px] font-bold mb-2">ลำดับพระรัชทายาทสืบสันตติวงศ์</h1>
+                        <h2 class="text-[22px] font-semibold">ใน ${globalCleanKingFullName}</h2>
+                        <div class="w-32 h-[3px] bg-slate-800 mx-auto mt-6 rounded-full"></div>
+                    </div>
+                `;
+            } else {
+                htmlPreview += `<div class="pt-8"></div>`; // เพิ่มพื้นที่ด้านบนสำหรับหน้าถัดไป
+            }
+            
+            htmlPreview += `<div class="flex flex-col gap-5">`;
+
+            pageData.forEach((p, indexInPage) => {
+                const globalIndex = (pIdx * pageSize) + indexInPage;
+                
+                const father = state.members.find(m => m.id === p.fatherId);
+                const mother = state.members.find(m => m.id === p.motherId);
+                let fatherName = removeBrackets(father ? ((typeof getFullDisplayTitle === 'function') ? getFullDisplayTitle(father) : father.name) : "ไม่ปรากฏนาม");
+                let motherName = removeBrackets(mother ? ((typeof getFullDisplayTitle === 'function') ? getFullDisplayTitle(mother) : mother.name) : "ไม่ปรากฏนาม");
+
+                let prefix = removeBrackets(p.titlePrefix || "").trim();
+                let cleanRank = removeBrackets(p.royalRank || "").trim();
+                let pname = removeBrackets(p.name || "").trim();
+                let suffix = removeBrackets(p.titleSuffix || "").trim();
+                let surname = removeBrackets(p.royalSurname || "").trim();
+                let kromRank = removeBrackets(p.kromRank || "").trim();
+                let kromTitle = removeBrackets(p.kromTitle || "").trim();
+                
+                let isMomChao = (cleanRank.includes('หม่อมเจ้า') || prefix.includes('หม่อมเจ้า') || pname.includes('หม่อมเจ้า'));
+                let isChaoFa = (cleanRank.includes("เจ้าฟ้า") || prefix.includes("เจ้าฟ้า") || pname.includes("เจ้าฟ้า"));
+                
+                let hasKrom = false;
+                let fullKromText = "";
+                let trailingSoi = ""; 
+                let soiFromName = ""; 
+
+                if (kromRank.includes("กรม")) {
+                    hasKrom = true;
+                    fullKromText = `${kromRank.trim()}${kromTitle.trim()}`; 
+                    if (suffix && !suffix.includes("กรม")) trailingSoi = suffix;
+                } else if (suffix.includes("กรม")) {
+                    hasKrom = true;
+                    fullKromText = suffix.trim(); 
+                } else if (pname.includes("กรม")) {
+                    hasKrom = true;
+                    let match = pname.match(/(กรม.*)/);
+                    if(match) fullKromText = match[1].trim(); else fullKromText = pname.trim();
+                    if (suffix) trailingSoi = suffix;
+                }
+
+                if (hasKrom && !pname.includes("กรม") && pname.includes(" ")) {
+                     let nameParts = pname.trim().split(" ");
+                     nameParts.shift(); 
+                     soiFromName = nameParts.join(" ").trim(); 
+                }
+                
+                let fullNameDisplay = "";
+                if (isMomChao) {
+                    let cleanPname = pname.replace(/หม่อมเจ้า/g, '').trim();
+                    fullNameDisplay = `หม่อมเจ้า${cleanPname}`;
+                    let displaySurname = surname || trailingSoi || (suffix && !hasKrom ? suffix : "");
+                    if (displaySurname) fullNameDisplay += ` ${displaySurname}`;
+                } else if (hasKrom) {
+                    let cleanPrefix = prefix.replace(/เจ้าฟ้า/g, "").replace(/พระองค์เจ้า/g, "").replace(/\s+/g, " ").trim();
+                    let rankText = isChaoFa ? "เจ้าฟ้า" : "";
+                    fullNameDisplay = cleanPrefix ? `${cleanPrefix} ${rankText}${fullKromText}` : `${rankText}${fullKromText}`;
+                    if (soiFromName) fullNameDisplay += ` ${soiFromName}`;
+                    if (trailingSoi) fullNameDisplay += ` ${trailingSoi}`;
+                } else {
+                    let cleanPname = pname.replace(/เจ้าฟ้า/g, '').replace(/พระองค์เจ้า/g, '').trim();
+                    let rankAndName = (cleanRank && !prefix.includes(cleanRank)) ? `${cleanRank}${cleanPname}` : cleanPname;
+                    fullNameDisplay = prefix ? `${prefix} ${rankAndName}` : rankAndName;
+                    if (suffix) fullNameDisplay += ` ${suffix}`;
+                }
+
+                fullNameDisplay = fullNameDisplay.replace(/\s+/g, ' ').trim();
+                const thaiIndex = toThaiDigit(globalIndex + 1);
+
+                const currentBranch = getTopAncestorId(p);
+                // ขีดเส้นแบ่งตระกูล (ยกเว้นคนแรกของหน้าแรก)
+                if (globalIndex > 0 && currentBranch !== prevBranch) {
+                    // ถ้าเปลี่ยนตระกูลเป็นคนแรกของหน้า ให้ซ่อนเส้นแบ่งเพื่อความสวยงาม
+                    if (indexInPage > 0) {
+                        htmlPreview += `<div class="w-full border-t-2 border-black my-2 opacity-80"></div>`;
+                    }
+                }
+                prevBranch = currentBranch;
+
+                htmlPreview += `
+                    <div class="pl-2">
+                        <div class="text-[20px] font-bold">${thaiIndex}. ${fullNameDisplay}</div>
+                        <div class="text-[18px] text-slate-700 pl-8 mt-1">ใน ${fatherName} กับ ${motherName}</div>
+                    </div>
+                `;
+            });
+
+            htmlPreview += `</div>`;
+            htmlPreview += `<div class="absolute bottom-[50px] right-[60px] text-slate-500 font-bold">หน้า ${toThaiDigit(pIdx + 1)} / ${toThaiDigit(pages.length)}</div>`;
+            htmlPreview += `</div>`;
+        });
+
+        previewBox.innerHTML = htmlPreview;
+        modalBox.classList.remove('hidden');
+
+    } catch (err) {
+        console.error(err);
+        alert("❌ เกิด Error ร้ายแรงในบรรทัดใดบรรทัดหนึ่ง:\n" + err.message);
     }
 }
 
+// ==========================================
+// ✅ ส่วนที่ 3: ฟังก์ชันบันทึก PDF (ปุ่มยืนยันใน Pop-up)
+// ==========================================
+async function confirmDownloadPDF() {
+    const btn = document.getElementById('confirmPdfBtn');
+    if (!btn) return;
+    const originalText = btn.innerHTML;
+    
+    if (typeof window.jspdf === 'undefined') {
+        alert("❌ ไม่พบระบบสร้าง PDF! กรุณาตรวจสอบแท็ก Script jsPDF");
+        return;
+    }
+
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสร้าง PDF...';
+    btn.disabled = true;
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pages = document.querySelectorAll('.a4-pdf-page');
+
+        for (let i = 0; i < pages.length; i++) {
+            const pageEl = pages[i];
+            const clone = pageEl.cloneNode(true);
+            clone.style.transform = "none";
+            clone.style.margin = "0";
+            clone.style.position = "absolute";
+            clone.style.left = "-9999px";
+            clone.style.top = "0";
+            document.body.appendChild(clone);
+
+            const canvas = await html2canvas(clone, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: "#ffffff",
+                logging: false
+            });
+
+            document.body.removeChild(clone);
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            if (i > 0) pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+        }
+
+        const fileName = globalCleanKingFullName ? globalCleanKingFullName.replace(/\s+/g, '_') : 'Succession_List';
+        pdf.save(`ลำดับสืบสันตติวงศ์_${fileName}.pdf`);
+
+        btn.innerHTML = '✅ เสร็จสิ้น';
+        setTimeout(() => {
+            closePalacePdfModal();
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, 1500);
+
+    } catch (error) {
+        alert(`❌ PDF Error: ${error.message}`);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+// ==========================================
+// ✅ ส่วนที่ 4: ฟังก์ชันสำหรับปิดหน้าต่าง Pop-up
+// ==========================================
+function closePalacePdfModal() {
+    const modalBox = document.getElementById('palacePdfModal');
+    const previewBox = document.getElementById('palacePdfPreview');
+    if (modalBox) modalBox.classList.add('hidden');
+    if (previewBox) previewBox.innerHTML = '';
+}
 
 
 </script>
@@ -16904,6 +16970,35 @@ async function downloadPalaceLawPNG() {
         </button>
     </div>
 </div>
+
+
+
+<div id="palacePdfModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        
+        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+            <div>
+                <h3 class="text-xl font-bold text-slate-800">ตัวอย่างเอกสาร</h3>
+                <p class="text-sm text-slate-500">ตรวจสอบความถูกต้องก่อนบันทึกเป็น PDF</p>
+            </div>
+            <button onclick="closePalacePdfModal()" class="text-slate-400 hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-times text-2xl"></i>
+            </button>
+        </div>
+        
+        <div id="palacePdfPreview" class="flex-1 overflow-y-auto p-8 bg-slate-200 flex flex-col items-center">
+        </div>
+
+        <div class="p-6 border-t bg-slate-50 flex justify-end gap-3">
+            <button onclick="closePalacePdfModal()" class="px-6 py-2 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-colors">ยกเลิก</button>
+            <button id="confirmPdfBtn" onclick="confirmDownloadPDF()" class="px-6 py-2 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-file-pdf"></i> บันทึกเป็น PDF 
+            </button>
+        </div>
+        
+    </div>
+</div>
+
 
 
 
