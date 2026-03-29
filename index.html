@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Royal Family Tree (Enhanced Lineage & Surnames)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&family=Mali:wght@400;600&family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet">
@@ -1084,6 +1085,25 @@ tr.rank-card-3 {
     <button id="btnShowPrecedenceModal" onclick="openPrecedenceModal()" class="hidden bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold transition border border-blue-100 shadow-sm" title="ดูลำดับชั้นยศ">
         <i class="fa-solid fa-list-ol mr-1"></i> ลำดับชั้นยศโปรเจียม
     </button>
+
+
+<button id="btnDownloadPrecedenceExcel" onclick="downloadPrecedenceExcel()" class="hidden bg-emerald-50 hover:bg-emerald-100 text-emerald-600 px-3 py-1.5 rounded-full text-xs font-bold transition border border-emerald-100 shadow-sm" title="โหลดตารางเป็นไฟล์ Excel">
+        <i class="fa-solid fa-file-excel mr-1"></i> โหลดตารางลำดับโปรเจียม .xlsx
+    </button>
+
+
+<button id="btnDownloadRoyalChildrenExcel" onclick="downloadRoyalChildrenExcel()" class="hidden bg-emerald-50 hover:bg-emerald-100 text-emerald-600 px-3 py-1.5 rounded-full text-xs font-bold transition border border-emerald-100 shadow-sm" title="โหลดตารางลูกหลวงเป็นไฟล์ Excel">
+    <i class="fa-solid fa-file-excel mr-1"></i> โหลดตารางลูกหลวง .xlsx
+</button>
+
+
+<button id="btnDownloadRoyalSpousesExcel" onclick="downloadRoyalSpousesExcel()" class="hidden bg-pink-50 hover:bg-pink-100 text-pink-600 px-3 py-1.5 rounded-full text-xs font-bold transition border border-pink-100 shadow-sm" title="โหลดตารางคู่สมรสเป็นไฟล์ Excel">
+    <i class="fa-solid fa-file-excel mr-1"></i> โหลดตารางคู่สมรส .xlsx
+</button>
+
+
+
+
 
             
         <div id="monarchFilterContainer" class="hidden flex gap-2">
@@ -6272,9 +6292,24 @@ function onTableFilterChange() {
     // แสดงปุ่ม Reset Precedence (คงเดิม) และปุ่มแสดง Modal ลำดับชั้นยศโปรเจียม (เพิ่มใหม่)
     const btnReset = document.getElementById('btnResetPrecedence');
     const btnPrecedence = document.getElementById('btnShowPrecedenceModal'); 
+    // ✨ [NEW] เพิ่มตัวแปรอ้างอิงปุ่มดาวน์โหลด Excel
+    const btnDownloadExcel = document.getElementById('btnDownloadPrecedenceExcel'); 
+    // 👑 [NEW] เพิ่มตัวแปรอ้างอิงปุ่มดาวน์โหลด Excel สำหรับลูกหลวง
+    const btnDownloadRoyalChildren = document.getElementById('btnDownloadRoyalChildrenExcel');
+    // 💍 [NEW] เพิ่มตัวแปรอ้างอิงปุ่มดาวน์โหลด Excel สำหรับคู่สมรส
+    const btnDownloadRoyalSpouses = document.getElementById('btnDownloadRoyalSpousesExcel');
     
     if (btnReset) btnReset.classList.toggle('hidden', filterStatus !== 'precedence');
     if (btnPrecedence) btnPrecedence.classList.toggle('hidden', filterStatus !== 'precedence'); 
+    
+    // ✨ [NEW] แสดงปุ่มโหลด Excel เฉพาะเมื่อ filterStatus เป็น 'precedence' นอกนั้นให้ซ่อน
+    if (btnDownloadExcel) btnDownloadExcel.classList.toggle('hidden', filterStatus !== 'precedence');
+    
+    // 👑 [NEW] แสดงปุ่มโหลด Excel ลูกหลวง เฉพาะเมื่อ filterStatus เป็น 'royal_children' นอกนั้นให้ซ่อน
+    if (btnDownloadRoyalChildren) btnDownloadRoyalChildren.classList.toggle('hidden', filterStatus !== 'royal_children');
+
+    // 💍 [NEW] แสดงปุ่มโหลด Excel คู่สมรส เฉพาะเมื่อ filterStatus เป็น 'royal_spouses' นอกนั้นให้ซ่อน
+    if (btnDownloadRoyalSpouses) btnDownloadRoyalSpouses.classList.toggle('hidden', filterStatus !== 'royal_spouses');
 
     // --- ส่วน Logic การแสดงผล ---
     if (filterStatus === 'royal_children') {
@@ -6434,6 +6469,7 @@ function onTableFilterChange() {
     
     renderTable();
 }
+
 
 // ฟังก์ชันสำหรับโหลดรายชื่อพระนามแผ่นดินลงในช่องเลือก (Dropdown)
 // 1. ฟังก์ชันเดิม (คงไว้ตามปกติ)
@@ -16683,6 +16719,337 @@ function closePalacePdfModal() {
     if (modalBox) modalBox.classList.add('hidden');
     if (previewBox) previewBox.innerHTML = '';
 }
+
+
+
+
+
+function downloadPrecedenceExcel() {
+    // 1. ค้นหาข้อมูลพระมหากษัตริย์องค์ปัจจุบันที่ยังมีชีวิตอยู่
+    const activeKing = (typeof state !== 'undefined' && state.members) 
+        ? state.members.find(m => m.isMonarch && m.isAlive && !m.isExMonarch) 
+        : null;
+    
+    // 2. ดึงพระนามเต็มของกษัตริย์ (ถ้าไม่มีให้ใช้คำว่า พระมหากษัตริย์)
+    const kingName = activeKing 
+        ? (typeof getFullDisplayTitle === 'function' ? getFullDisplayTitle(activeKing) : (activeKing.name_th || activeKing.name)) 
+        : "พระมหากษัตริย์";
+
+    // 3. ตั้งชื่อหัวข้อตารางใน Excel
+    const titleText = `ลำดับพระอิสริยายศพระบรมวงศานุวงศ์ (โปรเจียม) ใน ${kingName}`;
+    
+    // สร้างข้อมูล Array (เตรียมใส่ Excel)
+    const wsData = [
+        [titleText, ""], // แถวที่ 1 (หัวเรื่อง)
+        ["", ""],        // แถวที่ 2 (เว้นว่าง)
+        ["ลำดับ", "พระนาม"] // แถวที่ 3 (หัวคอลัมน์)
+    ];
+
+    // ดึงข้อมูลจากตารางบนหน้าจอจริงๆ เพื่อให้ลำดับเป๊ะตามที่เห็น
+    const tbody = document.getElementById('tableBody');
+    if (!tbody) return;
+    
+    const rows = tbody.querySelectorAll('tr'); 
+    if (rows.length === 0) {
+        if (typeof showToast === 'function') showToast("ไม่มีข้อมูลในตารางสำหรับดาวน์โหลด");
+        return;
+    }
+
+    let currentIndex = 1;
+    // ใช้ forEach ดึงข้อมูลแต่ละแถวมาใส่ array
+    rows.forEach((row) => {
+        const id = row.getAttribute('data-id');
+        if (!id) return; 
+
+        const member = state.members.find(m => m.id === id);
+        if (member) {
+            const fullName = typeof getFullDisplayTitle === 'function' ? getFullDisplayTitle(member) : member.name;
+            wsData.push([currentIndex, fullName]);
+            currentIndex++;
+        }
+    });
+
+    // สร้าง Worksheet จากข้อมูล
+    const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+    
+    // การจัดการ สไตล์ และ ฟอนต์ TH Sarabun PSK
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const cellAddress = { c: C, r: R };
+            const cellRef = XLSX.utils.encode_cell(cellAddress);
+            if (!worksheet[cellRef]) continue;
+
+            // กำหนดฟอนต์พื้นฐานให้ทุกเซลล์ (Sarabun ขนาด 16)
+            worksheet[cellRef].s = {
+                font: {
+                    name: "TH Sarabun PSK", 
+                    sz: 16 
+                },
+                alignment: {
+                    vertical: "center",
+                    horizontal: (C === 0 && R > 1) ? "center" : "left"
+                }
+            };
+            
+            // ทำให้หัวตาราง (แถว 1 และ 3) เป็นตัวหนา และจัดกึ่งกลาง
+            if (R === 0 || R === 2) {
+                 worksheet[cellRef].s.font.bold = true;
+                 worksheet[cellRef].s.alignment.horizontal = "center";
+            }
+        }
+    }
+
+    // ผสานเซลล์หัวเรื่อง (ให้ชื่อยาวๆ อยู่ตรงกลาง)
+    worksheet["!merges"] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }
+    ];
+    
+    // ปรับความกว้างคอลัมน์
+    worksheet["!cols"] = [
+        { wch: 10 }, // คอลัมน์ลำดับ
+        { wch: 70 }  // คอลัมน์พระนาม
+    ];
+
+    // สร้าง Workbook และบันทึกไฟล์
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "ลำดับโปเจียม");
+
+    // ตั้งชื่อไฟล์ที่จะดาวน์โหลด (ดึงชื่ออาณาจักรมาตั้งชื่อไฟล์ เพื่อให้สั้นและกระชับ)
+    const kingdomName = (typeof state !== 'undefined' && state.kingdomName) ? state.kingdomName : "ราชวงศ์";
+    const fileName = `ลำดับโปเจียม_${kingdomName}.xlsx`;
+    
+    XLSX.writeFile(workbook, fileName);
+    
+    if (typeof showToast === 'function') {
+        showToast("ดาวน์โหลดไฟล์ Excel เรียบร้อยแล้ว ✨");
+    }
+}
+
+
+
+// ฟังก์ชันสำหรับดาวน์โหลดตารางลำดับลูกหลวงเป็น Excel แยกรัชกาล
+function downloadRoyalChildrenExcel() {
+    if (typeof XLSX === 'undefined') {
+        if (typeof showToast === 'function') showToast("เกิดข้อผิดพลาด: ไม่พบไลบรารี XLSX");
+        return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    let hasData = false;
+
+    // 1. ดึงข้อมูลกษัตริย์ที่มีเลขรัชกาล และเรียงจากน้อยไปมาก
+    const monarchs = state.members
+        .filter(m => m.isMonarch && m.globalReignNumber)
+        .sort((a, b) => parseInt(a.globalReignNumber) - parseInt(b.globalReignNumber));
+
+    if (monarchs.length === 0) {
+        if (typeof showToast === 'function') showToast("ไม่พบข้อมูลพระมหากษัตริย์");
+        return;
+    }
+
+    monarchs.forEach(monarch => {
+        // 2. ดึงลูกๆ ของกษัตริย์องค์นั้น
+        let children = state.members.filter(m => m.fatherId === monarch.id || m.motherId === monarch.id);
+        if (children.length === 0) return; 
+
+        hasData = true;
+
+        // 3. เรียงลำดับลูกตามปีประสูติ/ปีเกิด
+        children.sort((a, b) => (parseInt(a.birthYear) || 9999) - (parseInt(b.birthYear) || 9999));
+
+        const monarchName = typeof getFullDisplayTitle === 'function' ? getFullDisplayTitle(monarch) : monarch.name;
+        const sheetData = [];
+        
+        // 4. เขียนหัวข้อชีตและหัวตาราง
+        sheetData.push([`ลำดับพระราชโอรสและพระราชธิดาใน${monarchName}`]);
+        sheetData.push(['ลำดับ', 'พระนาม', 'สถานะ', 'พระมารดา', 'ปีเกิด']);
+
+        // 5. วนลูปใส่ข้อมูลลูกหลวง
+        children.forEach((child, index) => {
+            const childName = typeof getFullDisplayTitle === 'function' ? getFullDisplayTitle(child) : child.name;
+            const status = child.gender === 'M' ? 'พระราชโอรส' : 'พระราชธิดา';
+            
+            let motherName = "ไม่ปรากฏ";
+            if (monarch.gender === 'M') {
+                const mother = state.members.find(m => m.id === child.motherId);
+                if (mother) {
+                    motherName = typeof getFullDisplayTitle === 'function' ? getFullDisplayTitle(mother) : mother.name;
+                }
+            } else {
+                motherName = monarchName; // กรณีแม่เป็นกษัตริย์ (ราชินีนาถ)
+            }
+
+            const birthYear = child.birthYear ? `พ.ศ. ${child.birthYear}` : "-";
+
+            sheetData.push([index + 1, childName, status, motherName, birthYear]);
+        });
+
+        // 6. แปลงเป็น Sheet และกำหนดความกว้างคอลัมน์
+        const ws = XLSX.utils.aoa_to_sheet(sheetData);
+        ws['!cols'] = [
+            { wch: 8 },   // ลำดับ
+            { wch: 50 },  // พระนามเต็ม
+            { wch: 15 },  // สถานะ
+            { wch: 40 },  // พระมารดา
+            { wch: 15 }   // ปีเกิด
+        ];
+
+        // 7. ตั้งชื่อชีตตามเลขรัชกาล (เช่น "ลูกร.1", "ลูกร.2")
+        const sheetName = `ลูกร.${monarch.globalReignNumber}`.substring(0, 31);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+
+    if (!hasData) {
+        if (typeof showToast === 'function') showToast("ไม่มีข้อมูลพระราชโอรสและพระราชธิดาให้ดาวน์โหลด");
+        return;
+    }
+
+    // 8. สั่งบันทึกและดาวน์โหลด
+    XLSX.writeFile(wb, "ทำเนียบพระราชโอรสและพระราชธิดา.xlsx");
+    if (typeof showToast === 'function') showToast("ดาวน์โหลดตารางลูกหลวงเรียบร้อยแล้ว ✨");
+}
+
+
+
+// ฟังก์ชันสำหรับดาวน์โหลดตารางทำเนียบคู่สมรสเป็น Excel แยกรัชกาล (เพิ่มชื่อกษัตริย์ที่หัวตาราง + จัดกลุ่มสถานะเป๊ะๆ)
+function downloadRoyalSpousesExcel() {
+    if (typeof XLSX === 'undefined') {
+        if (typeof showToast === 'function') showToast("เกิดข้อผิดพลาด: ไม่พบไลบรารี XLSX");
+        return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    let hasData = false;
+
+    // 1. ดึงข้อมูลกษัตริย์ที่มีเลขรัชกาล
+    const monarchs = state.members
+        .filter(m => m.isMonarch && m.globalReignNumber)
+        .sort((a, b) => parseInt(a.globalReignNumber) - parseInt(b.globalReignNumber));
+
+    if (monarchs.length === 0) {
+        if (typeof showToast === 'function') showToast("ไม่พบข้อมูลพระมหากษัตริย์");
+        return;
+    }
+
+    monarchs.forEach(monarch => {
+        // 2. ดึงคู่สมรส
+        let spouses = state.members.filter(m => 
+            (monarch.spouseIds && monarch.spouseIds.includes(m.id)) || 
+            monarch.registeredSpouseId === m.id || 
+            (m.spouseIds && m.spouseIds.includes(monarch.id)) || 
+            m.registeredSpouseId === monarch.id
+        );
+        spouses = [...new Set(spouses)];
+        if (spouses.length === 0) return; 
+
+        hasData = true;
+
+        // 3. เรียงลำดับยศและอายุ
+        spouses.sort((a, b) => {
+            const isRegA = (monarch.registeredSpouseId === a.id) ? 1 : 0;
+            const isRegB = (monarch.registeredSpouseId === b.id) ? 1 : 0;
+            if (isRegA !== isRegB) return isRegB - isRegA;
+            const scoreA = a.pojiamScore || 0;
+            const scoreB = b.pojiamScore || 0;
+            if (scoreA !== scoreB) return scoreB - scoreA;
+            return (parseInt(a.birthYear) || 9999) - (parseInt(b.birthYear) || 9999);
+        });
+
+        // ดึงพระนามเต็มของพระมหากษัตริย์
+        const monarchName = typeof getFullDisplayTitle === 'function' ? getFullDisplayTitle(monarch) : monarch.name;
+        const sheetData = [];
+        
+        // 4. เขียนหัวข้อ (แสดง "ทำเนียบคู่สมรสใน" ตามด้วยพระนามเต็มกษัตริย์)
+        sheetData.push([`ทำเนียบคู่สมรสใน${monarchName}`]);
+        sheetData.push(['ลำดับ', 'พระนาม / นาม', 'ตำแหน่ง', 'สถานะ']);
+
+        // 5. วนลูปและกำหนดตำแหน่ง / สถานะ
+        spouses.forEach((spouse, index) => {
+            // ดึงชื่อเต็มมาและตัดคำว่า "ในรัชกาลที่..." ที่ต่อท้ายชื่อคู่สมรสออก
+            let fullName = typeof getFullDisplayTitle === 'function' ? getFullDisplayTitle(spouse) : spouse.name;
+            fullName = fullName.replace(/\s*ในรัชกาลที่\s*\d+/g, "")
+                               .replace(/\s*ในรัชกาล\s*\d+/g, "")
+                               .replace(/\s*ในรัชกาลที่\s*[๑-๙]+/g, "")
+                               .trim();
+
+            let position = "บาทบริจาริกา";
+            let status = "พระสนม";
+
+            if (spouse.gender === 'M') {
+                if (spouse.relationship === 'พระบรมสหยาธิบดี') {
+                    position = "พระบรมสหยาธิบดี";
+                    status = "พระบรมสหยาธิบดี";
+                } else {
+                    position = "พระราชสวามี";
+                    status = "พระราชสวามี";
+                }
+            } else {
+                // นำคำนำหน้า ชื่อ และความสัมพันธ์ มาเช็ครวมกัน
+                const textToCheck = `${spouse.relationship || ""} ${spouse.title || ""} ${fullName}`;
+
+                // เช็คและจัดกลุ่มสถานะตามคำที่คุณต้องการ
+                if (textToCheck.includes("พระบรมราชินี") || textToCheck.includes("เอกอัครมเหสี")) {
+                    status = "เอกอัครมเหสี";
+                    position = "พระภรรยาเจ้า";
+                } 
+                else if (textToCheck.includes("พระอัครราชเทวี") || textToCheck.includes("พระบรมราชเทวี") || textToCheck.includes("อัครมเหสี")) {
+                    status = "อัครมเหสี";
+                    position = "พระภรรยาเจ้า";
+                } 
+                else if (textToCheck.includes("พระราชเทวี") || textToCheck.includes("พระวรราชเทวี") || textToCheck.includes("พระนางเจ้า") || textToCheck.includes("พระมเหสี")) {
+                    status = "พระมเหสี";
+                    position = "พระภรรยาเจ้า";
+                } 
+                else if (textToCheck.includes("พระนางเธอ")) {
+                    status = "พระนางเธอ";
+                    position = "พระภรรยาเจ้า";
+                } 
+                else if (textToCheck.includes("ชายา") || textToCheck.includes("เจ้าฟ้า") || textToCheck.includes("พระองค์เจ้า") || textToCheck.includes("หม่อมเจ้า")) {
+                    status = "พระราชชายา";
+                    position = "พระภรรยาเจ้า";
+                } 
+                else if (textToCheck.includes("เจ้าคุณพระ") || textToCheck.includes("พระสนมเอก") || textToCheck.includes("เจ้าคุณจอมมารดา")) {
+                    status = "พระสนมเอก";
+                    position = "บาทบริจาริกา";
+                } 
+                else {
+                    status = "พระสนม";
+                    position = "บาทบริจาริกา";
+                }
+            }
+
+            sheetData.push([index + 1, fullName, position, status]);
+        });
+
+        // 6. สร้างชีตและกำหนดความกว้างคอลัมน์
+        const ws = XLSX.utils.aoa_to_sheet(sheetData);
+        ws['!cols'] = [
+            { wch: 8 },   // ลำดับ
+            { wch: 50 },  // พระนาม / นาม
+            { wch: 25 },  // ตำแหน่ง
+            { wch: 25 }   // สถานะ
+        ];
+
+        // 7. ตั้งชื่อชีตตามเลขรัชกาล
+        const sheetName = `ร.${monarch.globalReignNumber}`.substring(0, 31);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+
+    if (!hasData) {
+        if (typeof showToast === 'function') showToast("ไม่มีข้อมูลคู่สมรสให้ดาวน์โหลด");
+        return;
+    }
+
+    // 8. สั่งบันทึกไฟล์
+    XLSX.writeFile(wb, "ทำเนียบคู่สมรส.xlsx");
+    if (typeof showToast === 'function') showToast("ดาวน์โหลดตารางคู่สมรสเรียบร้อยแล้ว ✨");
+}
+
+
+
+
+
 
 
 </script>
