@@ -9,6 +9,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&family=Mali:wght@400;600&family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -8680,6 +8683,9 @@ if (filterStatus === 'royal_surnames') {
     });
     return;
 }
+
+
+
 // ================= โหมดปกติ (ปรับปรุง Logic การเรียงโปรเจียม) =================
     if (filterStatus === 'alive') list = list.filter(m => m.isAlive);
     else if (filterStatus === 'dead') list = list.filter(m => !m.isAlive);
@@ -8746,16 +8752,14 @@ if (filterStatus === 'royal_surnames') {
         postNameTag += `<span class="badge-kulachet"><i class="fa-solid fa-star"></i> พระกุลเชษฐ์</span>`;
     }
 
-
-
-        // 3. RANK COLUMN (แสดงเป็นเลขไทย)
+        // 3. RANK COLUMN (แสดงเป็นเลขไทย) ***(ส่วนที่เพิ่ม onclick, css และ event.stopPropagation())***
         let rankColumnHTML = '';
         const isPrecedenceMode = filterStatus === 'precedence';
         
         if (isPrecedenceMode) {
             if (isKing || isConsort || isCrownPrince || index < 3) {
                 rankColumnHTML = `
-                    <div class="relative inline-flex items-center justify-center w-8 h-8 mr-3 shrink-0 group-hover:scale-110 transition-transform duration-200">
+                    <div onclick="event.stopPropagation(); openSequenceEditModal('${m.id}', ${index + 1})" title="คลิกเพื่อแก้ไขลำดับ" class="relative inline-flex items-center justify-center w-8 h-8 mr-3 shrink-0 group-hover:scale-110 transition-transform duration-200 cursor-pointer hover:opacity-80">
                         <div class="absolute inset-0 bg-gradient-to-br from-yellow-200 via-amber-400 to-yellow-600 rounded-full shadow-md"></div>
                         <div class="absolute inset-[2px] bg-white rounded-full"></div>
                         <span class="relative text-xs font-black text-amber-700 z-10 font-mono">${toThaiNumerals(index + 1)}</span>
@@ -8763,7 +8767,9 @@ if (filterStatus === 'royal_surnames') {
             } else {
                 rankColumnHTML = `
                     <div class="w-8 mr-3 text-center shrink-0">
-                        <span class="inline-block w-6 text-xs font-mono font-bold text-slate-400 bg-slate-100 py-0.5 rounded border border-slate-200">${toThaiNumerals(index + 1)}</span>
+                        <span onclick="event.stopPropagation(); openSequenceEditModal('${m.id}', ${index + 1})" title="คลิกเพื่อแก้ไขลำดับ" class="inline-block w-6 text-xs font-mono font-bold text-slate-400 bg-slate-100 py-0.5 rounded border border-slate-200 cursor-pointer hover:bg-amber-100 hover:text-amber-700 hover:border-amber-300 transition-all transform hover:scale-110">
+                            ${toThaiNumerals(index + 1)}
+                        </span>
                     </div>`;
             }
         }
@@ -8848,7 +8854,7 @@ if (filterStatus === 'royal_surnames') {
             <td class="py-3 pr-2 w-[100px]">
                 <div class="flex items-center justify-end">
                     ${moveControls}
-                    <button onclick="editPersonDirect('${m.id}')" 
+                    <button onclick="event.stopPropagation(); editPersonDirect('${m.id}')" 
                             class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all opacity-0 group-hover:opacity-100" 
                             title="แก้ไขข้อมูล">
                         <i class="fa-regular fa-pen-to-square"></i>
@@ -8863,7 +8869,6 @@ if (filterStatus === 'royal_surnames') {
         initTableSortable();
     }
 }
-
 
 
 function movePrecedence(id, direction) {
@@ -17048,7 +17053,107 @@ function downloadRoyalSpousesExcel() {
 
 
 
+// ฟังก์ชันเปิด Modal เมื่อกดที่ตัวเลขลำดับ
+function openSequenceEditModal(memberId, currentIndex) {
+    document.getElementById('seqEdit_id').value = memberId;
+    document.getElementById('seqEdit_oldIndex').value = currentIndex;
+    document.getElementById('seqEdit_newIndex').value = currentIndex; // ตั้งค่าเริ่มต้นเป็นลำดับปัจจุบัน
+    
+    // แสดง Modal
+    document.getElementById('sequenceEditModal').classList.add('active');
+    
+    // โฟกัสและคลุมดำตัวเลขในช่อง input ทันทีให้พร้อมพิมพ์
+    setTimeout(() => {
+        const input = document.getElementById('seqEdit_newIndex');
+        input.focus();
+        input.select();
+    }, 100);
+}
 
+// ฟังก์ชันคำนวณและบันทึกตำแหน่งใหม่
+function saveNewSequence() {
+    const memberId = document.getElementById('seqEdit_id').value;
+    const oldIndex = parseInt(document.getElementById('seqEdit_oldIndex').value, 10);
+    let newIndex = parseInt(document.getElementById('seqEdit_newIndex').value, 10);
+    
+    if (!memberId || isNaN(newIndex) || newIndex < 1) {
+        showToast("กรุณาระบุเลขลำดับให้ถูกต้อง");
+        return;
+    }
+
+    const tbody = document.getElementById('tableBody');
+    const rows = Array.from(tbody.children); // แถวทั้งหมดในตารางปัจจุบัน
+    
+    // ป้องกันไม่ให้ผู้ใช้ใส่เลขเกินจำนวนคนทั้งหมดที่มีในตาราง
+    if (newIndex > rows.length) {
+        newIndex = rows.length;
+    }
+
+    // แปลงเลขลำดับ (1, 2, 3...) เป็นดัชนี Array (0, 1, 2...)
+    const targetDOMIndex = newIndex - 1;
+    const currentDOMIndex = oldIndex - 1;
+
+    if (targetDOMIndex === currentDOMIndex) {
+        closeModal('sequenceEditModal');
+        return; // ปิด Modal หากไม่ได้เปลี่ยนเลขลำดับ
+    }
+
+    const movedMember = state.members.find(m => m.id === memberId);
+    if (!movedMember) {
+        closeModal('sequenceEditModal');
+        return;
+    }
+
+    // =======================================================
+    // ตรรกะการคำนวณ CustomPrecedence ใหม่ (อิงจาก SortableJS เดิม)
+    // =======================================================
+    let scoreAbove = null;
+    let scoreBelow = null;
+
+    let targetRowAbove = null;
+    let targetRowBelow = null;
+
+    // หาคนที่อยู่ "เหนือ" และ "ใต้" ตำแหน่งใหม่
+    if (targetDOMIndex > currentDOMIndex) {
+        targetRowAbove = rows[targetDOMIndex];
+        targetRowBelow = rows[targetDOMIndex + 1];
+    } else {
+        targetRowAbove = rows[targetDOMIndex - 1];
+        targetRowBelow = rows[targetDOMIndex];
+    }
+
+    // ดึงคะแนนของคนที่อยู่ด้านบนตำแหน่งใหม่
+    if (targetRowAbove) {
+        const idAbove = targetRowAbove.getAttribute('data-id');
+        const memberAbove = state.members.find(m => m.id === idAbove);
+        if (memberAbove) {
+            scoreAbove = memberAbove.customPrecedence !== undefined ? memberAbove.customPrecedence : (memberAbove.pojiamScore || 0);
+        }
+    }
+
+    // ดึงคะแนนของคนที่อยู่ด้านล่างตำแหน่งใหม่
+    if (targetRowBelow) {
+        const idBelow = targetRowBelow.getAttribute('data-id');
+        const memberBelow = state.members.find(m => m.id === idBelow);
+        if (memberBelow) {
+            scoreBelow = memberBelow.customPrecedence !== undefined ? memberBelow.customPrecedence : (memberBelow.pojiamScore || 0);
+        }
+    }
+
+    // คำนวณค่ากึ่งกลางเพื่อแทรกแทรกคนนี้เข้าไป (เหมือน OnEnd ของ Sortable)
+    if (scoreAbove !== null && scoreBelow !== null) {
+        movedMember.customPrecedence = (scoreAbove + scoreBelow) / 2;
+    } else if (scoreAbove !== null) { 
+        movedMember.customPrecedence = scoreAbove - 1000; // ไปอยู่ล่างสุด
+    } else if (scoreBelow !== null) { 
+        movedMember.customPrecedence = scoreBelow + 1000; // ไปอยู่บนสุด
+    }
+
+    saveState();
+    closeModal('sequenceEditModal');
+    showToast(`✨ ย้ายไปลำดับที่ ${newIndex} เรียบร้อย`);
+    renderTable(); // รีเฟรชตารางให้ข้อมูลเรียงใหม่
+}
 
 
 
@@ -17366,6 +17471,43 @@ function downloadRoyalSpousesExcel() {
     </div>
 </div>
 
+
+
+
+<div id="sequenceEditModal" class="modal">
+    <div class="modal-content w-full max-w-sm p-6 relative bg-white rounded-3xl shadow-2xl border border-slate-100">
+        <button onclick="closeModal('sequenceEditModal')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
+            <i class="fa-solid fa-times text-xl"></i>
+        </button>
+        
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-500 text-2xl border-2 border-blue-100 shadow-inner">
+                <i class="fa-solid fa-arrow-down-1-9"></i>
+            </div>
+            <h3 class="font-cute font-bold text-xl text-slate-800">ย้ายเลขลำดับ</h3>
+            <p class="text-xs text-slate-500 mt-1">ระบุเลขลำดับใหม่ที่ต้องการให้บุคคลนี้ไปอยู่</p>
+        </div>
+
+        <div class="space-y-4">
+            <input type="hidden" id="seqEdit_id">
+            <input type="hidden" id="seqEdit_oldIndex">
+            
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <label class="text-sm font-bold text-slate-600 block mb-2 text-center">ลำดับที่ต้องการ:</label>
+                <input type="number" id="seqEdit_newIndex" min="1" class="w-full p-3 rounded-xl border border-slate-300 text-center text-xl font-bold text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white shadow-sm" placeholder="เช่น 5">
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeModal('sequenceEditModal')" class="flex-1 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors text-sm">
+                    ยกเลิก
+                </button>
+                <button onclick="saveNewSequence()" class="flex-1 py-3 rounded-xl bg-blue-500 text-white font-bold hover:bg-blue-600 shadow-lg shadow-blue-200 transition-all text-sm flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-check"></i> บันทึกและย้าย
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
